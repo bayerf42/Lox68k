@@ -1,0 +1,45 @@
+// Simple inheritance
+
+class Shape {
+  init (x,y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  area () {
+    return nil;
+  }
+
+  position () {
+    return [this.x, this.y];
+  }
+}
+
+class Circle < Shape {
+  init(x,y,r) {
+    super.init(x,y);
+    this.r = r;
+  }
+
+  area () {
+    return this.r * this.r * 31416 / 10000;
+  }
+}
+
+class Rectangle < Shape {
+  init(x,y,w,h) {
+    super.init(x,y);
+    this.w = w;
+    this.h = h;
+  }
+
+  area() {
+    return this.w * this.h;
+  }
+}
+
+var r = Rectangle(10,20,30,40);
+var c = Circle(-10,-20,100);
+
+print r.position(), " ", r.area();
+print c.position(), " ", c.area();

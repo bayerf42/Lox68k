@@ -1,0 +1,128 @@
+// (Kit only) play some music on buzzer.
+//
+// Load notes.lox before
+
+var freq = Notes();
+
+fun stacc(n, d) {
+  sound(freq[n], d / 4); // index instance freq with a (variable) string
+  sleep(d / 4 * 3);
+}
+
+
+fun popcorn() {
+  var dur = 200;
+
+  fun phrase1() {
+    stacc("h1", dur);
+    stacc("a1", dur);
+    stacc("h1", dur);
+    stacc("fis1", dur);
+    stacc("d1", dur);
+    stacc("fis1", dur);
+    stacc("h", dur*2);
+  }
+
+  fun phrase2() {
+    stacc("h1", dur);
+    stacc("cis2", dur);
+    stacc("d2", dur);
+    stacc("cis2", dur);
+    stacc("d2", dur);
+    stacc("h1", dur);
+    stacc("cis2", dur);
+    stacc("h1", dur);
+    stacc("cis2", dur);
+    stacc("a1", dur);
+    stacc("h1", dur);
+    stacc("a1", dur);
+    stacc("h1", dur);
+  }
+
+  fun phrase2a() {
+    stacc("g1", dur);
+    stacc("h1", dur*2);
+  }
+
+  fun phrase2b() {
+    stacc("cis2", dur);
+    stacc("d2", dur*2);
+  }
+
+  fun phrase3() {
+    stacc("fis2", dur);
+    stacc("e2", dur);
+    stacc("fis2", dur);
+    stacc("d2", dur);
+    stacc("a1", dur);
+    stacc("d2", dur);
+    stacc("fis1", dur*2);
+  }
+
+  fun phrase4() {
+    stacc("fis2", dur);
+    stacc("gis2", dur);
+    stacc("a2", dur);
+    stacc("gis2", dur);
+    stacc("a2", dur);
+    stacc("fis2", dur);
+    stacc("gis2", dur);
+    stacc("fis2", dur);
+    stacc("gis2", dur);
+    stacc("e2", dur);
+    stacc("fis2", dur);
+    stacc("e2", dur);
+  }
+
+  fun phrase4a() {
+    stacc("fis2", dur);
+    stacc("d2", dur);
+    stacc("fis2", dur*2);
+  }
+
+  fun phrase4b() {
+    stacc("cis2", dur);
+    stacc("e2", dur);
+    stacc("fis2", dur*2);
+  }
+
+  fun partA(repeat) {
+    phrase1();
+    phrase1();
+    phrase2();
+    if (!repeat)
+      phrase2a();
+    else
+      phrase2b();
+  }
+
+  fun partB(repeat) {
+    phrase3();
+    phrase3();
+    phrase4();
+    if (!repeat)
+      phrase4a();
+    else
+      phrase4b();
+  }
+
+  partA(false);
+  partA(true);
+
+  partB(false);
+  partB(true);
+
+  partA(false);
+  partA(false);
+}
+
+
+fun play(list, dur) {
+  for (var i = 0; i < length(list); i = i + 1) {
+    sound(freq[list[i]], dur);
+  }
+}
+
+fun scale() {
+  play(["c","d","e","f","g","a","h","c1"], 200);
+}

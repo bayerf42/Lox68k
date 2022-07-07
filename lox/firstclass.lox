@@ -1,0 +1,37 @@
+// Classed are first-class in Lox, can be parameters to functions and returned by them.
+
+class Demo {
+    init(x) {
+        this.x = x;
+    }
+
+    show() {
+        print this.x;
+    }
+}
+
+
+fun counted(cl) {
+    var num = 0;
+
+    class Deco < cl {
+        init(x) {
+            super.init(x);
+            num = num + 1;
+        }
+
+        num_instances() {
+            return num;
+        }
+    }
+
+    return Deco;
+}
+
+
+var CountedDemo = counted(Demo);
+var cd1 = CountedDemo(42);
+var cd2 = CountedDemo(17);
+var cd3 = CountedDemo(23);
+
+print cd2.num_instances();

@@ -1,0 +1,41 @@
+// Classic quicksort algorithm with test, sort random arrays.
+
+fun quicksort(array, comparator) {
+
+    fun partition(lo, hi) {
+        var pivot = array[(hi + lo) / 2];
+        var i = lo - 1;
+        var j = hi + 1;
+        for (;;) {
+            i = i + 1; while (comparator(array[i], pivot)) i = i + 1; 
+            j = j - 1; while (comparator(pivot, array[j])) j = j - 1;
+            if (i >= j) return j;
+            var temp = array[i]; array[i] = array[j]; array[j] = temp;
+        }
+    }
+
+    fun quicksort(lo, hi) {
+        if (lo >= 0 and hi >= 0 and lo < hi) {
+            var p = partition(lo, hi);
+            quicksort(lo, p);
+            quicksort(p + 1, hi);
+        }
+    }
+
+    quicksort(0, length(array) - 1); 
+}
+
+fun test(n) {
+    var arr = [];
+    for (var i = 0; i < n; i = i + 1)
+        append(arr, random() % 10000);
+
+    print arr;
+
+    fun less(a,b) {return a<b;}
+    quicksort(arr, less);
+
+    print arr;
+}
+
+  

@@ -1,0 +1,45 @@
+// Place N queens on a chess board, so they don't attack each other
+
+fun queens(N) {
+
+  var board = [];
+  for (var x = 0; x < N; x = x+1) {
+    append(board, []);
+    for (var y = 0; y < N; y = y+1)
+      append(board[x], false);
+  }
+
+  fun print_board() {
+    for (var x = 0; x < N; x = x + 1) {
+      for (var y = 0; y < N; y = y + 1)
+        print board[x][y] and "|Q" or "|_",;
+      print "|";
+    } 
+  }
+
+  fun queen_at(x, y) {
+    return y >= 0 and y < N and board[x][y];
+  }
+
+  fun solution(x0, y0) { 
+    for (var x = 0; x < x0; x = x + 1) 
+      if (queen_at(x, y0) or queen_at(x, y0 - x0 + x) or queen_at(x, y0 + x0 - x))
+        return false;
+
+    if (x0 >= 0) board[x0][y0] = true;
+    if (x0 == N - 1) return true;
+
+    for (var y = 0; y < N; y = y + 1)
+      if (solution(x0 + 1, y)) return true;
+
+    if (x0 >= 0) board[x0][y0] = false;
+    return false;
+  }
+
+  if (solution(-1, 0))
+    print_board();
+  else
+    print "No solution for ", N, " queens.";
+}
+
+// Evaluating queens(8); on the Kit takes about 30 seconds.

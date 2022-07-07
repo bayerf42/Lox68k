@@ -1,0 +1,60 @@
+// Some functional programming tools and tests
+
+fun map(fn, list) {
+  var res = [];
+  for (var i=0; i<length(list); i=i+1)
+    append(res, fn(list[i]));
+  return res;
+}
+
+fun filter(fn, list) {
+  var res = [];
+  for (var i=0; i<length(list); i=i+1)
+    if (fn(list[i]))
+      append(res, list[i]);
+  return res;
+}
+
+fun complement(fn) {
+  fun lambda(x) {
+    return !fn(x);
+  }
+  return lambda;
+}
+
+fun reduce(fn, list) {
+  var len = length(list);
+  if (len == 0) return nil;
+  if (len == 1) return list[0];
+  var res = fn(list[0], list[1]);
+  for (var i=2; i<len; i=i+1)
+    res = fn(res, list[i]);
+  return res;
+}
+
+fun range(lower, upper) {
+  var res = [];
+  for (var i = lower; i<=upper; i=i+1)
+    append(res, i);
+  return res;
+}
+
+fun sum(n) {
+  fun add(x, y) { return x + y; }
+  return reduce(add, range(1, n));
+}
+
+
+fun sso(a, b) {
+  // sum of squares of odd numbers from a to b
+
+  fun add(x, y)  { return x + y; }
+  fun square(x)  { return x * x; }
+  fun even(n)    { return n % 2 == 0; }
+
+  return reduce(add, map(square,
+                         filter(complement(even),
+                                range(a, b))));
+}
+  
+

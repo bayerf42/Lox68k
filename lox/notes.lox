@@ -1,0 +1,71 @@
+class Notes {
+    // Hash table with note periods for sound() native
+    init() {
+        this.C    = 529;
+        this.Cis  = 499;
+        this.Des  = 499;
+        this.D    = 471;
+        this.Dis  = 445;
+        this.Es   = 445;
+        this.E    = 420;
+        this.F    = 396;
+        this.Fis  = 373;
+        this.Ges  = 373;
+        this.G    = 353;
+        this.Gis  = 333;
+        this.As   = 333;
+        this.A    = 314;
+        this.B    = 296;
+        this.H    = 280;
+        this.c    = 264;
+        this.cis  = 249;
+        this.des  = 249;
+        this.d    = 235;
+        this.dis  = 222;
+        this.es   = 222;
+        this.e    = 209;
+        this.f    = 197;
+        this.fis  = 186;
+        this.ges  = 186;
+        this.g    = 175;
+        this.gis  = 165;
+        this.as   = 165;
+        this.a    = 156;
+        this.b    = 147;
+        this.h    = 139;
+        this.c1   = 131;
+        this.cis1 = 124;
+        this.des1 = 124;
+        this.d1   = 117;
+        this.dis1 = 110;
+        this.es1  = 110;
+        this.e1   = 104;
+        this.f1   =  98;
+        this.fis1 =  92;
+        this.ges1 =  92;
+        this.g1   =  87;
+        this.gis1 =  82;
+        this.as1  =  82;
+        this.a1   =  77;
+        this.b1   =  73;
+        this.h1   =  69;
+        this.c2   =  65;
+        this.cis2 =  61;
+        this.des2 =  61;
+        this.d2   =  57; // +12 cent
+        this.dis2 =  54;
+        this.es2  =  54;
+        this.e2   =  51;
+        this.f2   =  48;
+        this.fis2 =  45;
+        this.ges2 =  45;
+        this.g2   =  43; // -17 cent
+        this.gis2 =  40;
+        this.as2  =  40;
+        this.a2   =  38; // -11 cent  
+        this.b2   =  36; // -22 cent
+        this.h2   =  33; // +22 cent
+        this.c3   =  31; // +24 cent
+        // intonation gets worse with higher notes, stop here
+    }
+}
