@@ -13,6 +13,6 @@
 wlox.exe
 llox
 
-# imported from Monitor project
-!rom_image/monitor4.7.*
+# imported from Monitor project or finally created
+!rom_image/*
 
