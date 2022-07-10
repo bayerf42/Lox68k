@@ -15,6 +15,7 @@ class Notes {
         this.Gis  = 333;
         this.As   = 333;
         this.A    = 314;
+        this.Ais  = 296;
         this.B    = 296;
         this.H    = 280;
         this.c    = 264;
@@ -31,6 +32,7 @@ class Notes {
         this.gis  = 165;
         this.as   = 165;
         this.a    = 156;
+        this.ais  = 147;
         this.b    = 147;
         this.h    = 139;
         this.c1   = 131;
@@ -47,6 +49,7 @@ class Notes {
         this.gis1 =  82;
         this.as1  =  82;
         this.a1   =  77;
+        this.ais1 =  73;
         this.b1   =  73;
         this.h1   =  69;
         this.c2   =  65;
@@ -63,6 +66,7 @@ class Notes {
         this.gis2 =  40;
         this.as2  =  40;
         this.a2   =  38; // -11 cent  
+        this.ais2 =  36; // -22 cent
         this.b2   =  36; // -22 cent
         this.h2   =  33; // +22 cent
         this.c3   =  31; // +24 cent
