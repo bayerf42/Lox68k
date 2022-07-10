@@ -19,7 +19,8 @@ ser = serial.Serial("COM8:", baudrate=9600, timeout=0)
 transcript = open("transcript.log", "w")
 loxPattern = "lox/{}.lox"
 hexPattern = "../../FBI/{}.hex"
-
+encoding   = "ascii" # The Monitor getchar() only reads 7 bits to allow processing fast enough, so
+                     # we restrict the entire serial protocol to ASCII
 
 RS = b'\x1e' # ASCII record separator, passes thru gets(), but marks new line for Lox (scanner.c:90)
 anti_stress_delay = 0.0005 # Avoid too much CPU load when waiting for a char from serial or key press
@@ -30,8 +31,9 @@ line_delay = 0.01  # Same for newline char.
 def response():
     resp = ser.read(1)
     if resp == RS: resp = b'\n' # Convert back
-    print(resp.decode(), end="", flush=True)
-    if resp != b'\r': transcript.write(resp.decode())
+    char = resp.decode(encoding, errors="ignore"); 
+    print(char, end="", flush=True)
+    if char != '\r': transcript.write(char)
 
 
 def terminal_help():
@@ -53,7 +55,7 @@ def uploadLOX():
             for line in open(path, "r"):
                 for char in line.rstrip('\n'):
                     time.sleep(char_delay)
-                    ser.write(char.encode())
+                    ser.write(char.encode(encoding, errors="replace"))
                     response()
                 time.sleep(char_delay)
                 ser.write(RS)
@@ -70,7 +72,7 @@ def uploadHEX():
     try:
         for line in open(hexPattern.format(name), "r"):
             for char in line:
-                ser.write(char.encode())
+                ser.write(char.encode(encoding))
     except FileNotFoundError:
         print("...not found.");
 
@@ -79,22 +81,22 @@ def terminal_loop():
     while True:
         time.sleep(anti_stress_delay)
         if msvcrt.kbhit():
-            key = msvcrt.getch()
+            key = msvcrt.getwch()
 
-            if key == b'\x00':
-                key = msvcrt.getch()
-                if key == b';':   # F1 
+            if key == '\x00' or key == '\xe0':
+                key = msvcrt.getwch()
+                if key == ';':   # F1 
                     terminal_help()
-                elif key == b'<': # F2 
+                elif key == '<': # F2 
                     uploadLOX()
-                elif key == b'=': # F3 
+                elif key == '=': # F3 
                     uploadHEX()
 
-            elif key == b'\x0a': # Ctrl-ENTER -> new line in input, but not completed yet
+            elif key == '\x0a': # Ctrl-ENTER -> new line in input, but not completed yet
                 ser.write(RS) 
 
             else:
-                ser.write(key)
+                ser.write(key.encode(encoding, errors="replace"))
 
         response() 
 
