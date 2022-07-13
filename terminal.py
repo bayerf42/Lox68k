@@ -19,8 +19,8 @@ ser = serial.Serial("COM8:", baudrate=9600, timeout=0)
 transcript = open("transcript.log", "w")
 loxPattern = "lox/{}.lox"
 hexPattern = "../../FBI/{}.hex"
-encoding   = "ascii" # The Monitor getchar() only reads 7 bits to allow processing fast enough, so
-                     # we restrict the entire serial protocol to ASCII
+encoding   = "ascii" # The Monitor getchar() only reads 7 bits to allow fast processing, so
+                     # we restrict the entire serial protocol to pure 7 bit ASCII
 
 RS = b'\x1e' # ASCII record separator, passes thru gets(), but marks new line for Lox (scanner.c:90)
 anti_stress_delay = 0.0005 # Avoid too much CPU load when waiting for a char from serial or key press
@@ -28,12 +28,21 @@ char_delay = 0.003 # Time to wait for char sent to the Kit is echoed back.
 line_delay = 0.01  # Same for newline char.
 
 
+def transcript_char(char):
+    if char == '\r':
+        pass                                 # ignore the extra CR sent from the Kit
+    elif char == '\b':
+        transcript.seek(transcript.tell()-1) # backspace from Kit: remove last char transcripted
+    else:
+        transcript.write(char)
+
+
 def response():
     resp = ser.read(1)
     if resp == RS: resp = b'\n' # Convert back
     char = resp.decode(encoding, errors="ignore"); 
     print(char, end="", flush=True)
-    if char != '\r': transcript.write(char)
+    transcript_char(char)
 
 
 def terminal_help():
