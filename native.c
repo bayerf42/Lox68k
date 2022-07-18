@@ -127,6 +127,13 @@ static bool slotsNative(int argCount, Value* args) {
     return true;
 }
 
+static bool removeNative(int argCount, Value* args) {
+    ObjInstance* instance = AS_INSTANCE(args[0]);
+    bool removed = tableDelete(&instance->fields, AS_STRING(args[1]));
+    args[-1] = BOOL_VAL(removed);
+    return true;
+}
+
 static bool globalsNative(int argCount, Value* args) {
     args[-1] = OBJ_VAL(allKeys(&vm.globals));
     return true;
@@ -452,6 +459,11 @@ static bool clockNative(int argCount, Value* args) {
     return true;
 }
 
+static bool gcNative(int argCount, Value* args) {
+    collectGarbage(false);
+    args[-1] = NUMBER_VAL(vm.bytesAllocated);
+    return true;
+}
 
 static void defineNative(const char* name, const char* signature, NativeFn function) {
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
@@ -487,9 +499,11 @@ void defineAllNatives(void) {
     defineNative("index",       "ALn",  indexNative);
 
     defineNative("slots",       "I",    slotsNative);
+    defineNative("remove",      "IS",   removeNative);
     defineNative("globals",     "",     globalsNative);
     defineNative("type",        "A",    typeNative);
     defineNative("clock",       "",     clockNative);
+    defineNative("gc",          "",     gcNative);
 
 #ifdef KIT68K
     defineNative("peek",        "N",    peekNative);

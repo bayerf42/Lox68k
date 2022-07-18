@@ -23,6 +23,7 @@ Trailing `?` indicates optional parameter.
 | dec         | num                    | string      | all          | *num* as decimal string                                                           |
 | delete      | list, index            | -           | all          | deletes item at *index* from *list*                                               |
 | exec        | addr, num?, num?, num? | num         | Kit, Emu     | executes subroutine at *addr* with upto 3 numbers on stack, returns number in `D0`|  
+| gc          | -                      | num         | all          | forces garbage collection, returns size of allocated memory                       |  
 | globals     | -                      | list        | all          | list of all global variable names                                                 |  
 | hex         | num                    | string      | all          | *num* as hexadecimal string                                                       |
 | index       | item, list, index?     | index or nil| all          | search *item* in *list*, returns index where found, optional search start *index* |  
@@ -38,6 +39,7 @@ Trailing `?` indicates optional parameter.
 | peek        | addr                   | byte        | Kit, Emu     | reads byte from *addr*                                                            |  
 | poke        | addr, byte             | -           | Kit, Emu     | writes *byte* to *addr*                                                           |  
 | random      | -                      | num         | all          | a pseudo-random positive number                                                   |
+| remove      | instance, string       | bool        | all          | removes a field name from an instance, returns true if it existed before          |
 | seed_rand   | num                    | num         | all          | set seed for random number generator, returns current state                       |
 | sleep       | duration               | -           | Kit, Emu     | busy waits for *duration* milliseconds                                            |  
 | slots       | instance               | list        | all          | list of all field names                                                           |
