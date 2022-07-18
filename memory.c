@@ -276,6 +276,7 @@ void collectGarbage(bool checkReclaim) {
                before - vm.bytesAllocated, before, vm.bytesAllocated);
     }
 
+    tableShrink(&vm.strings);
     vm.numGCs++;
 }
 

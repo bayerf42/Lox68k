@@ -86,8 +86,7 @@ bool tableSet(Table* table, ObjString* key, Value value) {
     bool isNewKey;
     int capacity;
 
-    //if (table->count + 1 > ((table->capacity * 3) >> 2)) {
-    if (table->count + 1 > (table->capacity >> 1)) {
+    if (table->count + 1 > ((table->capacity * 3) >> 2)) {
         capacity = GROW_CAPACITY(table->capacity);
         adjustCapacity(table, capacity);
     }
@@ -125,6 +124,19 @@ void tableAddAll(Table* from, Table* to) {
             tableSet(to, entry->key, entry->value);
         }
     }
+}
+
+void tableShrink(Table* table) {
+  int num_entries = 0;
+  int i, capacity;
+  
+  for (i = 0; i < table->capacity; i++) {
+    if (table->entries[i].key != NULL) num_entries++;
+  }
+
+  // Find optimal capacity for load factor 0.75
+  for (capacity = 8; num_entries > ((capacity * 3) >> 2); capacity <<= 1);
+  adjustCapacity(table, capacity);
 }
 
 ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t hash) {
