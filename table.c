@@ -1,10 +1,12 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "memory.h"
 #include "object.h"
 #include "table.h"
 #include "value.h"
+#include "vm.h"
 
 
 void initTable(Table* table) {
@@ -84,9 +86,10 @@ static void adjustCapacity(Table* table, int capacity) {
 bool tableSet(Table* table, ObjString* key, Value value) {
     Entry* entry;
     bool isNewKey;
-    int capacity;
+    int capacity = table->capacity;
 
-    if (table->count + 1 > ((table->capacity * 3) >> 2)) {
+    // Grow when load factor exceeds 0.75
+    if (table->count + 1 > ((capacity + capacity + capacity) >> 2)) {
         capacity = GROW_CAPACITY(table->capacity);
         adjustCapacity(table, capacity);
     }
@@ -131,12 +134,17 @@ void tableShrink(Table* table) {
   int i, capacity;
   
   for (i = 0; i < table->capacity; i++) {
-    if (table->entries[i].key != NULL) num_entries++;
+      if (table->entries[i].key != NULL) num_entries++;
   }
 
   // Find optimal capacity for load factor 0.75
-  for (capacity = 8; num_entries > ((capacity * 3) >> 2); capacity <<= 1);
-  adjustCapacity(table, capacity);
+  for (capacity = 8; num_entries > ((capacity + capacity + capacity) >> 2); capacity <<= 1);
+  if (capacity < table->capacity) {
+      if (vm.debug_log_gc) {
+          printf("   shrink strings from %d to %d\n", table->capacity, capacity);
+      }
+      adjustCapacity(table, capacity);
+  }
 }
 
 ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t hash) {
