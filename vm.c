@@ -291,6 +291,7 @@ static InterpretResult run(void) {
         }
 
         if (vm.interrupted) {
+            READ_BYTE();
             runtimeError("Interrupted.");
             return INTERPRET_INTERRUPTED;
         }
