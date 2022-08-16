@@ -21,7 +21,8 @@ static const char* matchesType(Value value, char type) {
         case 'L': return IS_LIST(value) ? NULL : "a list";
         case 'Q': return IS_STRING(value) || IS_LIST(value) ? NULL : "a sequence";
         case 'B': return IS_BOOL(value) ? NULL : "a bool";
-        case 'I': return IS_OBJ(value) ? NULL : "an instance";
+        case 'I': return IS_INSTANCE(value) ? NULL : "an instance";
+        case 'O': return IS_INSTANCE(value) || IS_CLASS(value) ? NULL : "an object";
         default:  return "an unknown type";
     }
 }
@@ -122,8 +123,15 @@ static bool indexNative(int argCount, Value* args) {
 }
 
 static bool slotsNative(int argCount, Value* args) {
-    ObjInstance* instance = AS_INSTANCE(args[0]);
-    args[-1] = OBJ_VAL(allKeys(&instance->fields));
+    ObjInstance* instance;
+    ObjClass* klass;
+    if (IS_INSTANCE(args[0])) {
+        instance = AS_INSTANCE(args[0]);
+        args[-1] = OBJ_VAL(allKeys(&instance->fields));
+    } else {
+        klass = AS_CLASS(args[0]);
+        args[-1] = OBJ_VAL(allKeys(&klass->methods));
+    }
     return true;
 }
 
@@ -498,7 +506,7 @@ void defineAllNatives(void) {
     defineNative("delete",      "LN",   deleteNative);
     defineNative("index",       "ALn",  indexNative);
 
-    defineNative("slots",       "I",    slotsNative);
+    defineNative("slots",       "O",    slotsNative);
     defineNative("remove",      "IS",   removeNative);
     defineNative("globals",     "",     globalsNative);
     defineNative("type",        "A",    typeNative);

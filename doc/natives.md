@@ -14,7 +14,7 @@ Trailing `?` indicates optional parameter.
 | bit_shift   | num, num               | num         | all          | first number shifted left, if second positive, right if negative by second number |
 | bit_xor     | num, num               | num         | all          | bitwise exclusive OR of 2 numbers                                                 |
 | chr         | byte                   | string      | all          | character with ASCII code *byte*                                                  |
-| clock       | -                      | num         | all          | runtime in millisecondss after start. Returns 0 on Kit, since no clock available. |  
+| clock       | -                      | num         | all          | runtime in milliseconds after start. Returns 0 on Kit, since no clock available.  |  
 | dbg_code    | bool                   | -           | all          | prints byte code after compiling                                                  |  
 | dbg_gc      | bool                   | -           | all          | prints garbage collection diagnostics                                             |  
 | dbg_stat    | bool                   | -           | all          | print statistics (steps, allocations) after execution                             |  
@@ -42,7 +42,7 @@ Trailing `?` indicates optional parameter.
 | remove      | instance, string       | bool        | all          | removes a field name from an instance, returns true if it existed before          |
 | seed_rand   | num                    | num         | all          | set seed for random number generator, returns current state                       |
 | sleep       | duration               | -           | Kit, Emu     | busy waits for *duration* milliseconds                                            |  
-| slots       | instance               | list        | all          | list of all field names                                                           |
+| slots       | instance or class      | list        | all          | list of all field names or methods in class                                       |
 | sound       | rate, duration         | -           | Kit          | plays a sound on speaker, cycle length *rate*, for *duration* milliseconds        |  
 | trap        | -                      | -           | Kit, Emu     | breaks to monitor, now you can inspect Lox internals, can be continued with **GO**|  
 | type        | item                   | string      | all          | type (as string) of *item*                                                        |  

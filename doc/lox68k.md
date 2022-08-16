@@ -8,7 +8,7 @@ It is a high-level interpreted programming language in the spirit of Python, Lua
 Lox is dynamically typed, has garbage collection and supports functional programming idioms with
 closures and first-class functions. It also includes a simple class-based object system,
 featuring single inheritance, constructors and super calls. Lox is controlled by a
-read-eval-print loop (*REPL*) from a terminal (emulator).
+read-eval-print loop (*REPL*).
 Here is an [overview of the Lox language](https://craftinginterpreters.com/the-lox-language.html).
 
 
@@ -117,7 +117,7 @@ To start Lox interactively (aka. the REPL), execute
 wlox
 ```
 
-To start Lox evaluating files and terminating, exexcute
+To start Lox evaluating files and terminating, execute
 ```sh
 wlox file1 file2 ...
 ```
