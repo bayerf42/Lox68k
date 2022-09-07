@@ -35,17 +35,22 @@ static bool isHexDigit(char c) {
         || c >= 'A' && c <= 'F';
 }
 
-static bool isAtEnd(void) {
-    return *scanner.current == '\0';
-}
+#define isAtEnd() (*scanner.current == '\0')
+//static bool isAtEnd(void) {
+//    return *scanner.current == '\0';
+//}
 
-static char advance(void) {
-    return *scanner.current++;
-}
 
-static char peek(void) {
-    return *scanner.current;
-}
+#define advance() (*scanner.current++)
+//static char advance(void) {
+//    return *scanner.current++;
+//}
+
+
+#define peek() (*scanner.current)
+//static char peek(void) {
+//    return *scanner.current;
+//}
 
 static char peekNext(void) {
     if (isAtEnd()) return '\0';
@@ -167,7 +172,7 @@ static Token number(char start) {
 
 static Token string(void) {
     while (peek() != '"' && !isAtEnd()) {
-        if (peek() == '\n') scanner.line++;
+        if (peek() == '\n' || peek() == '\x1e') scanner.line++;
         advance();
     }
 

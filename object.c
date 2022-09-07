@@ -106,6 +106,7 @@ static ObjString* allocateString(char* chars, int length, uint32_t hash) {
 }
 
 static uint32_t hashString(const char* chars, int length) {
+    // FNV-1 hash with 32 bits
     uint32_t hash = 2166136261u;
     int i;
 
