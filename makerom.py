@@ -7,7 +7,7 @@ import bincopy
 
 # Adapt the next line to where the monitor hex file resides. You can download
 # the Monitor complete with sources and documentation from
-# https://www.kswichit.com/68008/Fred/MonitorV4.7.zip
+# https://kswichit.net/68008/Fred/MonitorV4.7.zip
 
 MonitorPath = "rom_image/monitor4.7.hex"
 

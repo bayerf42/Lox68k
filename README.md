@@ -15,7 +15,7 @@ Here is an [overview of the Lox language](https://craftinginterpreters.com/the-l
 ### What is the Sirichote 68008 Kit?
 
 It is an educational single-board computer using the ancient Motorola 68008 CPU,
-designed by Wichit Sirichote, [described here](https://www.kswichit.com/68008/68008.htm).
+designed by Wichit Sirichote, [described here](https://kswichit.net/68008/68008.htm).
 It is mainly intended to learn programming the 68k in machine language. It has no operating
 system, just a little monitor program and communicates with a terminal (emulator) via RS232.
 If you want to buy/build one, contact Wichit via his web site.

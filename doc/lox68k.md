@@ -15,7 +15,7 @@ Here is an [overview of the Lox language](https://craftinginterpreters.com/the-l
 ### What is the Sirichote 68008 Kit?
 
 It is an educational single-board computer using the ancient Motorola 68008 CPU,
-designed by Wichit Sirichote, [described here](https://www.kswichit.com/68008/68008.htm).
+designed by Wichit Sirichote, [described here](https://kswichit.net/68008/68008.htm).
 It is mainly intended to learn programming the 68k in machine language. It has no operating
 system, just a little monitor program and communicates with a terminal (emulator) via RS232.
 If you want to buy/build one, contact Wichit via his web site.
@@ -38,7 +38,7 @@ it as Windows/Linux executables, too.
 ## Prerequisites
 
 * To build the 68008 version of Lox, you need the
-  *IDE68K suite* from https://www.kswichit.com/68008/ide68k30.zip
+  *IDE68K suite* from https://kswichit.net/68008/ide68k30.zip
 * To build the Windows version of Lox, you need the
   *Tiny C compiler* from https://bellard.org/tcc
 * To build the Linux version of Lox, you need nothing but standard *gcc*.
@@ -48,7 +48,7 @@ it as Windows/Linux executables, too.
 If you just want to checkout Lox with the IDE68K emulator, you need nothing else,
 just compile it as described below. But if you want to execute it on the Kit itself,
 you need the Monitor 4.7 ROM, available either in `rom_image/monitor4.7.bin` or with sources at
-https://www.kswichit.com/68008/Fred/MonitorV4.7.zip
+https://kswichit.net/68008/Fred/MonitorV4.7.zip
 But you should rather combine the Monitor and Lox into a single ROM image, see below.
 
 

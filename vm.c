@@ -29,12 +29,12 @@ void runtimeError(const char* format, ...) {
     va_start(args, format);
     vprintf(format, args);
     va_end(args);
-    puts("\n");
+    printf("\n");
 
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
         function = frame->closure->function;
-        instruction = frame->ip - frame->closure->function->chunk.code - 1;
+        instruction = frame->ip - function->chunk.code - 1;
         printf("[line %d] in ", function->chunk.lines[instruction]);
         if (function->name == NULL) {
             printf("script\n");
