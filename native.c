@@ -277,6 +277,18 @@ static bool seedRandNative(int argCount, Value* args) {
 }
 
 
+static bool lowerNative(int argCount, Value* args) {
+    args[-1] = OBJ_VAL(caseString(AS_STRING(args[0]), false));
+    return true;
+}
+
+
+static bool upperNative(int argCount, Value* args) {
+    args[-1] = OBJ_VAL(caseString(AS_STRING(args[0]), true));
+    return true;
+}
+
+
 // Modifying debugging options
 
 static bool dbgCodeNative(int argCount, Value* args) {
@@ -352,6 +364,14 @@ static bool execNative(int argCount, Value* args) {
     }
 
     args[-1] = NUMBER_VAL(result);
+    return true;
+}
+
+static bool addrNative(int argCount, Value* args) {
+    if (IS_OBJ(args[0]))
+        args[-1] = NUMBER_VAL((uint32_t)AS_OBJ(args[0]));
+    else 
+        args[-1] = NIL_VAL;
     return true;
 }
 
@@ -500,6 +520,9 @@ void defineAllNatives(void) {
     defineNative("random",      "",     randomNative);
     defineNative("seed_rand",   "N",    seedRandNative);
 
+    defineNative("lower",       "S",    lowerNative);
+    defineNative("upper",       "S",    upperNative);
+
     defineNative("length",      "Q",    lengthNative);
     defineNative("append",      "LA",   appendNative);
     defineNative("insert",      "LNA",  insertNative);
@@ -517,6 +540,7 @@ void defineAllNatives(void) {
     defineNative("peek",        "N",    peekNative);
     defineNative("poke",        "NN",   pokeNative);
     defineNative("exec",        "Nnnn", execNative);
+    defineNative("addr",        "A",    addrNative);
     defineNative("trap",        "",     trapNative);
 
     defineNative("lcd_clear",   "",     lcdClearNative);

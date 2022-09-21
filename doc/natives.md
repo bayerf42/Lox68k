@@ -6,6 +6,7 @@ Trailing `?` indicates optional parameter.
 | Name        | Parameters             | Returns     | Availability | Description                                                                       |
 |-------------|------------------------|-------------|--------------|-----------------------------------------------------------------------------------|
 | abs         | num                    | num         | all          | absolute value                                                                    |  
+| addr        | item                   | num or nil  | Kit, Emu     | address of an object in heap, nil for immediate values                            |  
 | append      | list, item             | -           | all          | appends *item* to end of *list*                                                   |
 | asc         | string, index?         | byte        | all          | ASCII code of first or indexed character                                          |  
 | bit_and     | num, num               | num         | all          | bitwise AND of 2 numbers                                                          |
@@ -35,6 +36,7 @@ Trailing `?` indicates optional parameter.
 | lcd_defchar | num, list of 8 bytes   | -           | Kit          | creates a user-defined char with code *num* for LCD with bit pattern from *list*  |  
 | lcd_goto    | column, line           | -           | Kit          | set cursor position on LCD                                                        |  
 | lcd_puts    | string                 | -           | Kit          | writes *string* to LCD                                                            |  
+| lower       | string                 | string      | all          | lower case of string                                                              |  
 | length      | list or string         | num         | all          | length of *list* or *string*                                                      |
 | peek        | addr                   | byte        | Kit, Emu     | reads byte from *addr*                                                            |  
 | poke        | addr, byte             | -           | Kit, Emu     | writes *byte* to *addr*                                                           |  
@@ -46,4 +48,5 @@ Trailing `?` indicates optional parameter.
 | sound       | rate, duration         | -           | Kit          | plays a sound on speaker, cycle length *rate*, for *duration* milliseconds        |  
 | trap        | -                      | -           | Kit, Emu     | breaks to monitor, now you can inspect Lox internals, can be continued with **GO**|  
 | type        | item                   | string      | all          | type (as string) of *item*                                                        |  
+| upper       | string                 | string      | all          | upper case of string                                                              |  
 

@@ -320,6 +320,23 @@ ObjString* concatStrings(ObjString* a, ObjString* b) {
     return result;
 }
 
+ObjString* caseString(ObjString* a, bool toUpper) {
+    int length = a->length;
+    char* chars = ALLOCATE(char, length + 1);
+    ObjString* result;
+    
+    fix_memcpy(chars, a->chars, a->length);
+    chars[length] = '\0';
+    if (toUpper)
+        strupr(chars);
+    else  
+        strlwr(chars); 
+
+    result = takeString(chars, length);
+    return result;
+}
+
+
 ObjList* concatLists(ObjList* a, ObjList* b) {
     ObjList* result = newList();
     int i;

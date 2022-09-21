@@ -168,6 +168,8 @@ bool isValidStringIndex(ObjString* string, int index);
 ObjString* concatStrings(ObjString* a, ObjString* b);
 ObjList* concatLists(ObjList* a, ObjList* b);
 
+ObjString* caseString(ObjString* a, bool toUpper);
+
 ObjList* allKeys(Table* table);
 
 bool isObjType(Value value, ObjType type);

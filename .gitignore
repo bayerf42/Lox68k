@@ -16,3 +16,6 @@ llox
 # imported from Monitor project or finally created
 !rom_image/*
 
+# assembler demos
+!asm/*.asm
+!asm/*.hex
