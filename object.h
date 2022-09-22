@@ -78,8 +78,8 @@ struct ObjString {
     uint8_t     isMarked;
 
     int16_t     length;
-    char*       chars;
     uint32_t    hash;
+    char        chars[]; // chap 19, single alloc for strings
 };
 
 typedef struct ObjUpvalue {
@@ -98,9 +98,8 @@ typedef struct {
     uint8_t      isMarked;
 
     ObjFunction* function;
+    int16_t      upvalueCount; // too big, but keep alignment
     ObjUpvalue** upvalues;
-    uint8_t      upvalueCount;
-    int8_t       padding;
 } ObjClosure;
 
 typedef struct {
@@ -147,7 +146,6 @@ ObjFunction* newFunction(void);
 ObjInstance* newInstance(ObjClass* klass);
 ObjList* newList(void);
 ObjNative* newNative(const char* signature, NativeFn function);
-ObjString* takeString(char* chars, int length);
 ObjString* copyString(const char* chars, int length);
 ObjUpvalue* newUpvalue(Value* slot);
 void printObject(Value value, bool compact);

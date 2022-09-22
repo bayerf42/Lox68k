@@ -91,19 +91,6 @@ ObjNative* newNative(const char* signature, NativeFn function) {
     return native;
 }
 
-static ObjString* allocateString(char* chars, int length, uint32_t hash) {
-    ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
-
-    string->length = length;
-    string->chars = chars;
-    string->hash = hash;
-
-    push(OBJ_VAL(string));
-    tableSet(&vm.strings, string, NIL_VAL);
-    pop();
-    
-    return string;
-}
 
 static uint32_t hashString(const char* chars, int length) {
     // FNV-1 hash with 32 bits
@@ -117,28 +104,26 @@ static uint32_t hashString(const char* chars, int length) {
     return hash;
 }
 
-ObjString* takeString(char* chars, int length) {
-    uint32_t hash = hashString(chars, length);
-    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
-
-    if (interned != NULL) {
-        FREE_ARRAY(char, chars, length + 1);
-        return interned;
-    }
-    return allocateString(chars, length, hash);
-}
 
 ObjString* copyString(const char* chars, int length) {
+    // Check if we already have an equal string
     uint32_t hash = hashString(chars, length);
-    char* heapChars;
+    ObjString* string;
     ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
-
     if (interned != NULL) return interned;
 
-    heapChars = ALLOCATE(char, length + 1);
-    fix_memcpy(heapChars, chars, length);
-    heapChars[length] = '\0';
-    return allocateString(heapChars, length, hash);
+    // Create new string
+    string = (ObjString*)allocateObject(sizeof(ObjString) + length + 1, OBJ_STRING);
+    string->length = length;
+    string->hash = hash;
+    fix_memcpy(string->chars, chars, length);
+    string->chars[length] = '\0';
+
+    // and save it in table
+    push(OBJ_VAL(string));
+    tableSet(&vm.strings, string, NIL_VAL);
+    pop();
+    return string;
 }
 
 ObjUpvalue* newUpvalue(Value* slot) {
@@ -311,31 +296,24 @@ ObjString* sliceFromString(ObjString* string, int begin, int end) {
 
 ObjString* concatStrings(ObjString* a, ObjString* b) {
     int length = a->length + b->length;
-    char* chars = ALLOCATE(char, length + 1);
-    ObjString* result;
-    
-    fix_memcpy(chars, a->chars, a->length);
-    fix_memcpy(chars + a->length, b->chars, b->length);
-    chars[length] = '\0';
 
-    result = takeString(chars, length);
-    return result;
+    fix_memcpy(input_line, a->chars, a->length);
+    fix_memcpy(input_line + a->length, b->chars, b->length);
+    input_line[length] = '\0';
+
+    return copyString(input_line, length);
 }
 
 ObjString* caseString(ObjString* a, bool toUpper) {
     int length = a->length;
-    char* chars = ALLOCATE(char, length + 1);
-    ObjString* result;
-    
-    fix_memcpy(chars, a->chars, a->length);
-    chars[length] = '\0';
+    fix_memcpy(input_line, a->chars, length);
+    input_line[length] = '\0';
     if (toUpper)
-        strupr(chars);
+        strupr(input_line);
     else  
-        strlwr(chars); 
+        strlwr(input_line); 
 
-    result = takeString(chars, length);
-    return result;
+    return copyString(input_line, length);
 }
 
 

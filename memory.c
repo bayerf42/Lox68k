@@ -15,6 +15,7 @@ char input_line[INPUT_SIZE];
 
 void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     void* result;
+
     if (vm.debug_stress_gc) {
         if (newSize > oldSize) {
             collectGarbage(false);
@@ -190,8 +191,7 @@ static void freeObject(Obj* object) {
         }
         case OBJ_STRING: {
             ObjString* string = (ObjString*)object;
-            FREE_ARRAY(char, string->chars, string->length + 1);
-            FREE(ObjString, object);
+            reallocate(object, sizeof(ObjString) + string->length + 1, 0);  
             break;
         }
         case OBJ_UPVALUE: {
