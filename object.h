@@ -53,7 +53,7 @@ typedef struct {
     struct Obj* nextObj;
     uint8_t     type;
     uint8_t     isMarked;
-
+ 
     uint8_t     arity;
     uint8_t     upvalueCount;
     Chunk       chunk;
@@ -79,7 +79,7 @@ struct ObjString {
 
     int16_t     length;
     uint32_t    hash;
-    char        chars[]; // chap 19, single alloc for strings
+    char        chars[]; // chap 19, single alloc for strings, as embedded char array
 };
 
 typedef struct ObjUpvalue {
@@ -99,7 +99,7 @@ typedef struct {
 
     ObjFunction* function;
     int16_t      upvalueCount; // too big, but keep alignment
-    ObjUpvalue** upvalues;
+    ObjUpvalue*  upvalues[];   // like ObjString, array embedded in structure
 } ObjClosure;
 
 typedef struct {

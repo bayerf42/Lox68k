@@ -49,18 +49,17 @@ ObjClass* newClass(ObjString* name) {
 }
 
 ObjClosure* newClosure(ObjFunction* function) {
-    ObjUpvalue** upvalues = ALLOCATE(ObjUpvalue*, function->upvalueCount);
-    ObjClosure* closure;
+    ObjClosure* closure = (ObjClosure*)
+        allocateObject(sizeof(ObjClosure) + sizeof(ObjUpvalue*) * function->upvalueCount,
+                       OBJ_CLOSURE);
     int i;
 
     for (i = 0; i < function->upvalueCount; i++) {
-        upvalues[i] = NULL;
+        closure->upvalues[i] = NULL;
     }
-
-    closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
     closure->function = function;
-    closure->upvalues = upvalues;
     closure->upvalueCount = function->upvalueCount;
+
     return closure;
 }
 
