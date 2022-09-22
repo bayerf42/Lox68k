@@ -100,7 +100,8 @@ __getch:                               ; Basic character input routine
            rts
 
            xdef        stackoverflow
-stackoverflow:
+stackoverflow:                         ; label for compiler-generated check
+__stackoverflow:                       ; label for manual check
            lea         himem,A7        ; reset stackpointer
            cmpi.w      #magic_val,magic_addr.W
            beq.s       .on_sbc

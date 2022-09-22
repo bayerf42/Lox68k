@@ -711,6 +711,8 @@ static const ParseRule* getRule(TokenType type) {
 }
 
 static void expression(void) {
+    CHECK_STACKOVERFLOW
+
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
@@ -726,6 +728,8 @@ static void function(FunctionType type) {
     ObjFunction* function;
     int i;
     uint8_t constant;
+
+    CHECK_STACKOVERFLOW
 
     initCompiler(&compiler, type);
 

@@ -20,10 +20,29 @@ typedef short          bool;
 #define UINT16_MAX 0xffff
 #define INT32_MAX  0x7fffffff
 
+
+// Code at the very beginning of a function to check for stack overflow:
+//
+// cmp.l STACKPOINTER.W,A7
+// bge   *+6
+// jsr   __stackoverflow
+//
+// please adapt the definition of STACKPOINTER in the project file when the address
+// of variable __stack in the assembler startup file changes, I haven't found a way
+// to automate this... 
+
+extern void _stackoverflow(void);
+#define CHECK_STACKOVERFLOW \
+  _word(0xbff8); _word(STACKPOINTER); \
+  _word(0x6c06); \
+  _stackoverflow();
+
 #else
 
 #include <stdbool.h>
 #include <stdint.h>
+
+#define CHECK_STACKOVERFLOW
 
 #endif
 
