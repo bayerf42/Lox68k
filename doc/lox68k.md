@@ -66,7 +66,7 @@ But you should rather combine the Monitor and Lox into a single ROM image, see b
 * The compile-time debugging options are now selectable at runtime via the `dbg_*` native functions.
 * Runtime statistics via `dbg_stat()`.
 * Hexadecimal literals via the `$` prefix, like `$ff` == `255`.
-* Modulo operstor `%`
+* Modulo operator `%`
 * Interrupting long-running computations by **IRQ** key (or `ctrl-C` in Windows/Linux versions).
 * `print` allows list of expression, all printed on one line. With trailing comma,
   no line feed is printed.
@@ -143,7 +143,7 @@ Be sure to compile it for 32 bit architecture, Lox68k assumes 32 bit `int`, `lon
 
 
 ### Lox compiled for the 68008 kit in ROM
-It is burnt into ROM (together with the Monitor 4.7)
+It is burnt into ROM (together with the Monitor code)
 and can [utilize the entire RAM for data](memorymap.md#ROM) and the kit's hardware like LCD, keyboard,
 sound, and terminal communication via the serial port.
 
@@ -165,13 +165,17 @@ send commands to the REPL running at the Kit via the terminal.
 To interrupt long-running computations, press the **IRQ** key bringing you back to the input
 prompt. Be sure to put the interrupt source switch to *IRQ*, not to *10ms TICK*.
 
+You can also run this version in the *IDE68K* emulator, but you have to set its start address
+`$44000` manually into the PC register.
+
 ### Lox compiled for the 68008 kit in RAM
 It is uploaded into RAM (which takes quite some time)
-and has some [tighter memory limits](memorymap.md#RAM) to fit everything into the available 128k RAM,
-but it also runs on the IDE68K emulator, even without the Monitor 4.x code.
+and has some [tighter memory limits](memorymap.md#RAM) to fit everything into the
+available 128k RAM, but you don't have to burn a ROM image after every modification
+while testing.
 
 To build this version, load project `clox.prj` and build it. A hex file `clox.hex` is generated,
-which can be uploaded to the Kit, or executed with the IDE68K emulator.
+which can be uploaded to the Kit, or executed with the *IDE68K* emulator.
 
 The start address is `$00400` as usual, you interact with it the same way as the ROM version.
 

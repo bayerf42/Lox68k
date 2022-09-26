@@ -94,9 +94,10 @@
   * Change the memory layout (section start addresses) in `cstart_lox_rom.asm` for your system
   * Provide your board's routines for `__putch`, `__getch`, and `__exit` in `cstart_lox_rom.asm`
   * Change `handleInterrupts` in `native.c` for your board to allow interrupting infinite loops
+  * Change the `CHECK_STACKOVERFLOW` macro in `common.h` if you want to check it in critical functions.
   * Porting to 68020-based boards should be no problem, just set the processor option in
     *IDE68K* accordingly. No assumptions about exception stack format or privileged SR access
-    are made.
+    are made. Also no extra information is stored in the upper 8 bits of pointers.
 
   
 

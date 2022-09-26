@@ -3,12 +3,15 @@
 * Written by : Fred Bayer
 * Date       : 2022-09-20
 * Description: Assembly subroutine to reverse a Lox list.
-*              call it by invoking exec($500, addr(list)) from Lox.
+*              call it by invoking exec($500, list) from Lox.
 *-----------------------------------------------------------
 
             org     $500
 
-reverse     movea.l 4(sp),a1         ; First parameter (address of Lox list object)
+reverse     move.l  4(sp),d0         ; First parameter
+            andi.l  #$80000001,d0    ; Test for Object
+            bne.s   .wrong_type
+            movea.l 4(sp),a1         ; Load first parameter (address of Lox list object)
             cmpi.b  #5,4(a1)         ; test for list subtype
             bne.s   .wrong_type
             move.w  6(a1),d0         ; length of list
@@ -23,8 +26,8 @@ reverse     movea.l 4(sp),a1         ; First parameter (address of Lox list obje
             move.l  d1,(a0)+
 .loop       dbf     d0,.again
 
-            clr.l   d0               ; success!
+            move.l  4(sp),d0         ; object itself for success
             rts
 
-.wrong_type moveq   #$ff,d0          ; -1 for error
+.wrong_type move.l  #$80000002,d0    ; nil for error
             rts

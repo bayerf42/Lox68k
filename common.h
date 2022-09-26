@@ -5,6 +5,10 @@
 
 #ifdef KIT68K
 
+/////////////////////////////////////////////////////////////////
+// Wichichote 68008 KIT / IDE68K C compiler specific definitions
+/////////////////////////////////////////////////////////////////
+
 typedef signed char    int8_t;
 typedef unsigned char  uint8_t;
 typedef unsigned short uint16_t;
@@ -37,29 +41,36 @@ extern void _stackoverflow(void);
   _word(0x6c06); \
   _stackoverflow();
 
+
+// HEAP_SIZE, INPUT_SIZE, and STACK_MAX are set in project file, different for RAM and ROM version.
+
+
 #else
+
+
+/////////////////////////////////////////////////////////////////
+// Now for the more modern compilers Tiny C and GNU C
+/////////////////////////////////////////////////////////////////
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #define CHECK_STACKOVERFLOW
 
-#endif
-
-#define DEDUPLICATE_CONSTANTS
-#define UINT8_COUNT (UINT8_MAX + 1)
-
-#ifdef KIT68K
-
-// HEAP_SIZE, INPUT_SIZE, and STACK_MAX are set in project file, different for RAM and ROM version.
-
-#else
 
 #define HEAP_SIZE   65536
 #define STACK_MAX    4096
 #define INPUT_SIZE  65536
 
 #endif
+
+
+/////////////////////////////////////////////////////////////////
+// Common definitions
+/////////////////////////////////////////////////////////////////
+
+#define DEDUPLICATE_CONSTANTS
+#define UINT8_COUNT (UINT8_MAX + 1)
 
 #define FRAMES_MAX  128
 #define GRAY_MAX   1024

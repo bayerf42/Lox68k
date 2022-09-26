@@ -348,22 +348,22 @@ static bool pokeNative(int argCount, Value* args) {
 }
 
 static bool execNative(int argCount, Value* args) {
-    typedef int sub0(void);
-    typedef int sub1(int);
-    typedef int sub2(int,int);
-    typedef int sub3(int,int,int);
+    typedef Value sub0(void);
+    typedef Value sub1(Value);
+    typedef Value sub2(Value,Value);
+    typedef Value sub3(Value,Value,Value);
 
     int32_t address = AS_NUMBER(args[0]);
-    int32_t result;
+    Value result;
 
     switch (argCount) {
         case 1: result = ((sub0*) address)(); break;
-        case 2: result = ((sub1*) address)(AS_NUMBER(args[1])); break;
-        case 3: result = ((sub2*) address)(AS_NUMBER(args[1]),AS_NUMBER(args[2])); break;
-        case 4: result = ((sub3*) address)(AS_NUMBER(args[1]),AS_NUMBER(args[2]),AS_NUMBER(args[3])); break;
+        case 2: result = ((sub1*) address)(args[1]); break;
+        case 3: result = ((sub2*) address)(args[1],args[2]); break;
+        case 4: result = ((sub3*) address)(args[1],args[2],args[3]); break;
     }
 
-    args[-1] = NUMBER_VAL(result);
+    args[-1] = result;
     return true;
 }
 
@@ -539,7 +539,7 @@ void defineAllNatives(void) {
 #ifdef KIT68K
     defineNative("peek",        "N",    peekNative);
     defineNative("poke",        "NN",   pokeNative);
-    defineNative("exec",        "Nnnn", execNative);
+    defineNative("exec",        "Naaa", execNative);
     defineNative("addr",        "A",    addrNative);
     defineNative("trap",        "",     trapNative);
 

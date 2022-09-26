@@ -6,8 +6,8 @@ Trailing `?` indicates optional parameter.
 | Name        | Parameters             | Returns     | Availability | Description                                                                       |
 |-------------|------------------------|-------------|--------------|-----------------------------------------------------------------------------------|
 | abs         | num                    | num         | all          | absolute value                                                                    |  
-| addr        | item                   | num or nil  | Kit, Emu     | address of an object in heap, nil for immediate values                            |  
-| append      | list, item             | -           | all          | appends *item* to end of *list*                                                   |
+| addr        | val                    | num or nil  | Kit, Emu     | address of an object in heap, nil for immediate values                            |  
+| append      | list, val              | -           | all          | appends *val* to end of *list*                                                    |
 | asc         | string, index?         | byte        | all          | ASCII code of first or indexed character                                          |  
 | bit_and     | num, num               | num         | all          | bitwise AND of 2 numbers                                                          |
 | bit_not     | num                    | num         | all          | bitwise NOT of a number                                                           |
@@ -22,14 +22,14 @@ Trailing `?` indicates optional parameter.
 | dbg_stress  | bool                   | -           | all          | force garbage collection before each allocation, slow!                            |  
 | dbg_trace   | bool                   | -           | all          | trace each VM instruction executed, prints stack                                  |  
 | dec         | num                    | string      | all          | *num* as decimal string                                                           |
-| delete      | list, index            | -           | all          | deletes item at *index* from *list*                                               |
-| exec        | addr, num?, num?, num? | num         | Kit, Emu     | executes subroutine at *addr* with upto 3 numbers on stack, returns number in `D0`|  
+| delete      | list, index            | -           | all          | deletes element at *index* from *list*                                            |
+| exec        | addr, val?, val?, val? | val         | Kit, Emu     | executes subroutine at *addr* with upto 3 values on stack, returns value in `D0`  |  
 | gc          | -                      | num         | all          | forces garbage collection, returns size of allocated memory                       |  
 | globals     | -                      | list        | all          | list of all global variable names                                                 |  
 | hex         | num                    | string      | all          | *num* as hexadecimal string                                                       |
-| index       | item, list, index?     | index or nil| all          | search *item* in *list*, returns index where found, optional search start *index* |  
+| index       | val, list, index?      | index or nil| all          | search *val* in *list*, returns index where found, optional search start *index*  |  
 | input       | string?                | string      | all          | input string from terminal with optional prompt                                   |
-| insert      | list, index, item      | -           | all          | inserts *item* into *list* at position *index*                                    |
+| insert      | list, index, val       | -           | all          | inserts *val* into *list* at position *index*                                     |
 | int         | string                 | num         | all          | parses *string* as number                                                         |
 | keycode     | -                      | code or nil | Kit          | code of key currently pressed or nil                                              |  
 | lcd_clear   | -                      | -           | Kit          | clears LCD                                                                        |  
@@ -47,6 +47,6 @@ Trailing `?` indicates optional parameter.
 | slots       | instance or class      | list        | all          | list of all field names or methods in class                                       |
 | sound       | rate, duration         | -           | Kit          | plays a sound on speaker, cycle length *rate*, for *duration* milliseconds        |  
 | trap        | -                      | -           | Kit, Emu     | breaks to monitor, now you can inspect Lox internals, can be continued with **GO**|  
-| type        | item                   | string      | all          | type (as string) of *item*                                                        |  
+| type        | val                    | string      | all          | type (as string) of *val*                                                        |  
 | upper       | string                 | string      | all          | upper case of string                                                              |  
 
