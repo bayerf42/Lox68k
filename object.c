@@ -173,6 +173,15 @@ const char* typeName(ObjType type) {
     }
 }
 
+
+static void fix_printf(const char* str) {
+    // printf("%s", str) has a bug in IDE68k library, inserting arbitrary spaces for strings
+    // longer than 127 characters, so do it manually (again)
+    while (*str)
+        putchar(*str++);
+}
+
+
 void printObject(Value value, bool compact) {
     switch (OBJ_TYPE(value)) {
         case OBJ_BOUND_METHOD: printFunction("bound", AS_BOUND_METHOD(value)->method->function); break;
@@ -182,7 +191,7 @@ void printObject(Value value, bool compact) {
         case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
         case OBJ_LIST: if (compact) printf("<list %d>",AS_LIST(value)->count); else printList(AS_LIST(value)); break;
         case OBJ_NATIVE: printf("<native fn>"); break;
-        case OBJ_STRING: printf("%s", AS_CSTRING(value)); break;
+        case OBJ_STRING: fix_printf(AS_CSTRING(value)); break;
         case OBJ_UPVALUE: printf("<upvalue>"); break;
     }
 }

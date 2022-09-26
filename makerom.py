@@ -9,7 +9,7 @@ import bincopy
 # the Monitor complete with sources and documentation from
 # https://kswichit.net/68008/Fred/MonitorV4.7.zip
 
-MonitorPath = "rom_image/monitor4.7.hex"
+MonitorPath = "rom_image/monitor.hex"
 
 rom = bincopy.BinFile(MonitorPath)
 bootvector = rom[0:8]
@@ -22,5 +22,5 @@ rom.exclude(0,0x40000)
 image = rom.as_binary()
 image[0:8] = bootvector
 
-with open("rom_image/mon4.7-lox1.0.bin","wb") as dest:
+with open("rom_image/mon-lox.bin","wb") as dest:
   dest.write(image)

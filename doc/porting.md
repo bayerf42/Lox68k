@@ -55,6 +55,7 @@
     * Loading a HEX file includes DATA sections and puts them in RAM, so all is ok.
     * But there's no mechanism in the C startup, which would create a DATA section in RAM from ROM.
     * BSS sections in ROM-able code are ok, these are zeroed by the C startup.
+  * `printf("%s", str)` inserts arbitrary spaces, when `str` is longer than 127 characters.
 
 
 ## Reducing memory size, other hardware restrictions
