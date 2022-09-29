@@ -316,26 +316,24 @@ static void slice(bool canAssign) {
     }
 }
 
+static void slice_right(bool canAssign) {
+    if (match(TOKEN_RIGHT_BRACKET)) {
+        emitConstant(NUMBER_VAL(INT32_MAX>>1));
+    } else {
+        expression();
+        consume(TOKEN_RIGHT_BRACKET, "Expect ']' after slice.");
+    }
+    slice(canAssign);
+}
+
 static void index_(bool canAssign) {
     if (match(TOKEN_COLON)) {
         emitConstant(NUMBER_VAL(0));
-        if (match(TOKEN_RIGHT_BRACKET)) {
-            emitConstant(NUMBER_VAL(INT32_MAX>>1));
-        } else {
-            expression();
-            consume(TOKEN_RIGHT_BRACKET, "Expect ']' after slice.");
-        }
-        slice(canAssign);
+        slice_right(canAssign);
     } else {
         expression();
         if (match(TOKEN_COLON)) {
-            if (match(TOKEN_RIGHT_BRACKET)) {
-                emitConstant(NUMBER_VAL(INT32_MAX>>1));
-            } else {
-                expression();
-                consume(TOKEN_RIGHT_BRACKET, "Expect ']' after slice.");
-            }
-            slice(canAssign);
+            slice_right(canAssign);
         } else {
             consume(TOKEN_RIGHT_BRACKET, "Expect ']' after index.");
 

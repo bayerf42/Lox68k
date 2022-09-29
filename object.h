@@ -40,20 +40,23 @@ typedef enum {
     OBJ_UPVALUE
 } ObjType;
 
-struct Obj {
-    struct Obj* nextObj;
-    uint8_t     type;
+
+#define OBJ_HEADER        \
+    struct Obj* nextObj;  \
+    uint8_t     type;     \
     uint8_t     isMarked;
+
+
+struct Obj {
+    OBJ_HEADER
 };
 
 // The IDE68K C compiler doesn't seem to like including struct Obj in the following structures
 // and generates wrong code when casting, so we expand struct Obj manually.
 
 typedef struct {
-    struct Obj* nextObj;
-    uint8_t     type;
-    uint8_t     isMarked;
- 
+    OBJ_HEADER
+
     uint8_t     arity;
     uint8_t     upvalueCount;
     Chunk       chunk;
@@ -64,18 +67,14 @@ typedef bool (*NativeFn)(int argCount, Value* args);
 typedef char Signature[8];
 
 typedef struct {
-    struct Obj* nextObj;
-    uint8_t     type;
-    uint8_t     isMarked;
+    OBJ_HEADER
 
     Signature   signature;
     NativeFn    function;
 } ObjNative;
 
 struct ObjString {
-    struct Obj* nextObj;
-    uint8_t     type;
-    uint8_t     isMarked;
+    OBJ_HEADER
 
     int16_t     length;
     uint32_t    hash;
@@ -83,9 +82,7 @@ struct ObjString {
 };
 
 typedef struct ObjUpvalue {
-    struct Obj*        nextObj;
-    uint8_t            type;
-    uint8_t            isMarked;
+    OBJ_HEADER
 
     Value*             location;
     Value              closed;
@@ -93,9 +90,7 @@ typedef struct ObjUpvalue {
 } ObjUpvalue;
 
 typedef struct {
-    struct Obj*  nextObj;
-    uint8_t      type;
-    uint8_t      isMarked;
+    OBJ_HEADER
 
     ObjFunction* function;
     int16_t      upvalueCount; // too big, but keep alignment
@@ -103,36 +98,28 @@ typedef struct {
 } ObjClosure;
 
 typedef struct {
-    struct Obj* nextObj;
-    uint8_t     type;
-    uint8_t     isMarked;
+    OBJ_HEADER
 
     ObjString*  name;
     Table       methods;
 } ObjClass;
 
 typedef struct {
-    struct Obj* nextObj;
-    uint8_t     type;
-    uint8_t     isMarked;
+    OBJ_HEADER
 
     ObjClass*   klass;
     Table       fields;
 } ObjInstance;
 
 typedef struct {
-    struct Obj* nextObj;
-    uint8_t     type;
-    uint8_t     isMarked;
+    OBJ_HEADER
 
     Value       receiver;
     ObjClosure* method;
 } ObjBoundMethod;
 
 typedef struct {
-    struct Obj* nextObj;
-    uint8_t     type;
-    uint8_t     isMarked;
+    OBJ_HEADER
 
     int16_t     count;
     int16_t     capacity;
