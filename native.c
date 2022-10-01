@@ -122,7 +122,7 @@ static bool indexNative(int argCount, Value* args) {
     return true;
 }
 
-static bool slotsNative(int argCount, Value* args) {
+static bool keysNative(int argCount, Value* args) {
     ObjInstance* instance;
     ObjClass* klass;
     if (IS_INSTANCE(args[0])) {
@@ -137,7 +137,7 @@ static bool slotsNative(int argCount, Value* args) {
 
 static bool removeNative(int argCount, Value* args) {
     ObjInstance* instance = AS_INSTANCE(args[0]);
-    bool removed = tableDelete(&instance->fields, AS_STRING(args[1]));
+    bool removed = tableDelete(&instance->fields, args[1]);
     args[-1] = BOOL_VAL(removed);
     return true;
 }
@@ -496,7 +496,7 @@ static bool gcNative(int argCount, Value* args) {
 static void defineNative(const char* name, const char* signature, NativeFn function) {
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(signature, function)));
-    tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
+    tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
     pop();
     pop();
 }
@@ -529,8 +529,8 @@ void defineAllNatives(void) {
     defineNative("delete",      "LN",   deleteNative);
     defineNative("index",       "ALn",  indexNative);
 
-    defineNative("slots",       "O",    slotsNative);
-    defineNative("remove",      "IS",   removeNative);
+    defineNative("keys",        "O",    keysNative);
+    defineNative("remove",      "IA",   removeNative);
     defineNative("globals",     "",     globalsNative);
     defineNative("type",        "A",    typeNative);
     defineNative("clock",       "",     clockNative);

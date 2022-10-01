@@ -120,7 +120,7 @@ ObjString* copyString(const char* chars, int length) {
 
     // and save it in table
     push(OBJ_VAL(string));
-    tableSet(&vm.strings, string, NIL_VAL);
+    tableSet(&vm.strings, OBJ_VAL(string), NIL_VAL);
     pop();
     return string;
 }
@@ -346,7 +346,7 @@ ObjList* allKeys(Table* table) {
     push(OBJ_VAL(result));
     for (i = 0; i < table->capacity; i++) {
         entry = &table->entries[i];
-        if (entry->key != NULL) {
+        if (!IS_EMPTY(entry->key)) {
             appendToList(result, OBJ_VAL(entry->key));
         }
     }

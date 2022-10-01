@@ -117,7 +117,7 @@ static bool callValue(Value callee, int argCount) {
             case OBJ_CLASS: {
                 klass = AS_CLASS(callee);
                 vm.stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
-                if (tableGet(&klass->methods, vm.initString, &initializer)) {
+                if (tableGet(&klass->methods, OBJ_VAL(vm.initString), &initializer)) {
                     return call(AS_CLOSURE(initializer), argCount);
                 } else if (argCount != 0) {
                     runtimeError("Expected 0 arguments but got %d.", argCount);
@@ -144,7 +144,7 @@ static bool callValue(Value callee, int argCount) {
 
 static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
     Value method = NIL_VAL;
-    if (!tableGet(&klass->methods, name, &method)) {
+    if (!tableGet(&klass->methods, OBJ_VAL(name), &method)) {
         runtimeError("Undefined property '%s'.", name->chars);
         return false;
     }
@@ -162,7 +162,7 @@ static bool invoke(ObjString* name, int argCount) {
     }
     instance = AS_INSTANCE(receiver);
 
-    if (tableGet(&instance->fields, name, &value)) {
+    if (tableGet(&instance->fields, OBJ_VAL(name), &value)) {
         vm.stackTop[-argCount - 1] = value;
         return callValue(value, argCount);
     }
@@ -172,7 +172,7 @@ static bool invoke(ObjString* name, int argCount) {
 static bool bindMethod(ObjClass* klass, ObjString* name) {
     Value method = NIL_VAL;
     ObjBoundMethod* bound;
-    if (!tableGet(&klass->methods, name, &method)) {
+    if (!tableGet(&klass->methods, OBJ_VAL(name), &method)) {
         runtimeError("Undefined property '%s'.", name->chars);
         return false;
     }
@@ -221,7 +221,7 @@ static void closeUpvalues(Value* last) {
 static void defineMethod(ObjString* name) {
     Value method = peek(0);
     ObjClass* klass = AS_CLASS(peek(1));
-    tableSet(&klass->methods, name, method);
+    tableSet(&klass->methods, OBJ_VAL(name), method);
     pop();
 }
 
@@ -335,7 +335,7 @@ static InterpretResult run(void) {
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
-                if (!tableGet(&vm.globals, aStr, &aVal)) {
+                if (!tableGet(&vm.globals, constant, &aVal)) {
                     runtimeError("Undefined variable '%s'.", aStr->chars);
                     return INTERPRET_RUNTIME_ERROR;
                 }
@@ -345,8 +345,7 @@ static InterpretResult run(void) {
             case OP_DEFINE_GLOBAL: {
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
-                aStr = AS_STRING(constant);
-                tableSet(&vm.globals, aStr, peek(0));
+                tableSet(&vm.globals, constant, peek(0));
                 pop();
                 break;
             }
@@ -354,8 +353,8 @@ static InterpretResult run(void) {
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
-                if (tableSet(&vm.globals, aStr, peek(0))) {
-                    tableDelete(&vm.globals, aStr);
+                if (tableSet(&vm.globals, constant, peek(0))) {
+                    tableDelete(&vm.globals, constant);
                     runtimeError("Undefined variable '%s'.", aStr->chars);
                     return INTERPRET_RUNTIME_ERROR;
                 }
@@ -382,7 +381,7 @@ static InterpretResult run(void) {
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
 
-                if (tableGet(&instance->fields, aStr, &aVal)) {
+                if (tableGet(&instance->fields, constant, &aVal)) {
                     dropNpush(1, aVal);
                     break;
                 }
@@ -401,8 +400,7 @@ static InterpretResult run(void) {
                 instance = AS_INSTANCE(peek(1));
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
-                aStr = AS_STRING(constant);
-                tableSet(&instance->fields, aStr, peek(0));
+                tableSet(&instance->fields, constant, peek(0));
                 aVal = pop();
                 dropNpush(1, aVal);
                 break;
@@ -618,13 +616,8 @@ static InterpretResult run(void) {
 
                 } else if (IS_INSTANCE(bVal)) {
                     instance = AS_INSTANCE(bVal);
-                    if (!IS_STRING(aVal)) {
-                        runtimeError("Instance index is not a string.");
-                        return INTERPRET_RUNTIME_ERROR;
-                    }
-                    aStr = AS_STRING(aVal);
                     resVal = NIL_VAL;
-                    tableGet(&instance->fields, aStr, &resVal); // not found -> nil
+                    tableGet(&instance->fields, aVal, &resVal); // not found -> nil
                     dropNpush(2, resVal);
                     break;
 
@@ -655,12 +648,7 @@ static InterpretResult run(void) {
                     
                 } else if (IS_INSTANCE(bVal)) {
                     instance = AS_INSTANCE(bVal);
-                    if (!IS_STRING(aVal)) {
-                        runtimeError("Instance index is not a string.");
-                        return INTERPRET_RUNTIME_ERROR;
-                    }
-                    aStr = AS_STRING(aVal);
-                    tableSet(&instance->fields, aStr, cVal);
+                    tableSet(&instance->fields, aVal, cVal);
                     dropNpush(3, cVal);
                     break;
 

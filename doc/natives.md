@@ -31,6 +31,7 @@ Trailing `?` indicates optional parameter.
 | input       | string?                | string      | all          | input string from terminal with optional prompt                                   |
 | insert      | list, index, val       | -           | all          | inserts *val* into *list* at position *index*                                     |
 | int         | string                 | num         | all          | parses *string* as number                                                         |
+| keys        | instance or class      | list        | all          | list of all field names/dictionary keys of an instance or methods in a class      |
 | keycode     | -                      | code or nil | Kit          | code of key currently pressed or nil                                              |  
 | lcd_clear   | -                      | -           | Kit          | clears LCD                                                                        |  
 | lcd_defchar | num, list of 8 bytes   | -           | Kit          | creates a user-defined char with code *num* for LCD with bit pattern from *list*  |  
@@ -41,12 +42,11 @@ Trailing `?` indicates optional parameter.
 | peek        | addr                   | byte        | Kit, Emu     | reads byte from *addr*                                                            |  
 | poke        | addr, byte             | -           | Kit, Emu     | writes *byte* to *addr*                                                           |  
 | random      | -                      | num         | all          | a pseudo-random positive number                                                   |
-| remove      | instance, string       | bool        | all          | removes a field name from an instance, returns true if it existed before          |
+| remove      | instance, val          | bool        | all          | removes a field name/dictionary key from an instance, true if it existed before   |
 | seed_rand   | num                    | num         | all          | set seed for random number generator, returns current state                       |
 | sleep       | duration               | -           | Kit, Emu     | busy waits for *duration* milliseconds                                            |  
-| slots       | instance or class      | list        | all          | list of all field names or methods in class                                       |
 | sound       | rate, duration         | -           | Kit          | plays a sound on speaker, cycle length *rate*, for *duration* milliseconds        |  
 | trap        | -                      | -           | Kit, Emu     | breaks to monitor, now you can inspect Lox internals, can be continued with **GO**|  
-| type        | val                    | string      | all          | type (as string) of *val*                                                        |  
+| type        | val                    | string      | all          | type (as string) of *val*                                                         |  
 | upper       | string                 | string      | all          | upper case of string                                                              |  
 

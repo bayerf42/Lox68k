@@ -29,6 +29,7 @@ void freeValueArray(ValueArray* array) {
 void printValue(Value value, bool compact) {
     if (IS_BOOL(value))        printf(AS_BOOL(value) ? "true" : "false");
     else if (IS_NIL(value))    printf("nil");
+    else if (IS_EMPTY(value))  printf("<empty>");
     else if (IS_NUMBER(value)) printf("%ld", AS_NUMBER(value));
     else if (IS_OBJ(value))    printObject(value, compact);
 }
@@ -38,12 +39,18 @@ ObjString* valueType(Value value) {
 
     if (IS_BOOL(value))        type = "bool";
     else if (IS_NIL(value))    type = "nil";
+    else if (IS_EMPTY(value))    type = "empty";
     else if (IS_NUMBER(value)) type = "number";
     else if (IS_OBJ(value))    type = typeName(OBJ_TYPE(value));
 
     return copyString(type, strlen(type));
 }
 
-bool valuesEqual(Value a, Value b) {
-    return a == b;
+//bool valuesEqual(Value a, Value b) {
+//    return a == b;
+//}
+
+uint32_t hashValue(Value value) {
+    if (IS_STRING(value)) return AS_STRING(value)->hash;
+    else return value;
 }

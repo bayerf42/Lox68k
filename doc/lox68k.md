@@ -57,7 +57,7 @@ But you should rather combine the Monitor and Lox into a single ROM image, see b
 ### Extensions
 
 * A list datatype with according primitives.
-* Indexing composite data with `[]` operator, by number (strings and lists) or string (instances)
+* Indexing composite data with `[]` operator, by number (strings and lists) or any value (instances)
 * [Slicing syntax](grammar.md) to extract subsequences from strings or lists,
   including negative indices to index from the end of the list or string,
   [like in Python](https://www.w3schools.com/python/python_strings_slicing.asp).
@@ -96,7 +96,7 @@ and doesn't support modern *C99*.
   * lists, modifiable resizable arrays of arbitrary values
   * closures, proper lexically-scoped functions
   * classes containing methods and supporting single inheritance
-  * object instances with dynamic fields
+  * object instances using dictionary as fields, indexable by any value
 
 
 ## The 4 varieties of Lox buildable

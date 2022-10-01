@@ -1,0 +1,48 @@
+// Sets implemented as dictionaries
+
+class Set {
+    init(list) {
+       for (var i=0; i<length(list); i=i+1)
+           this[list[i]] = true;
+    }
+
+    clone() {
+        return Set(keys(this));
+    }
+
+    display() {
+        var els = keys(this);
+        var first = true;
+        print "{",; 
+        for (var i=0; i<length(els); i=i+1) {
+            if (!first) print ", ",;
+            first = false;  
+            print els[i],;
+        }
+        print "}";
+    }  
+
+    union(that) {
+        var els = keys(that); 
+        for (var i=0; i<length(els); i=i+1)
+            this[els[i]] = true;
+    }
+
+    intersect(that) {
+        var els = keys(this); 
+        for (var i=0; i<length(els); i=i+1)
+            if (!that.contains(els[i]))
+               remove(this,els[i]);
+    }
+
+    subtract(that) {
+        var els = keys(that); 
+        for (var i=0; i<length(els); i=i+1)
+            remove(this,els[i]);
+    }
+
+    contains(el) {
+        return !!this[el];
+    }
+
+}
