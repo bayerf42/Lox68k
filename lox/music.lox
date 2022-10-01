@@ -10,8 +10,8 @@ fun stacc(n, d) {
 }
 
 
-fun popcorn() {
-  var dur = 200;
+fun popcorn(dur) {
+//  var dur = 200;
 
   fun phrase1() {
     stacc("h1", dur);

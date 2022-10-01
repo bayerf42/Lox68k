@@ -32,6 +32,12 @@ fun reduce(fn, list) {
   return res;
 }
 
+fun foreach(fn, list) {
+  for (var i=0; i<length(list); i=i+1)
+    fn(list[i]);
+}
+
+
 fun range(lower, upper) {
   var res = [];
   for (var i = lower; i<=upper; i=i+1)

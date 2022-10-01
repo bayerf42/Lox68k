@@ -30,6 +30,7 @@
     * This is only a problem when code is in RAM, in ROM the code is above `$0004 0000` anyway.
     * Quick fix for code in RAM: shuffle sections, move `data` and `bss` segments to low memory,
       start code at `$0001 0000`.
+  * Using the option `register variables` seems to generate wrong code (address error)
 
 
 
