@@ -330,7 +330,7 @@ static bool dbgStatNative(int argCount, Value* args) {
 
 static bool peekNative(int argCount, Value* args) {
     int32_t address = AS_NUMBER(args[0]);
-    uint8_t byte = *((uint8_t*)address);
+    Number byte = *((uint8_t*)address);
     args[-1] = NUMBER_VAL(byte);
     return true;
 }
