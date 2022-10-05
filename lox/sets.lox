@@ -26,6 +26,7 @@ class Set {
         var els = keys(that); 
         for (var i=0; i<length(els); i=i+1)
             this[els[i]] = true;
+        return this;
     }
 
     intersect(that) {
@@ -33,12 +34,14 @@ class Set {
         for (var i=0; i<length(els); i=i+1)
             if (!that.contains(els[i]))
                remove(this,els[i]);
+        return this;
     }
 
     subtract(that) {
         var els = keys(that); 
         for (var i=0; i<length(els); i=i+1)
             remove(this,els[i]);
+        return this;
     }
 
     contains(el) {

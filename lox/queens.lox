@@ -43,3 +43,13 @@ fun queens(N) {
 }
 
 // Evaluating queens(8); on the Kit takes about 30 seconds.
+
+fun all() {
+  for (var n=0; ; n = n + 1) {
+    var now = clock();
+    print n;
+    queens(n);
+    print clock() - now;
+    print;
+  }
+}

@@ -32,8 +32,7 @@ fun test(n) {
 
     print arr;
 
-    fun less(a,b) {return a<b;}
-    quicksort(arr, less);
+    quicksort(arr, fun (a,b) {return a<b;});
 
     print arr;
 }

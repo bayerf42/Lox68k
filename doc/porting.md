@@ -17,8 +17,8 @@
     code when embedding the entire `Obj` structure as first member in derived structures like
     `ObjFunction`. When `Obj` was 8 bytes long, everything worked, but when reducing it to
     6 bytes (to save heap, `type` and `marked` only need 1 byte), the compiler used 4 bytes as structure
-    size, leading to totally wrong offsets in derived structures. Fixed by manually expanding
-    `Obj`s fields in each derived structure.
+    size, leading to totally wrong offsets in derived structures. Fixed by macro `OBJ_HEADER` 
+    expanding `Obj`s fields in each derived structure.
   * Some macros were resolved incorrectly, e.g. `READ_CONSTANT` in `vm.c`. Had to expand
     manually.
   * Wrong word-size absolute addressing
@@ -42,7 +42,7 @@
   * an unsigned 16-bit value stays unsigned when converting to 32 bit, an explicit cast is
     required
   * Cannot use structure initialization by field name or array index (compiler precedence table)
-  * `inline` not supported
+  * `inline` not supported, use macros occasionally.
 
 
 ## C Library and start-up bugs
@@ -86,6 +86,9 @@
     so all I/O (including loading source code) has to be routed over those. The C library does
     this automatically, so functions like `printf` and `gets` (with simple line editing) can be
     used.
+  * To load Lox source files they have to be transferred via the serial interface. So a terminal
+    program has been written which allows loading source files from the host and feeds them through
+    the normal Lox REPL on the SBC via RS232. 
 
 # Porting to other 68k-based SBCs
   Should be quite easy when using *IDE68K*. 

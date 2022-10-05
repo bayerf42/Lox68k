@@ -593,6 +593,14 @@ static void unary(bool canAssign) {
     }
 }
 
+static void function(FunctionType type);
+
+static void lambda(bool canAssign) {
+    // Lambdas store as function name the last token, i.e. 'fun'
+    function(TYPE_FUNCTION);
+}
+
+
 const ParseRule rules[] = {
     /* [TOKEN_LEFT_PAREN]    = */ {grouping, call,   PREC_CALL},
     /* [TOKEN_RIGHT_PAREN]   = */ {NULL,     NULL,   PREC_NONE},
@@ -625,7 +633,7 @@ const ParseRule rules[] = {
     /* [TOKEN_ELSE]          = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_FALSE]         = */ {literal,  NULL,   PREC_NONE},
     /* [TOKEN_FOR]           = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_FUN]           = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_FUN]           = */ {lambda,   NULL,   PREC_NONE},
     /* [TOKEN_IF]            = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_NIL]           = */ {literal,  NULL,   PREC_NONE},
     /* [TOKEN_OR]            = */ {NULL,     or_,    PREC_OR},
@@ -639,6 +647,7 @@ const ParseRule rules[] = {
     /* [TOKEN_ERROR]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_EOF]           = */ {NULL,     NULL,   PREC_NONE},
 };
+
 
 static void parsePrecedence(Precedence precedence) {
     ParseFn prefixRule;

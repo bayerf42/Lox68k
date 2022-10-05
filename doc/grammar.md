@@ -2,12 +2,13 @@
 
 Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.html) are:
 * `print` can be abbreviated by `?` and allows a list of expressions, printed on one line
-* `[` ... `]` syntax for list expressions
+* `[` ... `]` syntax for building lists
 * `[ exp ]` as string, list, or instance index to access elements
 * `[ exp? : exp? ]` as list or string slice to extract subsequence
 * operator `%` for division remainder
 * no fractional part in integer literals
 * `$` prefix for hexadecimal integer literals
+* anonymous functions as expressions `fun (params*) {block}`
 
 
 ``` ebnf
@@ -19,8 +20,8 @@ declaration    → classDecl
                | statement ;
 
 classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
-                 "{" function* "}" ;
-funDecl        → "fun" function ;
+                 "{" ( IDENTIFIER function )* "}" ;
+funDecl        → "fun" IDENTIFIER function ;
 varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 
 statement      → exprStmt
@@ -62,9 +63,10 @@ index          → expression ;
 slice          → expression ":" expression | expression ":" | ":" expression | ":" ;
 primary        → "true" | "false" | "nil" | "this"
                | NUMBER | STRING | IDENTIFIER | "(" expression ")"
-               | "[" arguments? "]" | "super" "." IDENTIFIER ;
+               | "[" arguments? "]" | "super" "." IDENTIFIER
+               | "fun" function ;
 
-function       → IDENTIFIER "(" parameters? ")" block ;
+function       → "(" parameters? ")" block ;
 parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
 arguments      → expression ( "," expression )* ;
 

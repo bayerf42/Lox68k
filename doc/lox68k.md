@@ -25,7 +25,7 @@ If you want to buy/build one, contact Wichit via his web site.
 
 Lox was designed as a toy language to study the implementation of interpreters, but
 due to its small size and simplicity it's very well suited as a scripting language for a
-single board computer.
+single board computer with very restricted resources.
 
 The Lox68K port also contains several [native functions](natives.md) to access the
 Kit peripherals and to integrate machine level coding. I wish I had such a system in the 80ies
@@ -70,7 +70,7 @@ But you should rather combine the Monitor and Lox into a single ROM image, see b
 * Interrupting long-running computations by **IRQ** key (or `ctrl-C` in Windows/Linux versions).
 * `print` allows list of expression, all printed on one line. With trailing comma,
   no line feed is printed.
-
+* Anonymous functions (*lambdas*) as expressions.
 
 ### Omissions
 
