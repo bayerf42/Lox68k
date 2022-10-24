@@ -53,12 +53,14 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     ObjFunction* function;
     int j;
     int isLocal, upIndex;
+    int line;
 
     printf("%04d ", offset);
-    if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1])
+    line = getLine(chunk, offset);
+    if (offset > 0 && line == getLine(chunk, offset - 1))
         printf("   | ");
     else
-        printf("%4d ", chunk->lines[offset]);
+        printf("%4d ", line);
 
     instruction = chunk->code[offset];
     switch (instruction) {

@@ -338,7 +338,7 @@ ObjString* caseString(ObjString* a, bool toUpper) {
 
 ObjList* concatLists(ObjList* a, ObjList* b) {
     ObjList* result = newList();
-    int i;
+    int16_t i;
 
     push(OBJ_VAL(result));
     for (i = 0; i < a->count; i++)
@@ -351,7 +351,7 @@ ObjList* concatLists(ObjList* a, ObjList* b) {
 
 ObjList* allKeys(Table* table) {
     ObjList* result = newList();
-    int i;
+    int16_t i;
     Entry* entry;
 
     push(OBJ_VAL(result));

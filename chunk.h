@@ -50,17 +50,27 @@ typedef enum {
     OP_GET_SLICE,
 } OpCode;
 
+
+typedef struct {
+    int16_t offset;
+    int16_t line;
+} LineStart;
+
+
 typedef struct {
     int16_t    count;
     int16_t    capacity;
     uint8_t*   code;
-    int16_t*   lines;
     ValueArray constants;
+    int16_t    lineCount;
+    int16_t    lineCapacity;
+    LineStart* lines;
 } Chunk;
 
 void initChunk(Chunk* chunk);
 void freeChunk(Chunk* chunk);
 void writeChunk(Chunk* chunk, uint8_t byte, int line);
-int addConstant(Chunk* chunk, Value value);
+int  addConstant(Chunk* chunk, Value value);
+int  getLine(Chunk* chunk, int offset);
 
 #endif

@@ -35,7 +35,7 @@ void runtimeError(const char* format, ...) {
         frame = &vm.frames[i];
         function = frame->closure->function;
         instruction = frame->ip - function->chunk.code - 1;
-        printf("[line %d] in ", function->chunk.lines[instruction]);
+        printf("[line %d] in ", getLine(&function->chunk, instruction));
         if (function->name == NULL) {
             printf("script\n");
         } else {
