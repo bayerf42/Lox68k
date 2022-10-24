@@ -88,7 +88,7 @@ static void markArray(ValueArray* array) {
 
 
 static void blackenObject(Obj* object) {
-    int i;
+    int16_t i;
 
     if (vm.debug_log_gc) {
         printf("%lx blacken ", (void*)object);

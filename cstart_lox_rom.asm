@@ -47,17 +47,15 @@ heap       equ         *               ; start address of heap section (start of
 
 
            section     code
-start:
-           lea         himem,A7        ; initial stack pointer
-           lea         bss,A0
-           clr.l       D0              ; set bss section to zero
+start:                                           ; Minimal C start-up
+           lea         himem,A7                  ; initial stack pointer
+           lea         bss.W,A0
+           clr.l       D0                        ; set bss section to zero
 .loop      move.l      D0,(A0)+        
            cmp.l       #heap,A0
            bcs.s       .loop
-           move.l      #-1,__ungetbuf  ; unget-buffer for keyboard input
-           move.l      #0,__allocp     ; pointer to allocated memory for malloc-function
-           move.l      #heap,__heap    ; pointer to free memory
-           move.l      #(himem-stklen),__stack ; top of stack (for stack overflow detection)
+           move.l      #-1,__ungetbuf.W          ; unget-buffer for keyboard input
+           move.l      #(himem-stklen),__stack.W ; top of stack (for stack overflow detection)
            jsr         _main
 
            xdef        __exit
@@ -124,12 +122,6 @@ stackmsg:
            xdef        __ungetbuf
 __ungetbuf:
            ds.l        1               ; ungetbuffer for stdio functions
-           xdef        __allocp
-__allocp:
-           ds.l        1               ; start of free memory block list
-           xdef        __heap
-__heap:
-           ds.l        1               ; begin of free memory
            xdef        __stack
 __stack:
            ds.l        1               ; bottom of stack

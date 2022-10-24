@@ -222,7 +222,7 @@ static void defineMethod(ObjString* name) {
     Value method = peek(0);
     ObjClass* klass = AS_CLASS(peek(1));
     tableSet(&klass->methods, OBJ_VAL(name), method);
-    pop();
+    drop();
 }
 
 static bool isFalsey(Value value) {
@@ -320,7 +320,7 @@ static InterpretResult run(void) {
             case OP_NIL:   push(NIL_VAL); break;
             case OP_TRUE:  push(BOOL_VAL(true)); break;
             case OP_FALSE: push(BOOL_VAL(false)); break;
-            case OP_POP: pop(); break;
+            case OP_POP:   drop(); break;
             case OP_GET_LOCAL: {
                 slotNr = READ_BYTE();
                 push(frame->slots[slotNr]);
@@ -346,7 +346,7 @@ static InterpretResult run(void) {
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 tableSet(&vm.globals, constant, peek(0));
-                pop();
+                drop();
                 break;
             }
             case OP_SET_GLOBAL: {
@@ -529,7 +529,7 @@ static InterpretResult run(void) {
             }
             case OP_CLOSE_UPVALUE: {
                 closeUpvalues(vm.stackTop - 1);
-                pop();
+                drop();
                 break;
             }
             case OP_RETURN: {
@@ -537,7 +537,7 @@ static InterpretResult run(void) {
                 closeUpvalues(frame->slots);
                 vm.frameCount--;
                 if (vm.frameCount == 0) {
-                    pop();
+                    drop();
                     return INTERPRET_OK;
                 }
 
@@ -560,7 +560,7 @@ static InterpretResult run(void) {
                 }
                 subclass = AS_CLASS(peek(0));
                 tableAddAll(&AS_CLASS(aVal)->methods, &subclass->methods);
-                pop();
+                drop();
                 break;
             }
             case OP_METHOD:

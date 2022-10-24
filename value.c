@@ -39,7 +39,7 @@ ObjString* valueType(Value value) {
 
     if (IS_BOOL(value))        type = "bool";
     else if (IS_NIL(value))    type = "nil";
-    else if (IS_EMPTY(value))    type = "empty";
+    else if (IS_EMPTY(value))  type = "empty";
     else if (IS_NUMBER(value)) type = "number";
     else if (IS_OBJ(value))    type = typeName(OBJ_TYPE(value));
 

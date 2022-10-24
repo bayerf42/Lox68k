@@ -63,6 +63,7 @@ InterpretResult interpret(const char* source);
 void push(Value value);
 void runtimeError(const char* format, ...);
 
+#define drop() --vm.stackTop
 #define pop() (*(--vm.stackTop))
 #define peek(distance) (vm.stackTop[-1 - (distance)])
 

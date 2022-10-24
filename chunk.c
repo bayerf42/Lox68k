@@ -39,7 +39,7 @@ int addConstant(Chunk* chunk, Value value) {
 #endif
     push(value);
     writeValueArray(&chunk->constants, value);
-    pop();
+    drop();
     return chunk->constants.count - 1;
 }
 

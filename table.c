@@ -61,7 +61,7 @@ static void adjustCapacity(Table* table, int capacity) {
     Entry* entries = ALLOCATE(Entry, capacity);
     Entry* entry;
     Entry* dest;
-    int i;
+    int16_t i;
 
     for (i = 0; i < capacity; i++) {
         entries[i].key = EMPTY_VAL;
@@ -86,7 +86,7 @@ static void adjustCapacity(Table* table, int capacity) {
 bool tableSet(Table* table, Value key, Value value) {
     Entry* entry;
     bool isNewKey;
-    int capacity = table->capacity;
+    int16_t capacity = table->capacity;
 
     // Grow when load factor exceeds 0.75
     if (table->count + 1 > ((capacity + capacity + capacity) >> 2)) {
@@ -118,7 +118,7 @@ bool tableDelete(Table* table, Value key) {
 }
 
 void tableAddAll(Table* from, Table* to) {
-    int i;
+    int16_t i;
     Entry* entry;
 
     for (i = 0; i < from->capacity; i++) {
@@ -130,8 +130,8 @@ void tableAddAll(Table* from, Table* to) {
 }
 
 void tableShrink(Table* table) {
-  int num_entries = 0;
-  int i, capacity;
+  int16_t num_entries = 0;
+  int16_t i, capacity;
   
   for (i = 0; i < table->capacity; i++) {
       if (!IS_EMPTY(table->entries[i].key)) num_entries++;
@@ -176,7 +176,7 @@ ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t
 }
 
 void tableRemoveWhite(Table* table) {
-    int i;
+    int16_t i;
     Entry* entry;
 
     for (i = 0; i < table->capacity; i++) {
@@ -189,7 +189,7 @@ void tableRemoveWhite(Table* table) {
 }
 
 void markTable(Table* table) {
-    int i;
+    int16_t i;
     Entry* entry;
 
     for (i = 0; i < table->capacity; i++) {

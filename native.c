@@ -476,6 +476,27 @@ static bool trapNative(int argCount, Value* args) {
     return true;
 }
 
+#else
+
+#ifdef _WIN32
+    #include <Windows.h>
+#else
+    #include <unistd.h>
+#endif
+
+static bool sleepNative(int argCount, Value* args) {
+    int32_t millis = AS_NUMBER(args[0]);
+
+#ifdef _WIN32
+    Sleep(millis);
+#else
+    usleep(millis*1000);
+#endif
+
+    args[-1] = NIL_VAL;
+    return true;
+}
+
 #endif
 
 static bool clockNative(int argCount, Value* args) {
@@ -497,8 +518,8 @@ static void defineNative(const char* name, const char* signature, NativeFn funct
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(signature, function)));
     tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
-    pop();
-    pop();
+    drop();
+    drop();
 }
 
 void defineAllNatives(void) {
@@ -534,6 +555,7 @@ void defineAllNatives(void) {
     defineNative("globals",     "",     globalsNative);
     defineNative("type",        "A",    typeNative);
     defineNative("clock",       "",     clockNative);
+    defineNative("sleep",       "N",    sleepNative);
     defineNative("gc",          "",     gcNative);
 
 #ifdef KIT68K
@@ -549,7 +571,6 @@ void defineAllNatives(void) {
     defineNative("lcd_defchar", "NL",   lcdDefcharNative);
     defineNative("keycode",     "",     keycodeNative);
     defineNative("sound",       "NN",   soundNative);
-    defineNative("sleep",       "N",    sleepNative);
 #endif
 
     defineNative("dbg_code",    "B",    dbgCodeNative);

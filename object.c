@@ -121,7 +121,7 @@ ObjString* copyString(const char* chars, int length) {
     // and save it in table
     push(OBJ_VAL(string));
     tableSet(&vm.strings, OBJ_VAL(string), NIL_VAL);
-    pop();
+    drop();
     return string;
 }
 
@@ -190,7 +190,7 @@ void printObject(Value value, bool compact) {
         case OBJ_FUNCTION: printFunction("fun", AS_FUNCTION(value)); break;
         case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
         case OBJ_LIST: if (compact) printf("<list %d>",AS_LIST(value)->count); else printList(AS_LIST(value)); break;
-        case OBJ_NATIVE: printf("<native fn>"); break;
+        case OBJ_NATIVE: printf("<native>"); break;
         case OBJ_STRING: fix_printf(AS_CSTRING(value)); break;
         case OBJ_UPVALUE: printf("<upvalue>"); break;
     }
@@ -260,7 +260,7 @@ ObjList* sliceFromList(ObjList* list, int begin, int end) {
     for (i = begin; i < end; i++) {
         appendToList(result, list->items[i]);
     }
-    pop();
+    drop();
     return result;
 }
 
@@ -314,12 +314,23 @@ ObjString* concatStrings(ObjString* a, ObjString* b) {
 
 ObjString* caseString(ObjString* a, bool toUpper) {
     int length = a->length;
+    char* cp;
     fix_memcpy(input_line, a->chars, length);
     input_line[length] = '\0';
+
+#ifdef __linux__
+    if (toUpper)
+        for (cp=input_line; *cp; ++cp)
+            *cp = toupper(*cp);  
+    else  
+        for (cp=input_line; *cp; ++cp)
+            *cp = tolower(*cp);  
+#else
     if (toUpper)
         strupr(input_line);
     else  
         strlwr(input_line); 
+#endif
 
     return copyString(input_line, length);
 }
@@ -334,7 +345,7 @@ ObjList* concatLists(ObjList* a, ObjList* b) {
         appendToList(result, a->items[i]);
     for (i = 0; i < b->count; i++)
         appendToList(result, b->items[i]);
-    pop();
+    drop();
     return result;
 }
 
@@ -350,7 +361,7 @@ ObjList* allKeys(Table* table) {
             appendToList(result, OBJ_VAL(entry->key));
         }
     }
-    pop();
+    drop();
     return result;
 }
 
