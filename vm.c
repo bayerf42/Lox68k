@@ -37,9 +37,9 @@ void runtimeError(const char* format, ...) {
         instruction = frame->ip - function->chunk.code - 1;
         printf("[line %d] in ", getLine(&function->chunk, instruction));
         if (function->name == NULL) {
-            printf("script\n");
+            printf("<script>\n");
         } else {
-            printf("%s()\n", function->name->chars);
+            printf("%s\n", function->name->chars);
         }
     }
     resetStack();
@@ -73,8 +73,7 @@ void push(Value value) {
         return;
     }
   
-    *vm.stackTop = value;
-    vm.stackTop++;
+    *vm.stackTop++ = value;
 }
 
 static void dropNpush(int n, Value value) {
@@ -223,10 +222,6 @@ static void defineMethod(ObjString* name) {
     ObjClass* klass = AS_CLASS(peek(1));
     tableSet(&klass->methods, OBJ_VAL(name), method);
     drop();
-}
-
-static bool isFalsey(Value value) {
-    return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
 
@@ -449,7 +444,7 @@ static InterpretResult run(void) {
             case OP_MULTIPLY: BINARY_OP(NUMBER_VAL, *); break;
             case OP_DIVIDE:   BINARY_OP(NUMBER_VAL, /); break;
             case OP_MODULO:   BINARY_OP(NUMBER_VAL, %); break;
-            case OP_NOT: push(BOOL_VAL(isFalsey(pop()))); break;
+            case OP_NOT:      push(BOOL_VAL(IS_FALSEY(pop()))); break;
             case OP_NEGATE:
                 if (!IS_NUMBER(peek(0))) {
                     runtimeError("Operand must be a number.");
@@ -471,7 +466,7 @@ static InterpretResult run(void) {
             }
             case OP_JUMP_IF_FALSE: {
                 offset = READ_USHORT();
-                if (isFalsey(peek(0))) frame->ip += offset;
+                if (IS_FALSEY(peek(0))) frame->ip += offset;
                 break;
             }
             case OP_LOOP: {

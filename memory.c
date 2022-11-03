@@ -163,7 +163,7 @@ static void freeObject(Obj* object) {
         }
         case OBJ_CLOSURE: {
             ObjClosure* closure = (ObjClosure*)object;
-            reallocate(object, sizeof(ObjString) + sizeof(ObjUpvalue*) * closure->upvalueCount, 0);  
+            reallocate(object, sizeof(ObjClosure) + sizeof(ObjUpvalue*) * closure->upvalueCount, 0);  
             break;
         }
         case OBJ_FUNCTION: {

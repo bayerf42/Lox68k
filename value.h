@@ -14,27 +14,29 @@ typedef struct ObjString ObjString;
 typedef uint32_t Value;
 typedef int32_t Number;
 
-#define IS_BOOL(value)   (((value)|2) == TRUE_VAL)
+#define EMPTY_VAL        0x80000000
+#define NIL_VAL          0x80000002
+#define TRUE_VAL         0x80000004
+#define FALSE_VAL        0x80000006
+
+#define IS_BOOL(value)   (((value) | 2) == FALSE_VAL)
 #define IS_NIL(value)    ((value) == NIL_VAL)
 #define IS_EMPTY(value)  ((value) == EMPTY_VAL)
-#define IS_NUMBER(value) (((value)&1) == 1)
-#define IS_OBJ(value)    (((value)&0x80000001) == 0)
+#define IS_NUMBER(value) (((value) & 1) == 1)
+#define IS_OBJ(value)    (((value) & 0x80000001) == 0)
+#define IS_FALSEY(value) (((value) | 4) == FALSE_VAL)
 
 #define AS_BOOL(value)   ((value) == TRUE_VAL)
 #define AS_NUMBER(value) (((Number)(value))>>1)
 #define AS_OBJ(value)    ((Obj*)(value))
 
 #define BOOL_VAL(b)      ((b) ? TRUE_VAL : FALSE_VAL)
-#define EMPTY_VAL        0x80000000
-#define NIL_VAL          0x80000002
-#define FALSE_VAL        0x80000004
-#define TRUE_VAL         0x80000006
-#define NUMBER_VAL(num)  ((Value)(((num)<<1)|1))
+#define NUMBER_VAL(num)  ((Value)(((num)<<1) | 1))
 #define OBJ_VAL(obj)     ((Value)(obj))
 
 typedef struct {
-    int16_t capacity;
     int16_t count;
+    int16_t capacity;
     Value*  values;
 } ValueArray;
 
