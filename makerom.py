@@ -4,6 +4,7 @@
 ## and patch first 8 bytes from Monitor (boot vector, initial SSP and PC)
 
 import bincopy
+import shutil
 
 # Adapt the next line to where the monitor hex file resides. You can download
 # the Monitor complete with sources and documentation from
@@ -24,3 +25,7 @@ image[0:8] = bootvector
 
 with open("rom_image/mon-lox.bin","wb") as dest:
   dest.write(image)
+
+# Also copy hex files to rom dir
+shutil.copy2("clox.hex","rom_image")
+shutil.copy2("clox_rom.hex","rom_image")

@@ -157,6 +157,7 @@ static bool typeNative(int argCount, Value* args) {
 
 static bool ascNative(int argCount, Value* args) {
     ObjString* string = AS_STRING(args[0]);
+    Number code;
     int index = (argCount == 1) ? 0 : AS_NUMBER(args[1]);
 
     if (!isValidStringIndex(string, index)) {
@@ -164,7 +165,8 @@ static bool ascNative(int argCount, Value* args) {
         return false;
     }
     if (index < 0) index += string->length;
-    args[-1] = NUMBER_VAL((uint8_t)string->chars[index]);
+    code = string->chars[index] & 0xff;
+    args[-1] = NUMBER_VAL(code);
     return true;
 }
 
