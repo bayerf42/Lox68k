@@ -1,0 +1,34 @@
+fun FooFactory ()
+{
+  var classVar;
+
+  class Foo {
+    init(x) {
+      this.x = x;
+    }
+
+    setCV(v) {
+      classVar = v;
+    }
+
+    getCV() {
+      return classVar;
+    }
+
+    getX() {
+      return this.x;
+    }
+  }
+
+  return Foo;
+}
+
+var Foo = FooFactory();
+
+var a = Foo(56);
+var b = Foo(42);
+
+a.setCV(97);
+
+print a.getX()," ",a.getCV();
+print b.getX()," ",b.getCV();

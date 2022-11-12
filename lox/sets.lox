@@ -1,13 +1,13 @@
 // Sets implemented as dictionaries
 
 class Set {
-    init(list) {
+    init(..list) {
        for (var i=0; i<length(list); i=i+1)
            this[list[i]] = true;
     }
 
     clone() {
-        return Set(keys(this));
+        return Set(..keys(this));
     }
 
     display() {

@@ -1,4 +1,4 @@
-// Classed are first-class in Lox, can be parameters to functions and returned by them.
+// Classes are first-class in Lox, can be parameters to functions and returned by them.
 
 class Demo {
     init(x) {
@@ -15,8 +15,8 @@ fun counted(cl) {
     var num = 0;
 
     class Deco < cl {
-        init(x) {
-            super.init(x);
+        init(..args) {
+            super.init(..args);
             num = num + 1;
         }
 

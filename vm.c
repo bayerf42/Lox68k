@@ -83,7 +83,25 @@ static void dropNpush(int n, Value value) {
 
 static bool call(ObjClosure* closure, int argCount) {
     CallFrame* frame;
-    if (argCount != closure->function->arity) {
+    ObjList* args;
+    int itemCount,i;
+
+    if (closure->function->isVarArg) {
+        if (argCount < closure->function->arity - 1) {
+            runtimeError("Expected at least %d arguments but got %d.",
+                         closure->function->arity - 1, argCount);
+            return false;
+        }
+        args = newList();
+        itemCount = argCount - closure->function->arity + 1;
+        push(OBJ_VAL(args)); // protect from GC
+        for (i = itemCount; i>0; --i) {
+            appendToList(args, peek(i));
+        }
+        dropNpush(itemCount + 1, OBJ_VAL(args));
+        argCount = closure->function->arity; // actual parameter count
+    }
+    else if (argCount != closure->function->arity) {
         runtimeError("Expected %d arguments but got %d.", closure->function->arity, argCount);
         return false;
     }
@@ -224,7 +242,6 @@ static void defineMethod(ObjString* name) {
     drop();
 }
 
-
 #define READ_BYTE() (*frame->ip++)
 #define READ_USHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 #define BINARY_OP(valueType, op) \
@@ -268,10 +285,10 @@ static InterpretResult run(void) {
     ObjList   *aLst, *bLst, *resLst;
     ObjClass  *superclass, *subclass;
     ObjInstance* instance;
-    uint8_t itemCount, slotNr;
+    uint8_t slotNr;
     ObjFunction* function;
     ObjClosure* closure;
-    int argCount;
+    int argCount, itemCount;
     uint16_t offset;
     uint8_t isLocal, upIndex;
 
@@ -316,6 +333,7 @@ static InterpretResult run(void) {
             case OP_TRUE:  push(BOOL_VAL(true)); break;
             case OP_FALSE: push(BOOL_VAL(false)); break;
             case OP_POP:   drop(); break;
+            case OP_SWAP:  aVal = peek(0); peek(0) = peek(1); peek(1) = aVal; break;
             case OP_GET_LOCAL: {
                 slotNr = READ_BYTE();
                 push(frame->slots[slotNr]);
@@ -337,7 +355,7 @@ static InterpretResult run(void) {
                 push(aVal);
                 break;
             }
-            case OP_DEFINE_GLOBAL: {
+            case OP_DEF_GLOBAL: {
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 tableSet(&vm.globals, constant, peek(0));
@@ -476,34 +494,52 @@ static InterpretResult run(void) {
             }
             case OP_CALL: {
                 argCount = READ_BYTE();
+            cont_call:
                 if (!callValue(peek(argCount), argCount)) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
             }
+            case OP_VCALL: {
+                argCount = READ_BYTE() + AS_NUMBER(pop());
+                goto cont_call;
+            }
             case OP_INVOKE: {
                 index = READ_BYTE();
+                argCount = READ_BYTE();
+            cont_invoke:
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
-                argCount = READ_BYTE();
                 if (!invoke(aStr, argCount)) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
             }
+            case OP_VINVOKE: {
+                index = READ_BYTE();
+                argCount = READ_BYTE() + AS_NUMBER(pop());
+                goto cont_invoke;
+            }
             case OP_SUPER_INVOKE: {
                 index = READ_BYTE();
+                superclass = AS_CLASS(pop());
+                argCount = READ_BYTE();
+            cont_super_invoke:
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
-                argCount = READ_BYTE();
-                superclass = AS_CLASS(pop());
                 if (!invokeFromClass(superclass, aStr, argCount)) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
+            }
+            case OP_VSUPER_INVOKE: {
+                index = READ_BYTE();
+                superclass = AS_CLASS(pop());
+                argCount = READ_BYTE() + AS_NUMBER(pop());
+                goto cont_super_invoke;
             }
             case OP_CLOSURE: {
                 index = READ_BYTE();
@@ -573,6 +609,21 @@ static InterpretResult run(void) {
                     appendToList(aLst, peek(i));
                 }
                 dropNpush(itemCount + 1, OBJ_VAL(aLst));
+                break;
+            }
+            case OP_UNPACK: {
+                aVal = pop();
+                argCount = AS_NUMBER(pop());
+                if (!IS_LIST(aVal)) {
+                    runtimeError("Item to unpack is not a list.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                aLst = AS_LIST(aVal);
+                itemCount = aLst->count;
+                for (i = 0; i < itemCount; i++) {
+                    push(aLst->items[i]);
+                }
+                push(NUMBER_VAL(itemCount + argCount));
                 break;
             }
             case OP_GET_INDEX : {

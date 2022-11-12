@@ -1,0 +1,17 @@
+// Create all permutations of a list
+
+fun perms(arr) {
+  if (length(arr) == 0) return [];
+  if (length(arr) == 1) return [arr];
+
+  var res = [];
+  var part = perms(arr[1:]);
+  for (var i=0; i<length(part); i=i+1) {
+    for (var j=0; j<length(arr); j=j+1) {
+      var temp = part[i][:];
+      insert(temp, j, arr[0]);
+      append(res, temp);
+    }
+  }
+  return res;
+}

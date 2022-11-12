@@ -9,6 +9,8 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * no fractional part in integer literals
 * `$` prefix for hexadecimal integer literals
 * anonymous functions as expressions `fun (params*) {block}`
+* prefix `..` before last parameter name for vararg parameter in function declaration
+* prefix `..` before argument to unpack list into arguments in function call
 
 
 ``` ebnf
@@ -67,8 +69,8 @@ primary        → "true" | "false" | "nil" | "this"
                | "fun" function ;
 
 function       → "(" parameters? ")" block ;
-parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
-arguments      → expression ( "," expression )* ;
+parameters     → ".."? IDENTIFIER | IDENTIFIER ( "," IDENTIFIER )* ( "," ".." IDENTIFIER )? ;
+arguments      → ".."? expression ( "," ".."? expression )* ;
 
 NUMBER         → DIGIT+ | "$" HEXDIGIT+ ;
 STRING         → "\"" <any char except "\"">* "\"" ;

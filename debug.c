@@ -72,7 +72,7 @@ int disassembleInstruction(Chunk* chunk, int offset) {
         case OP_GET_LOCAL:     return byteInstruction("GET_LOC", chunk, offset);
         case OP_SET_LOCAL:     return byteInstruction("SET_LOC", chunk, offset);
         case OP_GET_GLOBAL:    return constantInstruction("GET_GLOB", chunk, offset);
-        case OP_DEFINE_GLOBAL: return constantInstruction("DEF_GLOB", chunk, offset);
+        case OP_DEF_GLOBAL:    return constantInstruction("DEF_GLOB", chunk, offset);
         case OP_SET_GLOBAL:    return constantInstruction("SET_GLOB", chunk, offset);
         case OP_GET_UPVALUE:   return byteInstruction("GET_UPVAL", chunk, offset);
         case OP_SET_UPVALUE:   return byteInstruction("SET_UPVAL", chunk, offset);
@@ -122,6 +122,11 @@ int disassembleInstruction(Chunk* chunk, int offset) {
         case OP_GET_INDEX:     return simpleInstruction("GET_INDEX", offset);
         case OP_SET_INDEX:     return simpleInstruction("SET_INDEX", offset);
         case OP_GET_SLICE:     return simpleInstruction("GET_SLICE", offset);
+        case OP_SWAP:          return simpleInstruction("SWAP", offset);
+        case OP_UNPACK:        return simpleInstruction("UNPACK", offset);
+        case OP_VCALL:         return byteInstruction("VCALL", chunk, offset);
+        case OP_VINVOKE:       return invokeInstruction("VINVOKE", chunk, offset);
+        case OP_VSUPER_INVOKE: return invokeInstruction("VSUPER_INVOKE", chunk, offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;

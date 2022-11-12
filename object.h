@@ -59,6 +59,8 @@ typedef struct {
 
     uint8_t     arity;
     uint8_t     upvalueCount;
+    uint8_t     isVarArg;
+    uint8_t     _padding;
     Chunk       chunk;
     ObjString*  name;
 } ObjFunction;

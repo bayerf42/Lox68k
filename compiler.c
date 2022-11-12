@@ -260,7 +260,7 @@ static void statement(void);
 static void declaration(void);
 static const ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
-static uint8_t argumentList(void);
+static uint8_t argumentList(bool* isVarArg);
 static uint8_t identifierConstant(Token* name);
 
 static void binary(bool canAssign) {
@@ -284,13 +284,15 @@ static void binary(bool canAssign) {
 }
 
 static void call(bool canAssign) {
-    uint8_t argCount = argumentList();
-    emitBytes(OP_CALL, argCount);
+    bool isVarArg = false;
+    uint8_t argCount = argumentList(&isVarArg);
+    emitBytes(isVarArg ? OP_VCALL : OP_CALL, argCount);
 }
 
 static void dot(bool canAssign) {
     uint8_t name;
     uint8_t argCount;
+    bool isVarArg = false;
 
     consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
     name = identifierConstant(&parser.previous);
@@ -299,8 +301,8 @@ static void dot(bool canAssign) {
         expression();
         emitBytes(OP_SET_PROPERTY, name);
     } else if (match(TOKEN_LEFT_PAREN)) {
-        argCount = argumentList();
-        emitBytes(OP_INVOKE, name);
+        argCount = argumentList(&isVarArg);
+        emitBytes(isVarArg ? OP_VINVOKE : OP_INVOKE, name);
         emitByte(argCount);
     } else {
         emitBytes(OP_GET_PROPERTY, name);
@@ -532,6 +534,7 @@ static Token syntheticToken(const char* text) {
 static void super_(bool canAssign) {
     uint8_t name;
     uint8_t argCount;
+    bool    isVarArg = false;
 
     if (currentClass == NULL) {
         error("Can't use 'super' outside of a class.");
@@ -545,9 +548,9 @@ static void super_(bool canAssign) {
 
     namedVariable(syntheticToken("this"), false);
     if (match(TOKEN_LEFT_PAREN)) {
-        argCount = argumentList();
+        argCount = argumentList(&isVarArg);
         namedVariable(syntheticToken("super"), false);
-        emitBytes(OP_SUPER_INVOKE, name);
+        emitBytes(isVarArg ? OP_VSUPER_INVOKE : OP_SUPER_INVOKE, name);
         emitByte(argCount);
     } else {
         namedVariable(syntheticToken("super"), false);
@@ -625,6 +628,7 @@ const ParseRule rules[] = {
     /* [TOKEN_GREATER_EQUAL] = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_LESS]          = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_LESS_EQUAL]    = */ {NULL,     binary, PREC_COMPARISON},
+    /* [TOKEN_DOT_DOT]       = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_IDENTIFIER]    = */ {variable, NULL,   PREC_NONE},
     /* [TOKEN_STRING]        = */ {string,   NULL,   PREC_NONE},
     /* [TOKEN_NUMBER]        = */ {number,   NULL,   PREC_NONE},
@@ -694,19 +698,36 @@ static void defineVariable(uint8_t global) {
         markInitialized();
         return;
     }
-    emitBytes(OP_DEFINE_GLOBAL, global);
+    emitBytes(OP_DEF_GLOBAL, global);
 }
 
-static uint8_t argumentList(void) {
+static uint8_t argumentList(bool* isVarArg) {
     uint8_t argCount = 0;
+    bool listArg;
 
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
-            expression();
-            if (argCount == 255) {
-                error("Can't have more than 255 arguments.");
+            listArg = false;
+
+            if (match(TOKEN_DOT_DOT)) {
+                // First UNPACK, introduce count of extra arguments
+                if (!*isVarArg) {
+                    emitConstant(NUMBER_VAL(0)); 
+                }
+                *isVarArg = true;
+                listArg = true;
             }
-            argCount++;
+
+            expression();
+
+            if (listArg)
+                emitByte(OP_UNPACK);
+            else {
+                if (*isVarArg) {
+                    emitByte(OP_SWAP); // bubble extra count to TOS
+                }
+                argCount++;
+            }
         } while (match(TOKEN_COMMA));
     }
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
@@ -745,9 +766,15 @@ static void function(FunctionType type) {
     consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
+            if (current->function->isVarArg) {
+                errorAtCurrent("No more parameters allowed after vararg.");
+            }
             current->function->arity++;
-            if (current->function->arity > 255) {
-                errorAtCurrent("Can't have more than 255 parameters.");
+            if (current->function->arity > 63) {
+                errorAtCurrent("Can't have more than 63 parameters.");
+            }
+            if (match(TOKEN_DOT_DOT)) {
+                current->function->isVarArg = true;
             }
             constant = parseVariable("Expect parameter name.");
             defineVariable(constant);

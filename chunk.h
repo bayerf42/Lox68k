@@ -13,7 +13,7 @@ typedef enum {
     OP_GET_LOCAL,
     OP_SET_LOCAL,
     OP_GET_GLOBAL,
-    OP_DEFINE_GLOBAL,
+    OP_DEF_GLOBAL,
     OP_SET_GLOBAL,
     OP_GET_UPVALUE,
     OP_SET_UPVALUE,
@@ -48,6 +48,11 @@ typedef enum {
     OP_GET_INDEX,
     OP_SET_INDEX,
     OP_GET_SLICE,
+    OP_SWAP,
+    OP_UNPACK,
+    OP_VCALL,
+    OP_VINVOKE,
+    OP_VSUPER_INVOKE,
 } OpCode;
 
 

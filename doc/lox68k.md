@@ -71,6 +71,8 @@ But you should rather combine the Monitor and Lox into a single ROM image, see b
 * `print` allows list of expression, all printed on one line. With trailing comma,
   no line feed is printed.
 * Anonymous functions (*lambdas*) as expressions.
+* Functions can have a rest parameter packing all additional arguments into a list.
+* Lists can be unpacked as arguments into a function/method call.
 
 ### Omissions
 
