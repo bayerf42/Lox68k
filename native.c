@@ -326,7 +326,6 @@ static bool dbgStatNative(int argCount, Value* args) {
 #ifdef KIT68K
 
 #include "monitor4x.h"
-#define LOOPS_PER_MILLI 72
 
 // Remember your old 80s home computers? 
 
@@ -438,10 +437,13 @@ static bool keycodeNative(int argCount, Value* args) {
     return true;
 }
 
+//#define LOOPS_NOTE 34483  // for non-register variables
+#define LOOPS_NOTE 91900 // for register variables
+
 static bool soundNative(int argCount, Value* args) {
     int delay = AS_NUMBER(args[0]);
     int len  = AS_NUMBER(args[1]);
-    int loops = 34483;
+    int loops = LOOPS_NOTE;
     int i,j;
 
     loops *= len;
@@ -459,6 +461,9 @@ static bool soundNative(int argCount, Value* args) {
     args[-1] = NIL_VAL;
     return true;
 }
+
+//#define LOOPS_PER_MILLI 72  // for non-register variables
+#define LOOPS_PER_MILLI 142 // for register variables
 
 static bool sleepNative(int argCount, Value* args) {
     int32_t millis = AS_NUMBER(args[0]);
