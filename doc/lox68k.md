@@ -150,12 +150,12 @@ and can [utilize the entire RAM for data](memorymap.md#ROM) and the kit's hardwa
 sound, and terminal communication via the serial port.
 
 To build this version, load project `clox_rom.prj` in *IDE68K* and build it.
-A hex file `clox_rom.hex` is generated, which is then combined with the Monitor 4.7
+A hex file `clox_rom.hex` is generated, which is then combined with the Monitor
 by executing 
 ```sh
 python makerom.py
 ```
-creating `rom_image/mon4.7-lox1.0.bin`, which you burn into EPROM/Flash and plug into the Kit.
+creating `rom_image/mon-lox.bin`, which you burn into EPROM/Flash and plug into the Kit.
 
 To start it, start a terminal emulation, either from *IDE68K*, or preferrably by typing
 ```sh

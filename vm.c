@@ -620,7 +620,7 @@ static InterpretResult run(void) {
                 }
                 aLst = AS_LIST(aVal);
                 itemCount = aLst->count;
-                for (i = 0; i < itemCount; i++) {
+                for (i = 0; i < itemCount && !vm.hadStackoverflow; i++) {
                     push(aLst->items[i]);
                 }
                 push(NUMBER_VAL(itemCount + argCount));
