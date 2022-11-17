@@ -567,18 +567,14 @@ static void this_(bool canAssign) {
 }
 
 static void and_(bool canAssign) {
-    int endJump = emitJump(OP_JUMP_IF_FALSE);
-    emitByte(OP_POP);
+    int endJump = emitJump(OP_JUMP_FALSE);
 
     parsePrecedence(PREC_AND);
     patchJump(endJump);
 }
 
 static void or_(bool canAssign) {
-    int elseJump = emitJump(OP_JUMP_IF_FALSE);
-    int endJump = emitJump(OP_JUMP);
-    patchJump(elseJump);
-    emitByte(OP_POP);
+    int endJump = emitJump(OP_JUMP_TRUE);
 
     parsePrecedence(PREC_OR);
     patchJump(endJump);
@@ -905,8 +901,7 @@ static void forStatement(void) {
         expression();
         consume(TOKEN_SEMICOLON, "Expect ';' after loop condition.");
         // jump out of the loop if condition is false.
-        exitJump = emitJump(OP_JUMP_IF_FALSE);
-        emitByte(OP_POP); // condition
+        exitJump = emitJump(OP_JUMP_FALSE);
     }
 
     if (!match(TOKEN_RIGHT_PAREN)) {
@@ -939,8 +934,7 @@ static void ifStatement(void) {
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
-    thenJump = emitJump(OP_JUMP_IF_FALSE);
-    emitByte(OP_POP);
+    thenJump = emitJump(OP_JUMP_FALSE);
     statement();
     elseJump = emitJump(OP_JUMP);
     patchJump(thenJump);
@@ -991,8 +985,7 @@ static void whileStatement(void) {
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
-    exitJump = emitJump(OP_JUMP_IF_FALSE);
-    emitByte(OP_POP);
+    exitJump = emitJump(OP_JUMP_FALSE);
     statement();
     emitLoop(loopStart);
 

@@ -92,7 +92,8 @@ int disassembleInstruction(Chunk* chunk, int offset) {
         case OP_PRINT:         return simpleInstruction("PRINT", offset);
         case OP_PRINTLN:       return simpleInstruction("PRINTLN", offset);
         case OP_JUMP:          return jumpInstruction("JUMP", 1, chunk, offset);
-        case OP_JUMP_IF_FALSE: return jumpInstruction("JUMP_FALSE", 1, chunk, offset);
+        case OP_JUMP_TRUE:     return jumpInstruction("JUMP_TRUE", 1, chunk, offset);
+        case OP_JUMP_FALSE:    return jumpInstruction("JUMP_FALSE", 1, chunk, offset);
         case OP_LOOP:          return jumpInstruction("LOOP", -1, chunk, offset);
         case OP_CALL:          return byteInstruction("CALL", chunk, offset);
         case OP_INVOKE:        return invokeInstruction("INVOKE", chunk, offset);

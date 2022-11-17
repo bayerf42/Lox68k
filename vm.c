@@ -482,9 +482,14 @@ static InterpretResult run(void) {
                 frame->ip += offset;
                 break;
             }
-            case OP_JUMP_IF_FALSE: {
+            case OP_JUMP_TRUE: {
                 offset = READ_USHORT();
-                if (IS_FALSEY(peek(0))) frame->ip += offset;
+                if (IS_FALSEY(peek(0))) drop(); else frame->ip += offset;
+                break;
+            }
+            case OP_JUMP_FALSE: {
+                offset = READ_USHORT();
+                if (IS_FALSEY(peek(0))) frame->ip += offset; else drop();
                 break;
             }
             case OP_LOOP: {
