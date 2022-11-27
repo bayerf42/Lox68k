@@ -699,29 +699,18 @@ static void defineVariable(uint8_t global) {
 
 static uint8_t argumentList(bool* isVarArg) {
     uint8_t argCount = 0;
-    bool listArg;
 
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
-            listArg = false;
-
             if (match(TOKEN_DOT_DOT)) {
-                // First UNPACK, introduce count of extra arguments
-                if (!*isVarArg) {
-                    emitConstant(NUMBER_VAL(0)); 
-                }
+                // First UNPACK, introduce count of arguments from lists
+                if (!*isVarArg) emitConstant(NUMBER_VAL(0)); 
                 *isVarArg = true;
-                listArg = true;
-            }
-
-            expression();
-
-            if (listArg)
-                emitByte(OP_UNPACK);
-            else {
-                if (*isVarArg) {
-                    emitByte(OP_SWAP); // bubble extra count to TOS
-                }
+                expression();
+                emitByte(OP_UNPACK); // this also adapts list arguments count
+            } else {
+                expression();
+                if (*isVarArg) emitByte(OP_SWAP); // bubble list arguments count to TOS
                 argCount++;
             }
         } while (match(TOKEN_COMMA));

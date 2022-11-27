@@ -76,10 +76,16 @@ void push(Value value) {
     *vm.stackTop++ = value;
 }
 
-static void dropNpush(int n, Value value) {
-    vm.stackTop -= n - 1;
-    vm.stackTop[-1] = value;
+//static void dropNpush(int n, Value value) {
+//    vm.stackTop -= n - 1;
+//    vm.stackTop[-1] = value;
+//}
+
+#define dropNpush(n,value) {\
+    vm.stackTop -= (n) - 1; \
+    vm.stackTop[-1] = (value); \
 }
+
 
 static bool call(ObjClosure* closure, int argCount) {
     CallFrame* frame;

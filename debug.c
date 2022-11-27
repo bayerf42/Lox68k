@@ -97,7 +97,7 @@ int disassembleInstruction(Chunk* chunk, int offset) {
         case OP_LOOP:          return jumpInstruction("LOOP", -1, chunk, offset);
         case OP_CALL:          return byteInstruction("CALL", chunk, offset);
         case OP_INVOKE:        return invokeInstruction("INVOKE", chunk, offset);
-        case OP_SUPER_INVOKE:  return invokeInstruction("SUPER_INVOKE", chunk, offset);
+        case OP_SUPER_INVOKE:  return invokeInstruction("SUP_INVOKE", chunk, offset);
         case OP_CLOSURE: {
             offset++;
             constant = chunk->code[offset++];
@@ -127,7 +127,7 @@ int disassembleInstruction(Chunk* chunk, int offset) {
         case OP_UNPACK:        return simpleInstruction("UNPACK", offset);
         case OP_VCALL:         return byteInstruction("VCALL", chunk, offset);
         case OP_VINVOKE:       return invokeInstruction("VINVOKE", chunk, offset);
-        case OP_VSUPER_INVOKE: return invokeInstruction("VSUPER_INVOKE", chunk, offset);
+        case OP_VSUPER_INVOKE: return invokeInstruction("VSUP_INVOKE", chunk, offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;
