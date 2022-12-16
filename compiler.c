@@ -740,7 +740,7 @@ static void function(FunctionType type) {
     Compiler compiler;
     ObjFunction* function;
     int i;
-    uint8_t constant;
+    uint8_t parameter;
 
     CHECK_STACKOVERFLOW
 
@@ -761,8 +761,8 @@ static void function(FunctionType type) {
             if (match(TOKEN_DOT_DOT)) {
                 current->function->isVarArg = true;
             }
-            constant = parseVariable("Expect parameter name.");
-            defineVariable(constant);
+            parameter = parseVariable("Expect parameter name.");
+            defineVariable(parameter);
         } while (match(TOKEN_COMMA));
     }
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameter.");

@@ -398,13 +398,13 @@ static InterpretResult run(void) {
                 instance = AS_INSTANCE(peek(0));
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
-                aStr = AS_STRING(constant);
 
                 if (tableGet(&instance->fields, constant, &aVal)) {
                     dropNpush(1, aVal);
                     break;
                 }
 
+                aStr = AS_STRING(constant);
                 if (!bindMethod(instance->klass, aStr)) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
@@ -468,7 +468,7 @@ static InterpretResult run(void) {
             case OP_MULTIPLY: BINARY_OP(NUMBER_VAL, *); break;
             case OP_DIVIDE:   BINARY_OP(NUMBER_VAL, /); break;
             case OP_MODULO:   BINARY_OP(NUMBER_VAL, %); break;
-            case OP_NOT:      push(BOOL_VAL(IS_FALSEY(pop()))); break;
+            case OP_NOT:      peek(0) = BOOL_VAL(IS_FALSEY(peek(0))); break;
             case OP_NEGATE:
                 if (!IS_NUMBER(peek(0))) {
                     runtimeError("Operand must be a number.");
