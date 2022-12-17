@@ -40,8 +40,8 @@ typedef struct {
     Value*  values;
 } ValueArray;
 
-//bool valuesEqual(Value a, Value b);
-#define valuesEqual(a,b) ((a)==(b))
+bool valuesEqual(Value a, Value b);
+//#define valuesEqual(a,b) ((a)==(b))
 void initValueArray(ValueArray* array);
 void writeValueArray(ValueArray* array, Value value);
 void freeValueArray(ValueArray* array);

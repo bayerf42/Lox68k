@@ -9,6 +9,10 @@
 #include "value.h"
 #include "vm.h"
 
+#ifdef KIT68K
+static char realBuffer[16];
+#endif
+
 bool isObjType(Value value, ObjType type) {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
 }
@@ -169,6 +173,7 @@ const char* typeName(ObjType type) {
         case OBJ_INSTANCE:     return "instance";
         case OBJ_LIST:         return "list";
         case OBJ_NATIVE:       return "native";
+        case OBJ_REAL:         return "real";
         case OBJ_STRING:       return "string";
         case OBJ_UPVALUE:      return "upvalue";
         default:               return "unknown";
@@ -193,6 +198,14 @@ void printObject(Value value, bool compact) {
         case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
         case OBJ_LIST: if (compact) printf("<list %d>",AS_LIST(value)->count); else printList(AS_LIST(value)); break;
         case OBJ_NATIVE: printf("<native>"); break;
+        case OBJ_REAL:
+#ifdef KIT68K
+            printReal(realBuffer, AS_REAL(value));
+            printf("%s", realBuffer);
+            break;
+#else
+            printf("%.15g", AS_REAL(value)); break;
+#endif
         case OBJ_STRING: fix_printf(AS_CSTRING(value)); break;
         case OBJ_UPVALUE: printf("<upvalue>"); break;
     }
@@ -365,5 +378,12 @@ ObjList* allKeys(Table* table) {
     }
     drop();
     return result;
+}
+
+Value newReal(Real val) {
+    ObjReal* real = ALLOCATE_OBJ(ObjReal, OBJ_REAL);
+
+    real->content = val;
+    return OBJ_VAL(real);
 }
 

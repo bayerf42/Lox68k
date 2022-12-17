@@ -4,6 +4,10 @@
 # C startup, manually
 !cstart*.asm
 
+# FFP glue, manually
+!ffp_glue.asm
+
+
 *.lst
 *.log
 *.o

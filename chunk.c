@@ -78,6 +78,7 @@ int getLine(Chunk* chunk, int offset) {
             return line->line;
         } else {
             start = mid + 1;
-        } 
+        }
     }
+    return -1; // not reached
 }

@@ -17,6 +17,9 @@ typedef short          int16_t;
 typedef int            int32_t;
 typedef short          bool;
 
+
+typedef int            Real;
+
 #define true       1
 #define false      0
 
@@ -24,6 +27,7 @@ typedef short          bool;
 #define UINT16_MAX 0xffff
 #define INT32_MAX  0x7fffffff
 
+#include "mathffp.h"
 
 // Code at the very beginning of a function to check for stack overflow:
 //
@@ -54,6 +58,12 @@ extern void _stackoverflow(void);
 
 #include <stdbool.h>
 #include <stdint.h>
+
+typedef double Real;
+
+#include <math.h>
+
+#define intToReal(x) (x)
 
 #define CHECK_STACKOVERFLOW
 

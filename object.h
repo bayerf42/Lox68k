@@ -16,6 +16,7 @@
 #define IS_LIST(value) isObjType(value, OBJ_LIST)
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 #define IS_STRING(value) isObjType(value, OBJ_STRING)
+#define IS_REAL(value) isObjType(value, OBJ_REAL)
 
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass*)AS_OBJ(value))
@@ -27,6 +28,7 @@
 #define AS_NATIVE_SIG(value) (((ObjNative*)AS_OBJ(value))->signature)
 #define AS_STRING(value) ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value) (((ObjString*)AS_OBJ(value))->chars)
+#define AS_REAL(value) (((ObjReal*)AS_OBJ(value))->content)
 
 typedef enum {
     OBJ_BOUND_METHOD,
@@ -36,6 +38,7 @@ typedef enum {
     OBJ_INSTANCE,
     OBJ_LIST,
     OBJ_NATIVE,
+    OBJ_REAL,
     OBJ_STRING,
     OBJ_UPVALUE
 } ObjType;
@@ -128,12 +131,19 @@ typedef struct {
     Value*      items;
 } ObjList;
 
+typedef struct {
+    OBJ_HEADER
+
+    Real        content;
+} ObjReal;
+
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
 ObjClass* newClass(ObjString* name);
 ObjClosure* newClosure(ObjFunction* function);
 ObjFunction* newFunction(void);
 ObjInstance* newInstance(ObjClass* klass);
 ObjList* newList(void);
+Value newReal(Real val);
 ObjNative* newNative(const char* signature, NativeFn function);
 ObjString* copyString(const char* chars, int length);
 ObjUpvalue* newUpvalue(Value* slot);

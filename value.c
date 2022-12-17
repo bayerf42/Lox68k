@@ -46,11 +46,14 @@ ObjString* valueType(Value value) {
     return copyString(type, strlen(type));
 }
 
-//bool valuesEqual(Value a, Value b) {
-//    return a == b;
-//}
+bool valuesEqual(Value a, Value b) {
+    if (IS_REAL(a) && IS_REAL(b))
+        return AS_REAL(a) == AS_REAL(b);
+    return a == b;
+}
 
 uint32_t hashValue(Value value) {
     if (IS_STRING(value)) return AS_STRING(value)->hash;
+    else if (IS_REAL(value)) return *((uint32_t*)&AS_REAL(value));
     else return value;
 }

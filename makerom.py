@@ -16,6 +16,7 @@ rom = bincopy.BinFile(MonitorPath)
 bootvector = rom[0:8]
 
 rom.add_file("clox_rom.hex")
+rom.add_file("rom_image/motoffp.hex")
 
 rom.fill()
 rom.exclude(0,0x40000)

@@ -126,5 +126,8 @@ __ungetbuf:
 __stack:
            ds.l        1               ; bottom of stack
 
+_errno:
+           ds.b        1               ; for signalling FFP errors
+
            section code
 

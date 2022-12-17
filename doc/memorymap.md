@@ -24,7 +24,8 @@ and constants into ROM. Build this version via the project file `clox_rom.prj`, 
 | `$20000`      | `$3ffff`       | 128 k | -    | unassigned                           |
 | `$40000`      | `$43fff`       |  16 k | ROM  | Monitor code and constants           |
 | `$44000`      | `$4ffff`       |  48 k | ROM  | Lox code and constants               |
-| `$50000`      | `$5ffff`       |  64 k | ROM  | free                                 |
+| `$50000`      | `$5efff`       |  60 k | ROM  | free                                 |
+| `$5f000`      | `$5ffff`       |   4 k | ROM  | Motorola FFP library                 |
 | `$60000`      | `$fffff`       | 640 k | -    | I/O or unassigned                    |
 
 
@@ -48,6 +49,7 @@ Build this version via the project file `clox.prj` and upload the resulting hex 
 | `$1c000`      | `$1ffff`       |  16 k | RAM  | processor stack                      |
 | `$20000`      | `$3ffff`       | 128 k | -    | unassigned                           |
 | `$40000`      | `$43fff`       |  16 k | ROM  | Monitor code and constants           |
-| `$44000`      | `$5ffff`       | 112 k | ROM  | free                                 |
+| `$44000`      | `$5efff`       | 108 k | ROM  | free                                 |
+| `$5f000`      | `$5ffff`       |   4 k | ROM  | Motorola FFP library                 |
 | `$60000`      | `$fffff`       | 640 k | -    | I/O or unassigned                    |
 

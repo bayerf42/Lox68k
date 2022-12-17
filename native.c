@@ -3,7 +3,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <time.h>
-#include <math.h>
 #include <ctype.h>
 
 #include "common.h"
@@ -13,10 +12,12 @@
 #include "memory.h"
 #include "vm.h"
 
+
 static const char* matchesType(Value value, char type) {
     switch (type) {
         case 'A': return NULL; // any value
-        case 'N': return IS_NUMBER(value) ? NULL : "a number";
+        case 'N': return IS_NUMBER(value) ? NULL : "an integer";
+        case 'R': return IS_NUMBER(value) || IS_REAL(value) ? NULL : "a number";
         case 'S': return IS_STRING(value) ? NULL : "a string";
         case 'L': return IS_LIST(value) ? NULL : "a list";
         case 'Q': return IS_STRING(value) || IS_LIST(value) ? NULL : "a sequence";
@@ -57,10 +58,78 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
 
 
 static bool absNative(int argCount, Value* args) {
-    args[-1] = NUMBER_VAL(abs(AS_NUMBER(args[0])));
+    if (IS_NUMBER(args[0])) 
+        args[-1] = NUMBER_VAL(abs(AS_NUMBER(args[0])));
+    else
+        args[-1] = newReal(fabs(AS_REAL(args[0])));
     return true;
 }
 
+typedef Real (*RealFun)(Real);
+
+static bool transcendentalNative(int argCount, Value* args, RealFun fn) {
+    if (IS_NUMBER(args[0])) 
+        args[-1] = newReal(fn(intToReal(AS_NUMBER(args[0]))));
+    else
+        args[-1] = newReal(fn(AS_REAL(args[0])));
+    if (errno != 0) {
+        runtimeError("Arithmetic error.");
+        return false;
+    }
+
+    return true;
+}
+
+static bool sqrtNative(int argCount, Value* args) {
+    return transcendentalNative(argCount, args, sqrt);
+}
+
+static bool sinNative(int argCount, Value* args) {
+    return transcendentalNative(argCount, args, sin);
+}
+
+static bool cosNative(int argCount, Value* args) {
+    return transcendentalNative(argCount, args, cos);
+}
+
+static bool tanNative(int argCount, Value* args) {
+    return transcendentalNative(argCount, args, tan);
+}
+
+static bool sinhNative(int argCount, Value* args) {
+    return transcendentalNative(argCount, args, sinh);
+}
+
+static bool coshNative(int argCount, Value* args) {
+    return transcendentalNative(argCount, args, cosh);
+}
+
+static bool tanhNative(int argCount, Value* args) {
+    return transcendentalNative(argCount, args, tanh);
+}
+
+static bool expNative(int argCount, Value* args) {
+    return transcendentalNative(argCount, args, exp);
+}
+
+static bool logNative(int argCount, Value* args) {
+    return transcendentalNative(argCount, args, log);
+}
+
+static bool atanNative(int argCount, Value* args) {
+    return transcendentalNative(argCount, args, atan);
+}
+
+static bool powNative(int argCount, Value* args) {
+    Real x = (IS_NUMBER(args[0])) ? intToReal(AS_NUMBER(args[0])) : AS_REAL(args[0]);
+    Real y = (IS_NUMBER(args[1])) ? intToReal(AS_NUMBER(args[1])) : AS_REAL(args[1]);
+    args[-1] = newReal(pow(x,y));
+    if (errno != 0) {
+        runtimeError("Arithmetic error.");
+        return false;
+    }
+    return true;
+}
 
 static bool lengthNative(int argCount, Value* args) {
     if (IS_STRING(args[0])) {
@@ -530,7 +599,18 @@ static void defineNative(const char* name, const char* signature, NativeFn funct
 }
 
 void defineAllNatives(void) {
-    defineNative("abs",         "N",    absNative);
+    defineNative("abs",         "R",    absNative);
+    defineNative("sqrt",        "R",    sqrtNative);
+    defineNative("sin",         "R",    sinNative);
+    defineNative("cos",         "R",    cosNative);
+    defineNative("tan",         "R",    tanNative);
+    defineNative("sinh",        "R",    sinhNative);
+    defineNative("cosh",        "R",    coshNative);
+    defineNative("tanh",        "R",    tanhNative);
+    defineNative("exp",         "R",    expNative);
+    defineNative("log",         "R",    logNative);
+    defineNative("atan",        "R",    atanNative);
+    defineNative("pow",         "RR",   powNative);
 
     defineNative("asc",         "Sn",   ascNative);
     defineNative("chr",         "N",    chrNative);
