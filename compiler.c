@@ -271,8 +271,8 @@ static void binary(bool canAssign) {
         case TOKEN_BANG_EQUAL:    emitBytes(OP_EQUAL, OP_NOT); break;
         case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
         case TOKEN_GREATER:       emitByte(OP_GREATER); break;
-        case TOKEN_GREATER_EQUAL: emitBytes(OP_LESS, OP_NOT); break;
-        case TOKEN_LESS:          emitByte(OP_LESS); break;
+        case TOKEN_GREATER_EQUAL: emitBytes(OP_SWAP, OP_GREATER); emitByte(OP_NOT); break;
+        case TOKEN_LESS:          emitBytes(OP_SWAP, OP_GREATER); break;
         case TOKEN_LESS_EQUAL:    emitBytes(OP_GREATER, OP_NOT); break;
         case TOKEN_PLUS:          emitByte(OP_ADD); break;
         case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
@@ -364,13 +364,23 @@ static void grouping(bool canAssign) {
 }
 
 static void number(bool canAssign) {
-    Number value;
+    Value value;
     if (parser.previous.start[0] == '$') {
-        value = strtol(parser.previous.start+1, NULL, 16);
+        value = NUMBER_VAL(strtol(parser.previous.start+1, NULL, 16));
     } else {
-        value = strtol(parser.previous.start, NULL, 10);
+        if (parser.previous.real) {
+#ifdef KIT68K
+            value = newReal(scanReal(parser.previous.start));
+            if (errno != 0)
+                error("Real constant overflow.");
+#else
+            value = newReal(strtod(parser.previous.start, NULL));
+#endif
+        }
+        else
+            value = NUMBER_VAL(strtol(parser.previous.start, NULL, 10));
     }
-    emitConstant(NUMBER_VAL(value));
+    emitConstant(value);
 }
 
 static void string(bool canAssign) {

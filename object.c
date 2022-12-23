@@ -9,9 +9,7 @@
 #include "value.h"
 #include "vm.h"
 
-#ifdef KIT68K
-static char realBuffer[16];
-#endif
+static char numBuffer[32];
 
 bool isObjType(Value value, ObjType type) {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
@@ -198,14 +196,7 @@ void printObject(Value value, bool compact) {
         case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
         case OBJ_LIST: if (compact) printf("<list %d>",AS_LIST(value)->count); else printList(AS_LIST(value)); break;
         case OBJ_NATIVE: printf("<native>"); break;
-        case OBJ_REAL:
-#ifdef KIT68K
-            printReal(realBuffer, AS_REAL(value));
-            printf("%s", realBuffer);
-            break;
-#else
-            printf("%.15g", AS_REAL(value)); break;
-#endif
+        case OBJ_REAL: printf("%s", formatReal(AS_REAL(value))); break;
         case OBJ_STRING: fix_printf(AS_CSTRING(value)); break;
         case OBJ_UPVALUE: printf("<upvalue>"); break;
     }
@@ -244,7 +235,7 @@ void insertIntoList(ObjList* list, Value value, int index) {
     if (index > count) index = count;
     for (i = count; i >= index; i--) {
         list->items[i + 1] = list->items[i];
-    } 
+    }
     list->items[index] = value;
     ++list->count;
 }
@@ -265,10 +256,10 @@ ObjList* sliceFromList(ObjList* list, int begin, int end) {
     int i;
 
     if (begin < 0)  begin += n;
-    if (begin < 0)  begin = 0; 
+    if (begin < 0)  begin = 0;
     if (begin >= n) begin = n;
     if (end < 0)    end += n;
-    if (end <= 0)   end = 0; 
+    if (end <= 0)   end = 0;
     if (end > n)    end = n;
 
     push(OBJ_VAL(result));
@@ -308,10 +299,10 @@ ObjString* sliceFromString(ObjString* string, int begin, int end) {
     int n = string->length;
 
     if (begin < 0)  begin += n;
-    if (begin < 0)  begin = 0; 
+    if (begin < 0)  begin = 0;
     if (begin >= n) begin = n;
     if (end < 0)    end += n;
-    if (end <= 0)   end = 0; 
+    if (end <= 0)   end = 0;
     if (end > n)    end = n;
 
     return copyString(string->chars + begin, (end > begin) ? end - begin : 0);
@@ -336,15 +327,15 @@ ObjString* caseString(ObjString* a, bool toUpper) {
 #ifdef __linux__
     if (toUpper)
         for (cp=input_line; *cp; ++cp)
-            *cp = toupper(*cp);  
-    else  
+            *cp = toupper(*cp);
+    else
         for (cp=input_line; *cp; ++cp)
-            *cp = tolower(*cp);  
+            *cp = tolower(*cp);
 #else
     if (toUpper)
         strupr(input_line);
-    else  
-        strlwr(input_line); 
+    else
+        strlwr(input_line);
 #endif
 
     return copyString(input_line, length);
@@ -387,3 +378,68 @@ Value newReal(Real val) {
     return OBJ_VAL(real);
 }
 
+const char* formatReal(Real val) {
+#ifdef KIT68K
+    int expo, dp, off;
+    char* estr;
+    char* dest;
+
+    if (val==0) return "0.0";
+
+    printReal(numBuffer, val);
+    expo = atoi(numBuffer + 11);
+    estr = numBuffer + 10;
+
+    // Fixed format returned from printReal:
+    // s.mmmmmmmmEsdd
+    //           1111
+    // 01234567890123
+
+    if (expo >= 1 && expo <= 7) {
+        // shift DP to the right
+        for (dp = 1; expo > 0; dp++, expo--) {
+            numBuffer[dp] = numBuffer[dp + 1];
+            numBuffer[dp + 1] = '.';
+        }
+        numBuffer[10] = '\0'; // cut off exponent
+        estr = NULL;
+    } else if (expo <= 0 && expo >= -3) {
+        // shift mantissa to the right
+        for (off = 9; off > 1; off--)
+            numBuffer[off - expo + 1] = numBuffer[off];
+        numBuffer[11 - expo] = '\0'; // cut off exponent
+        estr = NULL;
+        for (off = 2 - expo; off > 0; off--)
+            numBuffer[off] = '0';
+        numBuffer[2] = '.';
+    } else {
+        // exponential display, but 1 digit left to DP
+        numBuffer[1] = numBuffer[2];
+        numBuffer[2] = '.';
+        sprintf(numBuffer + 11, "%d", expo - 1);
+    }
+
+    // Squeeze out trailing zeros in mantissa
+    for (dest = estr ? estr : numBuffer + strlen(numBuffer);
+         dest[-1] == '0' && dest[-2] != '.';)
+        *--dest = '\0';
+    if (estr) memmove(dest, estr, 6);
+
+    if (numBuffer[0] == '+') return numBuffer + 1;
+
+#else
+    sprintf(numBuffer, "%.15g", val);
+#endif
+
+    return numBuffer;
+}
+
+const char* formatInt(Number val) {
+    sprintf(numBuffer, "%ld", val);
+    return numBuffer;
+}
+
+const char* formatHex(Number val) {
+    sprintf(numBuffer, "%lx", val);
+    return numBuffer;
+}

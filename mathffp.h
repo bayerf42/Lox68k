@@ -4,6 +4,8 @@
 #include "common.h"
 
 Real fabs(Real x);
+int  trunc(Real x);
+
 Real sqrt(Real x);
 Real sin(Real x);
 Real cos(Real x);
@@ -16,7 +18,15 @@ Real exp(Real x);
 Real log(Real x);
 Real pow(Real x, Real y);
 
+Real neg(Real x);
+Real add(Real x, Real y);
+Real sub(Real x, Real y);
+Real mul(Real x, Real y);
+Real div(Real x, Real y);
+
+int  greater(Real x, Real y);
 Real intToReal(int n);
+int  realToInt(Real x);
 Real scanReal(const char* str);
 void printReal(char* str, Real x);
 

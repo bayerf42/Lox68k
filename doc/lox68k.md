@@ -94,6 +94,7 @@ and doesn't support modern *C99*.
   * `nil` the absent/dontcare/missing value
   * `false`, `true` boolean values
   * 31 bit signed integer numbers
+  * real numbers, as Motorola FFP 32 bit on Kit, or IEEE-754 doubles on other hardware
   * strings, non-modifiable and interned for quick comparisons
   * lists, modifiable resizable arrays of arbitrary values
   * closures, proper lexically-scoped functions

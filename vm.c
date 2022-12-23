@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 
@@ -250,32 +251,6 @@ static void defineMethod(ObjString* name) {
 
 #define READ_BYTE() (*frame->ip++)
 #define READ_USHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
-#define BINARY_OP(valueType, op) \
-    do { \
-        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
-            runtimeError("Operands must be numbers."); \
-            return INTERPRET_RUNTIME_ERROR; \
-        } \
-        bNum = AS_NUMBER(pop()); \
-        aNum = AS_NUMBER(pop()); \
-        push(valueType(aNum op bNum)); \
-    } while (false)
-#define COMPARE_OP(op) \
-    do { \
-        if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) { \
-            bNum = AS_NUMBER(pop()); \
-            aNum = AS_NUMBER(pop()); \
-            push(BOOL_VAL(aNum op bNum)); \
-        } else if (IS_STRING(peek(0)) && IS_STRING(peek(1))) { \
-            bStr = AS_STRING(peek(0)); \
-            aStr = AS_STRING(peek(1)); \
-            dropNpush(2, BOOL_VAL(strcmp(aStr->chars, bStr->chars) op 0)); \
-        } else { \
-            runtimeError("Operands must be numbers or strings."); \
-            return INTERPRET_RUNTIME_ERROR; \
-        } \
-    } while (false)
-
 
 static InterpretResult run(void) {
     Value* slot;
@@ -286,6 +261,7 @@ static InterpretResult run(void) {
     // The IDE68K ancient C compiler generates wrong code for local vars in case branches.
     // Thus, we declare all needed variables at function start..
     Number aNum, bNum;
+    Real aReal, bReal, cReal;
     Value  aVal=NIL_VAL, bVal, cVal, resVal;
     ObjString *aStr, *bStr, *resStr;
     ObjList   *aLst, *bLst, *resLst;
@@ -440,14 +416,63 @@ static InterpretResult run(void) {
                 aVal = pop();
                 push(BOOL_VAL(valuesEqual(aVal, bVal)));
                 break;
-            case OP_GREATER:  COMPARE_OP(>); break;
-            case OP_LESS:     COMPARE_OP(<); break;
+            case OP_GREATER: {
+                if (IS_NUMBER(peek(0))) {
+                    if (IS_NUMBER(peek(1))) {
+                        bNum = AS_NUMBER(pop());
+                        aNum = AS_NUMBER(pop());
+                        push(BOOL_VAL(aNum > bNum));
+                        break;
+                    } else if (IS_REAL(peek(1))) {
+                        aReal = AS_REAL(peek(1));
+                        bReal = intToReal(AS_NUMBER(peek(0)));
+                        goto greaterReals;
+                    } else goto typeErrorGt;
+                } else if (IS_REAL(peek(0))) {
+                    bReal = AS_REAL(peek(0));
+                    if (IS_NUMBER(peek(1))) {
+                        aReal = intToReal(AS_NUMBER(peek(1)));
+                    } else if (IS_REAL(peek(1))) {
+                        aReal = AS_REAL(peek(1));
+                    } else goto typeErrorGt;
+                greaterReals: 
+                    dropNpush(2, BOOL_VAL(greater(aReal,bReal)));
+                } else if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
+                    bStr = AS_STRING(peek(0));
+                    aStr = AS_STRING(peek(1));
+                    dropNpush(2, BOOL_VAL(strcmp(aStr->chars, bStr->chars) > 0));
+                } else {
+                typeErrorGt:
+                    runtimeError("Operands must be numbers or strings.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
             case OP_ADD: {
-                if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
-                    bNum = AS_NUMBER(pop());
-                    aNum = AS_NUMBER(pop());
-                    resVal = NUMBER_VAL(aNum + bNum);
-                    push(resVal);
+                if (IS_NUMBER(peek(0))) {
+                    if (IS_NUMBER(peek(1))) {
+                        bNum = AS_NUMBER(pop());
+                        aNum = AS_NUMBER(pop());
+                        push(NUMBER_VAL(aNum + bNum));
+                        break;
+                    } else if (IS_REAL(peek(1))) {
+                        aReal = AS_REAL(peek(1));
+                        bReal = intToReal(AS_NUMBER(peek(0)));
+                        goto addReals;
+                    } else goto typeErrorAdd;
+                } else if (IS_REAL(peek(0))) {
+                    bReal = AS_REAL(peek(0));
+                    if (IS_NUMBER(peek(1))) {
+                        aReal = intToReal(AS_NUMBER(peek(1)));
+                    } else if (IS_REAL(peek(1))) {
+                        aReal = AS_REAL(peek(1));
+                    } else goto typeErrorAdd;
+                addReals: 
+                    dropNpush(2, newReal(add(aReal,bReal)));
+                    if (errno != 0) {
+                        runtimeError("Arithmetic error.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
                 } else if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
                     bStr = AS_STRING(peek(0));
                     aStr = AS_STRING(peek(1));
@@ -459,22 +484,115 @@ static InterpretResult run(void) {
                     resLst = concatLists(aLst, bLst);
                     dropNpush(2, OBJ_VAL(resLst));
                 } else {
+                typeErrorAdd:
                     runtimeError("Operands must be numbers, strings, or lists.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
             }
-            case OP_SUBTRACT: BINARY_OP(NUMBER_VAL, -); break;
-            case OP_MULTIPLY: BINARY_OP(NUMBER_VAL, *); break;
-            case OP_DIVIDE:   BINARY_OP(NUMBER_VAL, /); break;
-            case OP_MODULO:   BINARY_OP(NUMBER_VAL, %); break;
+            case OP_SUBTRACT: {
+                if (IS_NUMBER(peek(0))) {
+                    if (IS_NUMBER(peek(1))) {
+                        bNum = AS_NUMBER(pop());
+                        aNum = AS_NUMBER(pop());
+                        push(NUMBER_VAL(aNum - bNum));
+                        break;
+                    } else if (IS_REAL(peek(1))) {
+                        aReal = AS_REAL(peek(1));
+                        bReal = intToReal(AS_NUMBER(peek(0)));
+                    } else goto typeErrorNum;
+                } else if (IS_REAL(peek(0))) {
+                    bReal = AS_REAL(peek(0));
+                    if (IS_NUMBER(peek(1))) {
+                        aReal = intToReal(AS_NUMBER(peek(1)));
+                    } else if (IS_REAL(peek(1))) {
+                        aReal = AS_REAL(peek(1));
+                    } else goto typeErrorNum;
+                } else {
+                typeErrorNum:
+                    runtimeError("Operands must be numbers.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                dropNpush(2, newReal(sub(aReal,bReal)));
+                if (errno != 0) {
+                    runtimeError("Arithmetic error.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
+            case OP_MULTIPLY: {
+                if (IS_NUMBER(peek(0))) {
+                    if (IS_NUMBER(peek(1))) {
+                        bNum = AS_NUMBER(pop());
+                        aNum = AS_NUMBER(pop());
+                        push(NUMBER_VAL(aNum * bNum));
+                        break;
+                    } else if (IS_REAL(peek(1))) {
+                        aReal = AS_REAL(peek(1));
+                        bReal = intToReal(AS_NUMBER(peek(0)));
+                    } else goto typeErrorNum;
+                } else if (IS_REAL(peek(0))) {
+                    bReal = AS_REAL(peek(0));
+                    if (IS_NUMBER(peek(1))) {
+                        aReal = intToReal(AS_NUMBER(peek(1)));
+                    } else if (IS_REAL(peek(1))) {
+                        aReal = AS_REAL(peek(1));
+                    } else goto typeErrorNum;
+                } else goto typeErrorNum;
+                dropNpush(2, newReal(mul(aReal,bReal)));
+                if (errno != 0) {
+                    runtimeError("Arithmetic error.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
+            case OP_DIVIDE: {
+                if (IS_NUMBER(peek(0))) {
+                    if (IS_NUMBER(peek(1))) {
+                        bNum = AS_NUMBER(pop());
+                        aNum = AS_NUMBER(pop());
+                        push(NUMBER_VAL(aNum / bNum));
+                        break;
+                    } else if (IS_REAL(peek(1))) {
+                        aReal = AS_REAL(peek(1));
+                        bReal = intToReal(AS_NUMBER(peek(0)));
+                    } else goto typeErrorNum;
+                } else if (IS_REAL(peek(0))) {
+                    bReal = AS_REAL(peek(0));
+                    if (IS_NUMBER(peek(1))) {
+                        aReal = intToReal(AS_NUMBER(peek(1)));
+                    } else if (IS_REAL(peek(1))) {
+                        aReal = AS_REAL(peek(1));
+                    } else goto typeErrorNum;
+                } else goto typeErrorNum;
+                dropNpush(2, newReal(div(aReal,bReal)));
+                if (errno != 0) {
+                    runtimeError("Arithmetic error.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
+            case OP_MODULO: {
+                if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
+                    bNum = AS_NUMBER(pop());
+                    aNum = AS_NUMBER(pop());
+                    push(NUMBER_VAL(aNum % bNum));
+                } else {
+                    runtimeError("Operands must be integers.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
             case OP_NOT:      peek(0) = BOOL_VAL(IS_FALSEY(peek(0))); break;
             case OP_NEGATE:
-                if (!IS_NUMBER(peek(0))) {
+                if (IS_NUMBER(peek(0)))
+                    peek(0) = NUMBER_VAL(-AS_NUMBER(peek(0)));
+                else if (IS_REAL(peek(0)))
+                    peek(0) = newReal(neg(AS_REAL(peek(0))));
+                else {
                     runtimeError("Operand must be a number.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
             case OP_PRINT:
                 printValue(pop(), false);
@@ -644,7 +762,7 @@ static InterpretResult run(void) {
                 if (IS_LIST(bVal)) {
                     bLst = AS_LIST(bVal);
                     if (!IS_NUMBER(aVal)) {
-                        runtimeError("List index is not a number.");
+                        runtimeError("List index is not an integer.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
                     index = AS_NUMBER(aVal);
@@ -659,7 +777,7 @@ static InterpretResult run(void) {
                 } else if (IS_STRING(bVal)) {
                     bStr = AS_STRING(bVal);
                     if (!IS_NUMBER(aVal)) {
-                        runtimeError("String index is not a number.");
+                        runtimeError("String index is not an integer.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
                     index = AS_NUMBER(aVal);
@@ -691,7 +809,7 @@ static InterpretResult run(void) {
                 if (IS_LIST(bVal)) {
                     bLst = AS_LIST(bVal);
                     if (!IS_NUMBER(aVal)) {
-                        runtimeError("List index is not a number.");
+                        runtimeError("List index is not an integer.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
                     index = AS_NUMBER(aVal);
@@ -720,12 +838,12 @@ static InterpretResult run(void) {
                 cVal = peek(0); // object
 
                 if (!IS_NUMBER(bVal)) {
-                    runtimeError("Slice begin is not a number.");
+                    runtimeError("Slice begin is not an integer.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 begin = AS_NUMBER(bVal);
                 if (!IS_NUMBER(aVal)) {
-                    runtimeError("Slice end is not a number.");
+                    runtimeError("Slice end is not an integer.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 end = AS_NUMBER(aVal);
@@ -754,7 +872,6 @@ static InterpretResult run(void) {
 
 #undef READ_BYTE
 #undef READ_USHORT
-#undef BINARY_OP
 
 InterpretResult interpret(const char* source) {
     ObjFunction* function = compile(source);

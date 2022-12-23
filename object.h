@@ -171,5 +171,8 @@ ObjList* allKeys(Table* table);
 
 bool isObjType(Value value, ObjType type);
 
+const char* formatReal(Real val);
+const char* formatInt(Number val);
+const char* formatHex(Number val);
 
 #endif

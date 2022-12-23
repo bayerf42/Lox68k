@@ -6,11 +6,11 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * `[ exp ]` as string, list, or instance index to access elements
 * `[ exp? : exp? ]` as list or string slice to extract subsequence
 * operator `%` for division remainder
-* no fractional part in integer literals
 * `$` prefix for hexadecimal integer literals
 * anonymous functions as expressions `fun (params*) {block}`
 * prefix `..` before last parameter name for vararg parameter in function declaration
 * prefix `..` before argument to unpack list into arguments in function call
+* Real numbers with exponential part
 
 
 ``` ebnf
@@ -72,7 +72,8 @@ function       → "(" parameters? ")" block ;
 parameters     → ".."? IDENTIFIER | IDENTIFIER ( "," IDENTIFIER )* ( "," ".." IDENTIFIER )? ;
 arguments      → ".."? expression ( "," ".."? expression )* ;
 
-NUMBER         → DIGIT+ | "$" HEXDIGIT+ ;
+NUMBER         → DIGIT+ ( "." DIGIT+ )? ( ( "e" | "E" ) ( "+" | "-" )? DIGIT+ )?
+               | "$" HEXDIGIT+ ;
 STRING         → "\"" <any char except "\"">* "\"" ;
 IDENTIFIER     → ALPHA ( ALPHA | DIGIT )* ;
 ALPHA          → "a" ... "z" | "A" ... "Z" | "_" ;

@@ -37,7 +37,8 @@ typedef struct {
     const char* start;
     TokenType   type;
     int16_t     length;
-    int32_t     line; 
+    int16_t     line; 
+    bool        real; 
 } Token;
 
 

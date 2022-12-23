@@ -7,7 +7,7 @@ typedef struct Obj Obj;
 typedef struct ObjString ObjString;
 
 // 68008 Value tagging scheme
-// Numbers          sxxx xxxx ... xxxx xxx1 (shift 1 bit for arithmetic)
+// Integers         sxxx xxxx ... xxxx xxx1 (shift 1 bit for arithmetic)
 // Specials         1000 0000 ... 0000 0xx0 (empty, nil, false, true; see below)
 // Object pointers  0xxx xxxx ... xxxx xxx0 (even address, < 2GB)
 
@@ -41,7 +41,6 @@ typedef struct {
 } ValueArray;
 
 bool valuesEqual(Value a, Value b);
-//#define valuesEqual(a,b) ((a)==(b))
 void initValueArray(ValueArray* array);
 void writeValueArray(ValueArray* array, Value value);
 void freeValueArray(ValueArray* array);

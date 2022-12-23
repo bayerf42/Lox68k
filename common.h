@@ -18,8 +18,6 @@ typedef int            int32_t;
 typedef short          bool;
 
 
-typedef int            Real;
-
 #define true       1
 #define false      0
 
@@ -27,7 +25,13 @@ typedef int            Real;
 #define UINT16_MAX 0xffff
 #define INT32_MAX  0x7fffffff
 
-#include "mathffp.h"
+extern void memmove(void *, void *, int);
+
+
+typedef int Real;
+
+#include "ffp_glue.h"
+
 
 // Code at the very beginning of a function to check for stack overflow:
 //
@@ -59,14 +63,22 @@ extern void _stackoverflow(void);
 #include <stdbool.h>
 #include <stdint.h>
 
+
 typedef double Real;
 
 #include <math.h>
 
 #define intToReal(x) (x)
+#define realToInt(x) ((Number)(x))
+#define neg(x)       (-(x))
+#define add(x,y)     ((x)+(y))
+#define sub(x,y)     ((x)-(y))
+#define mul(x,y)     ((x)*(y))
+#define div(x,y)     ((x)/(y))
+#define greater(x,y) ((x)>(y))
+
 
 #define CHECK_STACKOVERFLOW
-
 
 #define HEAP_SIZE   65536
 #define STACK_MAX    4096

@@ -10,13 +10,14 @@ import shutil
 # the Monitor complete with sources and documentation from
 # https://kswichit.net/68008/Fred/MonitorV4.7.zip
 
-MonitorPath = "rom_image/monitor.hex"
+MonitorPath = "../Monitor/monitor.hex"
+MotoFFPPath = "../MotoFFP/motoffp.hex"
 
 rom = bincopy.BinFile(MonitorPath)
 bootvector = rom[0:8]
 
 rom.add_file("clox_rom.hex")
-rom.add_file("rom_image/motoffp.hex")
+rom.add_file(MotoFFPPath)
 
 rom.fill()
 rom.exclude(0,0x40000)

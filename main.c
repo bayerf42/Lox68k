@@ -10,6 +10,8 @@
 #include "native.h"
 
 
+#define VERSION "V1.2"
+
 #ifdef KIT68K
 
 #include "monitor4x.h"
@@ -43,7 +45,7 @@ int main() {
     rand32 = 47110815;
     init_freelist();
     initVM();
-    printf("Lox68k V1.0 by Fred Bayer\n");
+    printf("Lox68k %s by Fred Bayer\n", VERSION);
     repl();
 
     freeVM();
@@ -120,7 +122,7 @@ int main(int argc, const char* argv[]) {
     init_freelist();
     initVM();
 
-    printf("Lox68k (compiled for Big Computer) V1.0 by Fred Bayer\n");
+    printf("Lox68k (compiled for Big Computer) %s by Fred Bayer\n", VERSION);
     if (argc == 1) {
         repl();
     } else {

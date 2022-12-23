@@ -57,21 +57,41 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
 }
 
 
+static bool realNative(int argCount, Value* args) {
+    if (IS_NUMBER(args[0]))
+        args[-1] = newReal(intToReal(AS_NUMBER(args[0])));
+    else
+        args[-1] = args[0];
+    return true;
+}
+
 static bool absNative(int argCount, Value* args) {
-    if (IS_NUMBER(args[0])) 
+    if (IS_NUMBER(args[0]))
         args[-1] = NUMBER_VAL(abs(AS_NUMBER(args[0])));
     else
         args[-1] = newReal(fabs(AS_REAL(args[0])));
     return true;
 }
 
+static bool truncNative(int argCount, Value* args) {
+    if (IS_NUMBER(args[0]))
+        args[-1] = args[0];
+    else
+        args[-1] = NUMBER_VAL(realToInt(AS_REAL(args[0])));
+    if (errno != 0) {
+        runtimeError("Arithmetic error.");
+        return false;
+    }
+    return true;
+}
+
 typedef Real (*RealFun)(Real);
 
 static bool transcendentalNative(int argCount, Value* args, RealFun fn) {
-    if (IS_NUMBER(args[0])) 
-        args[-1] = newReal(fn(intToReal(AS_NUMBER(args[0]))));
+    if (IS_NUMBER(args[0]))
+        args[-1] = newReal((*fn)(intToReal(AS_NUMBER(args[0]))));
     else
-        args[-1] = newReal(fn(AS_REAL(args[0])));
+        args[-1] = newReal((*fn)(AS_REAL(args[0])));
     if (errno != 0) {
         runtimeError("Arithmetic error.");
         return false;
@@ -253,24 +273,22 @@ static bool chrNative(int argCount, Value* args) {
 }
 
 static bool decNative(int argCount, Value* args) {
-    Number number = AS_NUMBER(args[0]);
-    char buffer[12];
-
-    sprintf(buffer, "%ld", number);
-    args[-1] = OBJ_VAL(copyString(buffer, strlen(buffer)));
+    const char* res;
+    if (IS_NUMBER(args[0]))
+        res = formatInt(AS_NUMBER(args[0]));
+    else
+        res = formatReal(AS_REAL(args[0]));
+    args[-1] = OBJ_VAL(copyString(res, strlen(res)));
     return true;
 }
 
 static bool hexNative(int argCount, Value* args) {
-    Number number = AS_NUMBER(args[0]);
-    char buffer[12];
-
-    sprintf(buffer, "%lx", number);
-    args[-1] = OBJ_VAL(copyString(buffer, strlen(buffer)));
+    const char* res = formatHex(AS_NUMBER(args[0]));
+    args[-1] = OBJ_VAL(copyString(res, strlen(res)));
     return true;
 }
 
-static bool intNative(int argCount, Value* args) {
+static bool parseIntNative(int argCount, Value* args) {
     char* start = AS_CSTRING(args[0]);
     char* end = start;
     Number number;
@@ -284,6 +302,29 @@ static bool intNative(int argCount, Value* args) {
         args[-1] = NUMBER_VAL(number);
     else
         args[-1] = NIL_VAL;
+    return true;
+}
+
+char* terminator; // filled by scanReal()
+
+static bool parseRealNative(int argCount, Value* args) {
+    char* start = AS_CSTRING(args[0]);
+    char* end = start;
+    Real real;
+
+#ifdef KIT68K
+    real = scanReal(start);
+    if (errno == 0 && start + strlen(start) == terminator)
+        args[-1] = newReal(real);
+    else
+        args[-1] = NIL_VAL;
+#else
+    real = strtod(start, &end);
+    if (start + strlen(start) == end)
+        args[-1] = newReal(real);
+    else
+        args[-1] = NIL_VAL;
+#endif
     return true;
 }
 
@@ -396,7 +437,7 @@ static bool dbgStatNative(int argCount, Value* args) {
 
 #include "monitor4x.h"
 
-// Remember your old 80s home computers? 
+// Remember your old 80s home computers?
 
 static bool peekNative(int argCount, Value* args) {
     int32_t address = AS_NUMBER(args[0]);
@@ -440,7 +481,7 @@ static bool execNative(int argCount, Value* args) {
 static bool addrNative(int argCount, Value* args) {
     if (IS_OBJ(args[0]))
         args[-1] = NUMBER_VAL((uint32_t)AS_OBJ(args[0]));
-    else 
+    else
         args[-1] = NIL_VAL;
     return true;
 }
@@ -487,7 +528,7 @@ static bool lcdDefcharNative(int argCount, Value* args) {
             }
             bitmap[i] = (char)byte;
         } else {
-            runtimeError("Number expected in UDC bitmap at %d.", i);
+            runtimeError("Integer expected in UDC bitmap at %d.", i);
             return false;
         }
     }
@@ -599,7 +640,9 @@ static void defineNative(const char* name, const char* signature, NativeFn funct
 }
 
 void defineAllNatives(void) {
+    defineNative("real",        "R",    realNative);
     defineNative("abs",         "R",    absNative);
+    defineNative("trunc",       "R",    truncNative);
     defineNative("sqrt",        "R",    sqrtNative);
     defineNative("sin",         "R",    sinNative);
     defineNative("cos",         "R",    cosNative);
@@ -614,9 +657,10 @@ void defineAllNatives(void) {
 
     defineNative("asc",         "Sn",   ascNative);
     defineNative("chr",         "N",    chrNative);
-    defineNative("dec",         "N",    decNative);
+    defineNative("dec",         "R",    decNative);
     defineNative("hex",         "N",    hexNative);
-    defineNative("int",         "S",    intNative);
+    defineNative("parse_int",   "S",    parseIntNative);
+    defineNative("parse_real",  "S",    parseRealNative);
     defineNative("input",       "s",    inputNative);
 
     defineNative("bit_and",     "NN",   bitAndNative);
@@ -679,10 +723,10 @@ void handleInterrupts(bool enable) {
     *INTERRUPT2_VECTOR = (long)irqHandler;
 
     if (enable) {
-        // ANDI  #$f0ff,SR  ; clear interrupt mask in status register 
+        // ANDI  #$f0ff,SR  ; clear interrupt mask in status register
         _word(0x027c); _word(0xf0ff);
     } else {
-        // ORI   #$0f00,SR  ; set interrupt mask in status register 
+        // ORI   #$0f00,SR  ; set interrupt mask in status register
         _word(0x007c); _word(0x0f00);
     }
 }
@@ -702,5 +746,4 @@ void handleInterrupts(bool enable) {
         signal(SIGINT, SIG_DFL);
 }
 
-#endif    
-
+#endif

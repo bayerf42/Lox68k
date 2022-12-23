@@ -81,7 +81,6 @@ int disassembleInstruction(Chunk* chunk, int offset) {
         case OP_GET_SUPER:     return constantInstruction("GET_SUPER", chunk, offset);
         case OP_EQUAL:         return simpleInstruction("EQ", offset);
         case OP_GREATER:       return simpleInstruction("GT", offset);
-        case OP_LESS:          return simpleInstruction("LT", offset);
         case OP_ADD:           return simpleInstruction("ADD", offset);
         case OP_SUBTRACT:      return simpleInstruction("SUB", offset);
         case OP_MULTIPLY:      return simpleInstruction("MUL", offset);

@@ -70,6 +70,13 @@ static Token makeToken(TokenType type) {
     token.start = scanner.start;
     token.length = (int)(scanner.current - scanner.start);
     token.line = scanner.line;
+    token.real = false;
+    return token;
+}
+
+static Token makeNumToken(bool isReal) {
+    Token token = makeToken(TOKEN_NUMBER);
+    token.real = isReal;
     return token;
 }
 
@@ -79,6 +86,7 @@ static Token errorToken(const char* message) {
     token.start = message;
     token.length = (int)strlen(message);
     token.line = scanner.line;
+    token.real = false;
     return token;
 }
 
@@ -160,14 +168,37 @@ static Token identifier(void) {
 
 
 static Token number(char start) {
+    bool exponentEmpty = true;
+    bool isReal = false;
+
     if (start == '$') {
         while (isHexDigit(peek())) advance();
     }
     else {
         while (isDigit(peek())) advance();
-    }
 
-    return makeToken(TOKEN_NUMBER);
+        // Look for fractional part
+        if (peek() == '.' && isDigit(peekNext())) {
+            // Consume the ".".
+            advance();
+            isReal = true;
+            while (isDigit(peek())) advance();
+        }
+        // Look for exponential part
+        if (peek() == 'e' || peek() == 'E') {
+            advance();
+            isReal = true;
+            if (peek() == '+' || peek() == '-') {
+                advance();
+            }
+            while (isDigit(peek())) {
+                advance();
+                exponentEmpty = false;
+            }
+            if (exponentEmpty) return errorToken("Empty exponent in number.");
+        }
+    }
+    return makeNumToken(isReal);
 }
 
 static Token string(void) {
