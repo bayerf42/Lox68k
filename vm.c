@@ -416,33 +416,33 @@ static InterpretResult run(void) {
                 aVal = pop();
                 push(BOOL_VAL(valuesEqual(aVal, bVal)));
                 break;
-            case OP_GREATER: {
+            case OP_LESS: {
                 if (IS_NUMBER(peek(0))) {
                     if (IS_NUMBER(peek(1))) {
                         bNum = AS_NUMBER(pop());
                         aNum = AS_NUMBER(pop());
-                        push(BOOL_VAL(aNum > bNum));
+                        push(BOOL_VAL(aNum < bNum));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
                         bReal = intToReal(AS_NUMBER(peek(0)));
-                        goto greaterReals;
-                    } else goto typeErrorGt;
+                        goto lessReals;
+                    } else goto typeErrorLess;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
                     if (IS_NUMBER(peek(1))) {
                         aReal = intToReal(AS_NUMBER(peek(1)));
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
-                    } else goto typeErrorGt;
-                greaterReals: 
-                    dropNpush(2, BOOL_VAL(greater(aReal,bReal)));
+                    } else goto typeErrorLess;
+                lessReals: 
+                    dropNpush(2, BOOL_VAL(less(aReal,bReal)));
                 } else if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
                     bStr = AS_STRING(peek(0));
                     aStr = AS_STRING(peek(1));
-                    dropNpush(2, BOOL_VAL(strcmp(aStr->chars, bStr->chars) > 0));
+                    dropNpush(2, BOOL_VAL(strcmp(aStr->chars, bStr->chars) < 0));
                 } else {
-                typeErrorGt:
+                typeErrorLess:
                     runtimeError("Operands must be numbers or strings.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
@@ -490,7 +490,7 @@ static InterpretResult run(void) {
                 }
                 break;
             }
-            case OP_SUBTRACT: {
+            case OP_SUB: {
                 if (IS_NUMBER(peek(0))) {
                     if (IS_NUMBER(peek(1))) {
                         bNum = AS_NUMBER(pop());
@@ -520,7 +520,7 @@ static InterpretResult run(void) {
                 }
                 break;
             }
-            case OP_MULTIPLY: {
+            case OP_MUL: {
                 if (IS_NUMBER(peek(0))) {
                     if (IS_NUMBER(peek(1))) {
                         bNum = AS_NUMBER(pop());
@@ -546,7 +546,7 @@ static InterpretResult run(void) {
                 }
                 break;
             }
-            case OP_DIVIDE: {
+            case OP_DIV: {
                 if (IS_NUMBER(peek(0))) {
                     if (IS_NUMBER(peek(1))) {
                         bNum = AS_NUMBER(pop());
@@ -572,7 +572,7 @@ static InterpretResult run(void) {
                 }
                 break;
             }
-            case OP_MODULO: {
+            case OP_MOD: {
                 if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
                     bNum = AS_NUMBER(pop());
                     aNum = AS_NUMBER(pop());
@@ -583,8 +583,10 @@ static InterpretResult run(void) {
                 }
                 break;
             }
-            case OP_NOT:      peek(0) = BOOL_VAL(IS_FALSEY(peek(0))); break;
-            case OP_NEGATE:
+            case OP_NOT:
+                peek(0) = BOOL_VAL(IS_FALSEY(peek(0)));
+                break;
+            case OP_NEG:
                 if (IS_NUMBER(peek(0)))
                     peek(0) = NUMBER_VAL(-AS_NUMBER(peek(0)));
                 else if (IS_REAL(peek(0)))

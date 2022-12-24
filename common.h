@@ -75,7 +75,7 @@ typedef double Real;
 #define sub(x,y)     ((x)-(y))
 #define mul(x,y)     ((x)*(y))
 #define div(x,y)     ((x)/(y))
-#define greater(x,y) ((x)>(y))
+#define less(x,y)    ((x)<(y))
 
 
 #define CHECK_STACKOVERFLOW

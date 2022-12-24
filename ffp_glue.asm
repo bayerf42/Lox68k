@@ -199,13 +199,13 @@ _div
        movem.l (a7)+,d3-d7
        rts
 
-_greater
+_less
        movem.l d6-d7,-(a7)
        move.l  (12,a7),d7
        move.l  (16,a7),d6
        clr.l   d0
        jsr     ffp_compare
-       sgt     d0
+       slt     d0
        movem.l (a7)+,d6-d7
        rts
 

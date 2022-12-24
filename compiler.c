@@ -270,15 +270,15 @@ static void binary(bool canAssign) {
     switch (operatorType) {
         case TOKEN_BANG_EQUAL:    emitBytes(OP_EQUAL, OP_NOT); break;
         case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
-        case TOKEN_GREATER:       emitByte(OP_GREATER); break;
-        case TOKEN_GREATER_EQUAL: emitBytes(OP_SWAP, OP_GREATER); emitByte(OP_NOT); break;
-        case TOKEN_LESS:          emitBytes(OP_SWAP, OP_GREATER); break;
-        case TOKEN_LESS_EQUAL:    emitBytes(OP_GREATER, OP_NOT); break;
+        case TOKEN_GREATER:       emitBytes(OP_SWAP, OP_LESS); break;
+        case TOKEN_LESS_EQUAL:    emitBytes(OP_SWAP, OP_LESS); emitByte(OP_NOT); break;
+        case TOKEN_LESS:          emitByte(OP_LESS); break;
+        case TOKEN_GREATER_EQUAL: emitBytes(OP_LESS, OP_NOT); break;
         case TOKEN_PLUS:          emitByte(OP_ADD); break;
-        case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
-        case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
-        case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
-        case TOKEN_PERCENT:       emitByte(OP_MODULO); break;
+        case TOKEN_MINUS:         emitByte(OP_SUB); break;
+        case TOKEN_STAR:          emitByte(OP_MUL); break;
+        case TOKEN_SLASH:         emitByte(OP_DIV); break;
+        case TOKEN_PERCENT:       emitByte(OP_MOD); break;
         default: return; // Unreachable
     }
 }
@@ -597,7 +597,7 @@ static void unary(bool canAssign) {
 
     switch (operatorType) {
         case TOKEN_BANG:  emitByte(OP_NOT); break;
-        case TOKEN_MINUS: emitByte(OP_NEGATE); break;
+        case TOKEN_MINUS: emitByte(OP_NEG); break;
         default: return; // Unreachable
     }
 }

@@ -67,11 +67,20 @@ void markObject(Obj* object) {
 
     object->isMarked = true;
 
-    if (vm.grayCount + 1 > GRAY_MAX) {
-        printf("Gray stack sixe exceeded, exiting.\n");
-        exit(1);
+    switch (object->type) {
+        case OBJ_STRING:
+        case OBJ_REAL:
+        case OBJ_NATIVE:
+            // Leaf object, nothing to do
+            break;
+
+        default:
+            if (vm.grayCount + 1 > GRAY_MAX) {
+                printf("Gray stack sixe exceeded, exiting.\n");
+                exit(1);
+            }
+            vm.grayStack[vm.grayCount++] = object;
     }
-    vm.grayStack[vm.grayCount++] = object;
 }
 
 
@@ -138,10 +147,6 @@ static void blackenObject(Obj* object) {
         }
         case OBJ_UPVALUE:
             markValue(((ObjUpvalue*)object)->closed);
-            break;
-        case OBJ_NATIVE:
-        case OBJ_STRING:
-        case OBJ_REAL:
             break;
     }
 }

@@ -164,17 +164,17 @@ static void printList(ObjList* list) {
 
 const char* typeName(ObjType type) {
     switch(type) {
-        case OBJ_BOUND_METHOD: return "bound_method";
+        case OBJ_BOUND_METHOD: return "bound";
         case OBJ_CLASS:        return "class";
         case OBJ_CLOSURE:      return "closure";
-        case OBJ_FUNCTION:     return "function";;
+        case OBJ_FUNCTION:     return "*fun";      // internal
         case OBJ_INSTANCE:     return "instance";
         case OBJ_LIST:         return "list";
         case OBJ_NATIVE:       return "native";
         case OBJ_REAL:         return "real";
         case OBJ_STRING:       return "string";
-        case OBJ_UPVALUE:      return "upvalue";
-        default:               return "unknown";
+        case OBJ_UPVALUE:      return "*upvalue";  // internal
+        default:               return "*unknown";  // shouldn't happen
     }
 }
 
@@ -191,7 +191,7 @@ void printObject(Value value, bool compact) {
     switch (OBJ_TYPE(value)) {
         case OBJ_BOUND_METHOD: printFunction("bound", AS_BOUND_METHOD(value)->method->function); break;
         case OBJ_CLASS: printf("<class %s>", AS_CLASS(value)->name->chars); break;
-        case OBJ_CLOSURE: printFunction("clos", AS_CLOSURE(value)->function); break;
+        case OBJ_CLOSURE: printFunction("closure", AS_CLOSURE(value)->function); break;
         case OBJ_FUNCTION: printFunction("fun", AS_FUNCTION(value)); break;
         case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
         case OBJ_LIST: if (compact) printf("<list %d>",AS_LIST(value)->count); else printList(AS_LIST(value)); break;

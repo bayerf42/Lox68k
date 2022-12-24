@@ -1,0 +1,24 @@
+// ye goode olde function plotter...
+
+fun plot(fn, xmin, xmax, dx) {
+    var vals  = [];
+    var ymax  = -1e18;
+    var ymin  = -ymax;
+    var width = 80;
+
+    for (var x = xmin; x <= xmax; x = x + dx) {
+        var y = fn(x);
+        append(vals, y);
+        if (y > ymax) ymax = y;
+        if (y < ymin) ymin = y;
+    }
+
+    for (var i = 0; i < length(vals); i = i + 1) {
+        var spaces = trunc(width * (vals[i] - ymin) / (ymax - ymin));
+        for (var j = 0; j < spaces; j = j + 1) print " ", ;
+        print "*";
+    }
+
+    print "ymin = ", ymin;
+    print "ymax = ", ymax;
+}
