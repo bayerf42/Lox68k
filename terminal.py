@@ -18,7 +18,7 @@ import os
 ser = serial.Serial("COM8:", baudrate=9600, timeout=0)
 transcript = open("transcript.log", "w")
 loxPattern = "lox/{}.lox"
-hexPattern = "../../FBI/{}.hex"
+hexPattern = "../FBI/{}.hex"
 encoding   = "ascii" # The Monitor getchar() only reads 7 bits to allow fast processing, so
                      # we restrict the entire serial protocol to pure 7 bit ASCII
 

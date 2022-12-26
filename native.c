@@ -16,7 +16,7 @@
 static const char* matchesType(Value value, char type) {
     switch (type) {
         case 'A': return NULL; // any value
-        case 'N': return IS_NUMBER(value) ? NULL : "an integer";
+        case 'N': return IS_NUMBER(value) ? NULL : "an int";
         case 'R': return IS_NUMBER(value) || IS_REAL(value) ? NULL : "a number";
         case 'S': return IS_STRING(value) ? NULL : "a string";
         case 'L': return IS_LIST(value) ? NULL : "a list";
@@ -96,7 +96,6 @@ static bool transcendentalNative(int argCount, Value* args, RealFun fn) {
         runtimeError("Arithmetic error.");
         return false;
     }
-
     return true;
 }
 
@@ -243,7 +242,6 @@ static bool typeNative(int argCount, Value* args) {
 
 // Some datatype conversions
 
-
 static bool ascNative(int argCount, Value* args) {
     ObjString* string = AS_STRING(args[0]);
     Number code;
@@ -388,7 +386,6 @@ static bool seedRandNative(int argCount, Value* args) {
     return true;
 }
 
-
 static bool lowerNative(int argCount, Value* args) {
     args[-1] = OBJ_VAL(caseString(AS_STRING(args[0]), false));
     return true;
@@ -399,7 +396,6 @@ static bool upperNative(int argCount, Value* args) {
     args[-1] = OBJ_VAL(caseString(AS_STRING(args[0]), true));
     return true;
 }
-
 
 // Modifying debugging options
 

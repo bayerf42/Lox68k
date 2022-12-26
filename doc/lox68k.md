@@ -139,7 +139,7 @@ The same as the Windows version, but compiled with `GCC` on Linux.
 
 To build it, execute
 ```sh
-gcc -O2 -std=gnu89 -m32 -o llox *.c
+gcc -O2 -std=gnu89 -m32 -lm -o llox *.c
 ```
 
 Be sure to compile it for 32 bit architecture, Lox68k assumes 32 bit `int`, `long` and pointers.

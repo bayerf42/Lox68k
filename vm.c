@@ -889,6 +889,7 @@ InterpretResult interpret(const char* source) {
     call(closure, 0);
 
     vm.interrupted = false;
+    errno = 0;
 #ifndef KIT68K
     vm.started = clock();
 #endif

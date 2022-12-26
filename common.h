@@ -62,6 +62,7 @@ extern void _stackoverflow(void);
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <errno.h>
 
 
 typedef double Real;
