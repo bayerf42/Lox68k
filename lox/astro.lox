@@ -1,0 +1,118 @@
+var pi = 4*atan(1);
+var pi2 = 2*pi;
+
+fun fmod(a, b) {
+  var q = a/b;
+  return b * (q-trunc(q));
+}
+
+fun radians(deg) {
+  return pi/180*deg;
+}
+
+fun asin(x) {
+  return atan(x/sqrt(1-x*x));
+}
+
+fun acos(x) {
+  return pi/2 - asin(x);
+}
+
+fun max(a,b) {
+  if (a>b) return a; else return b;
+}
+
+// Rosenheim
+var LAT  = 47.8682208;
+var LONG = 12.1080485;
+var TZ   = 1;
+
+fun jDate(y, mo, d) {
+    // "Compute Julian day number from date components."
+    if (mo <= 2) {
+        mo = mo + 12;
+        y  = y - 1;
+    }
+    var g = y / 400 - y / 100 + y / 4;
+    // Modified, omitting large offset to avoid precision loss due to single floats
+    return 1.5+365*y - 738007 + g + trunc(30.6001*(mo+1)) + d + 0.5;
+}
+
+fun eps(t) {
+    // Inflection of earth axis.
+    return radians(23.43929111 + (-46.815*t - 0.00059*t*t + 0.001813*t*t*t)/3600);
+}
+
+fun eqTime(t) {
+    // Compute equation of time.
+    fun red(a) {
+        var res = fmod(a,pi2);
+        if (res<0) res = res + pi2;
+        return res;
+    }
+
+    var raAv = 18.71506921 + 2400.0513369*t + (2.5862e-5 - 1.72e-9*t)*t*t;
+    var m = red(pi2 * (0.993133 + 99.997361*t));
+    var l = red(pi2 * (0.7859453 + m/pi2 + (6893.0*sin(m)+72*sin(2*m)+6191.2*t)/1296e3));
+    var e = eps(t);
+    var ra = atan(tan(l)*cos(e));
+    if (ra<0) ra = ra + pi;
+    if (l>pi) ra = ra + pi;
+
+    ra = 24*ra/pi2;
+    var dk = asin(sin(e)*sin(l));
+
+    // Normalise to 0<=raAv<24
+    raAv = fmod(raAv, 24.0);
+    if (raAv<0) raAv = raAv + 24.0;
+
+    var dra = raAv - ra;
+    if (dra<-12) dra = dra + 24;
+    if (dra>12)  dra = dra - 24;
+
+    dra = dra * 1.0027379;
+
+    return [dra, dk];
+}
+
+
+fun rs(y, m, d, latitude, longitude, timezone) {
+    // Compute sun rise/set for given date and coordinates.
+    var jd2000 = jDate(2000,1,0);
+    var jd = jDate(y, m, d);
+    var t = (jd-jd2000)/36525;
+    var h = radians(-50.0/60.0);
+    var b = radians(latitude);
+
+    var eq = eqTime(t);
+    var eqt = eq[0];
+    var dk  = eq[1];
+    var dt = 12*acos((sin(h)-sin(b)*sin(dk)) / (cos(b)*cos(dk)))/pi;
+
+    var rise = 12 - dt - eqt - longitude/15.0 + timezone;
+    var set  = 12 + dt - eqt - longitude/15.0 + timezone;
+
+    return [rise, set];
+}
+
+class Time {
+    init(hfrac) {
+        this.hours = trunc(hfrac);
+        this.minutes = max(0, trunc(fmod(hfrac, 1) * 60 + 0.5));
+        if (this.minutes >= 60) { this.minutes = 0; this.hours = this.hours + 1;}
+        if (this.hours >= 24) print "Overflow!";
+    }
+
+    format() {
+        return dec(this.hours) + ":" + ("0" + dec(this.minutes))[-2:];
+    }
+}
+
+
+fun sunRiseSet(y, m, d) {
+    var times = rs(y, m, d, LAT, LONG, TZ);
+
+    return "Sunrise at " + Time(times[0]).format() + ", sunset at " + Time(times[1]).format();
+}
+
+	

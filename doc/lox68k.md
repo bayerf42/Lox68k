@@ -47,8 +47,9 @@ it as Windows/Linux executables, too.
 
 If you just want to checkout Lox with the IDE68K emulator, you need nothing else,
 just compile it as described below. But if you want to execute it on the Kit itself,
-you need the Monitor 4.7 ROM, available either in `rom_image/monitor4.7.bin` or with sources at
-https://kswichit.net/68008/Fred/MonitorV4.7.zip
+you need the Monitor ROM, available either in `rom_image/monitor.bin` or with sources at
+https://kswichit.net/68008/Fred/MonitorV4.7.zip or from
+[its Github project](https://github.com/bayerf42/Monitor).
 But you should rather combine the Monitor and Lox into a single ROM image, see below.
 
 
@@ -73,6 +74,7 @@ But you should rather combine the Monitor and Lox into a single ROM image, see b
 * Anonymous functions (*lambdas*) as expressions.
 * Functions can have a rest parameter packing all additional arguments into a list.
 * Lists can be unpacked as arguments into a function/method call.
+* Real number arithmetic and native transcendental functions.
 
 ### Omissions
 
@@ -82,24 +84,28 @@ including plenty of RAM and a FPU where the principal `Value` type is
 (pretty much like in Lua, Python and Javascript) and other values are embedded as NANs.
 
 For the 68008 port the `Value` type has been shrunk to 32 bit, where numbers
-are 31 bit signed integer now, using 1 bit to discriminate from pointers or special values.
+are 31 bit signed integers, using 1 bit to discriminate from pointers or special values.
 
-Don't forget we're targetting an architecture 40 years old, which runs about 16000 times
+**New:** Floating point numbers have been re-introduced as heap-based objects. They can be freely
+mixed with integers in calculations. Also a standard set of transcendental functions has been
+added. 
+
+Don't forget we're targetting an architecture 40 years old, which runs about 20000 times
 slower than contemporary CPUs. Also the IDE68K C compiler has [several bugs](porting.md)
 and doesn't support modern *C99*. 
 
 
 ### Lox68k datatypes
 
-  * `nil` the absent/dontcare/missing value
+  * `nil` the absent/dontcare/undefined value
   * `false`, `true` boolean values
   * 31 bit signed integer numbers
-  * real numbers, as Motorola FFP 32 bit on Kit, or IEEE-754 doubles on other hardware
+  * real numbers, as Motorola 32 bit Fast Floating Point on Kit, or IEEE-754 doubles on other hardware
   * strings, non-modifiable and interned for quick comparisons
   * lists, modifiable resizable arrays of arbitrary values
   * closures, proper lexically-scoped functions
   * classes containing methods and supporting single inheritance
-  * object instances using dictionary as fields, indexable by any value
+  * object instances using dictionary for fields, but also indexable by any value
 
 
 ## The 4 varieties of Lox buildable

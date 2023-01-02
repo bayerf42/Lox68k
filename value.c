@@ -26,12 +26,12 @@ void freeValueArray(ValueArray* array) {
     initValueArray(array);
 }
 
-void printValue(Value value, bool compact) {
+void printValue(Value value, bool compact, bool machine) {
     if (IS_BOOL(value))        printf(AS_BOOL(value) ? "true" : "false");
     else if (IS_NIL(value))    printf("nil");
     else if (IS_EMPTY(value))  printf("<empty>");
     else if (IS_NUMBER(value)) printf("%ld", AS_NUMBER(value));
-    else if (IS_OBJ(value))    printObject(value, compact);
+    else if (IS_OBJ(value))    printObject(value, compact, machine);
 }
 
 ObjString* valueType(Value value) {

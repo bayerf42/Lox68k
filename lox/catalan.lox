@@ -1,0 +1,12 @@
+// Catalan numbers, very inefficient recursive solution, for performance testing
+
+fun cat(n) {
+
+  if (n==1) return 1;
+  var res = 0;
+  for (var i=1;i<n;i=i+1)
+    res = res + cat(n-i)*cat(i);
+  return res;
+
+}
+

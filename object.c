@@ -153,11 +153,11 @@ static void printList(ObjList* list) {
 
     printf("[");
     for (i = 0; i < list->count - 1; i++) {
-        printValue(list->items[i], false);
+        printValue(list->items[i], false, false);
         printf(", ");
     }
     if (list->count != 0) {
-        printValue(list->items[list->count - 1], false);
+        printValue(list->items[list->count - 1], false, false);
     }
     printf("]");
 }
@@ -187,7 +187,7 @@ static void fix_printf(const char* str) {
 }
 
 
-void printObject(Value value, bool compact) {
+void printObject(Value value, bool compact, bool machine) {
     switch (OBJ_TYPE(value)) {
         case OBJ_BOUND_METHOD: printFunction("bound", AS_BOUND_METHOD(value)->method->function); break;
         case OBJ_CLASS: printf("<class %s>", AS_CLASS(value)->name->chars); break;
@@ -197,7 +197,11 @@ void printObject(Value value, bool compact) {
         case OBJ_LIST: if (compact) printf("<list %d>",AS_LIST(value)->count); else printList(AS_LIST(value)); break;
         case OBJ_NATIVE: printf("<native>"); break;
         case OBJ_REAL: printf("%s", formatReal(AS_REAL(value))); break;
-        case OBJ_STRING: fix_printf(AS_CSTRING(value)); break;
+        case OBJ_STRING:
+            if (machine) fix_printf("\"");
+            fix_printf(AS_CSTRING(value));
+            if (machine) fix_printf("\"");
+            break;
         case OBJ_UPVALUE: printf("<upvalue>"); break;
     }
 }

@@ -61,7 +61,7 @@ void markObject(Obj* object) {
 
     if (vm.debug_log_gc) {
         printf("%lx mark ", (void*) object);
-        printValue(OBJ_VAL(object), true);
+        printValue(OBJ_VAL(object), true, true);
         printf("\n");
     }
 
@@ -101,7 +101,7 @@ static void blackenObject(Obj* object) {
 
     if (vm.debug_log_gc) {
         printf("%lx blacken ", (void*)object);
-        printValue(OBJ_VAL(object), true);
+        printValue(OBJ_VAL(object), true, true);
         printf("\n");
     }
 
@@ -232,13 +232,6 @@ static void markRoots(void) {
     markObject((Obj*)vm.initString);
 }
 
-static void traceReferences(void) {
-    while (vm.grayCount > 0) {
-        Obj* object = vm.grayStack[--vm.grayCount];
-        blackenObject(object);
-    }
-}
-
 static void sweep(void) {
     Obj* previous = NULL;
     Obj* object = vm.objects;
@@ -259,6 +252,13 @@ static void sweep(void) {
             }
             freeObject(unreached);
         }
+    }
+}
+
+static void traceReferences(void) {
+    while (vm.grayCount > 0) {
+        Obj* object = vm.grayStack[--vm.grayCount];
+        blackenObject(object);
     }
 }
 

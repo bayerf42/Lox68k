@@ -147,7 +147,7 @@ Value newReal(Real val);
 ObjNative* newNative(const char* signature, NativeFn function);
 ObjString* copyString(const char* chars, int length);
 ObjUpvalue* newUpvalue(Value* slot);
-void printObject(Value value, bool compact);
+void printObject(Value value, bool compact, bool machine);
 const char* typeName(ObjType type);
 
 void appendToList(ObjList* list, Value value);

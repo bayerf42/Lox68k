@@ -68,12 +68,12 @@
     By reducing the allowed locals (64) and upvalues (32) the compiler struct on the
     stack has been reduced to allow a sensible nesting of functions within the total
     C stack area of 16k.
-  * No floating point.
-    * The 68008 has no built-in FP arithmetic. All `Number`s are 31-bit signed integers, the
-      remaining bit discriminates numbers from `Obj` pointers and specials, see `value.h`.
-    * Perhaps sometimes I find/implement a soft FP library, then NaN boxing could be used again,
-      just like in the original CLOX implementation, but with single floats (32 bit) instead of
-      doubles (64 bit).
+  * The 68008 has no built-in FP arithmetic. Originally all `Number`s were 31-bit signed integers,
+    the  remaining bit discriminates numbers from `Obj` pointers and specials, see `value.h`.
+  * Floating point numbers have been added later, not as the primary number type, but as
+    heap-based objects. I found a soft FP library, the Motorola 68343 Fast Floating Point library,
+    which I cleaned up and ported for the Kit in a separate [Github project](https://github.com/bayerf42/MotoFFP).
+    This library is used by Lox now for real number and transcendental functions.
 
   
 ## Board limitations
@@ -101,7 +101,9 @@
   * Porting to 68020-based boards should be no problem, just set the processor option in
     *IDE68K* accordingly. No assumptions about exception stack format or privileged SR access
     are made. Also no extra information is stored in the upper 8 bits of pointers.
-
+    * If you have a 68881/2 FPU, you can make use of it by defining the `Real` data type in
+      `common.h` to your preferred precision and changing `ffp_glue.asm` to use the appropriate
+      FPU instructions. 
   
 
  

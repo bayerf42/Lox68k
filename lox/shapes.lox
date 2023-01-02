@@ -22,7 +22,7 @@ class Circle < Shape {
   }
 
   area () {
-    return this.r * this.r * 31416 / 10000;
+    return this.r * this.r * 3.14159265358979;
   }
 }
 

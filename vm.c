@@ -291,15 +291,15 @@ static InterpretResult run(void) {
         }
 
         if (vm.debug_trace_execution) {
-            printf("          ");
             for (slot = vm.stack; slot < vm.stackTop; slot++) {
                 printf("[");
-                printValue(*slot, true);
+                printValue(*slot, true, true);
                 printf("] ");
             }
             printf("\n");
             disassembleInstruction(&frame->closure->function->chunk,
                                    (int)(frame->ip - frame->closure->function->chunk.code));
+            printf("\n");
         }
 
         ++vm.stepsExecuted;
@@ -597,10 +597,10 @@ static InterpretResult run(void) {
                 }
                 break;
             case OP_PRINT:
-                printValue(pop(), false);
+                printValue(pop(), false, false);
                 break;
             case OP_PRINTLN:
-                printValue(pop(), false);
+                printValue(pop(), false, false);
                 printf("\n");
                 break;
             case OP_JUMP: {
