@@ -10,14 +10,17 @@ import shutil
 # the Monitor complete with sources and documentation from
 # https://kswichit.net/68008/Fred/MonitorV4.7.zip
 
-MonitorPath = "../Monitor/monitor.hex"
-MotoFFPPath = "../MotoFFP/motoffp.hex"
+rom_path = "../roms/"
+mon_file = "monitor.hex"
+ffp_file = "motoffp.hex"
+lox_file = "clox_rom.hex"
+loxram_file = "clox.hex"
 
-rom = bincopy.BinFile(MonitorPath)
+rom = bincopy.BinFile(rom_path + mon_file)
 bootvector = rom[0:8]
 
-rom.add_file("clox_rom.hex")
-rom.add_file(MotoFFPPath)
+rom.add_file(lox_file)
+rom.add_file(rom_path + ffp_file)
 
 rom.fill()
 rom.exclude(0,0x40000)
@@ -25,9 +28,9 @@ rom.exclude(0,0x40000)
 image = rom.as_binary()
 image[0:8] = bootvector
 
-with open("rom_image/mon-lox.bin","wb") as dest:
+with open(rom_path + "mon_ffp_lox.bin","wb") as dest:
   dest.write(image)
 
 # Also copy hex files to rom dir
-shutil.copy2("clox.hex","rom_image")
-shutil.copy2("clox_rom.hex","rom_image")
+shutil.copy2(lox_file, rom_path)
+shutil.copy2(loxram_file, rom_path)

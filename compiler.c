@@ -260,7 +260,7 @@ static void statement(void);
 static void declaration(void);
 static const ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
-static uint8_t argumentList(bool* isVarArg);
+static uint8_t argumentList(bool* isVarArg, TokenType terminator);
 static uint8_t identifierConstant(Token* name);
 
 static void binary(bool canAssign) {
@@ -285,7 +285,7 @@ static void binary(bool canAssign) {
 
 static void call(bool canAssign) {
     bool isVarArg = false;
-    uint8_t argCount = argumentList(&isVarArg);
+    uint8_t argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
     emitBytes(isVarArg ? OP_VCALL : OP_CALL, argCount);
 }
 
@@ -301,7 +301,7 @@ static void dot(bool canAssign) {
         expression();
         emitBytes(OP_SET_PROPERTY, name);
     } else if (match(TOKEN_LEFT_PAREN)) {
-        argCount = argumentList(&isVarArg);
+        argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
         emitBytes(isVarArg ? OP_VINVOKE : OP_INVOKE, name);
         emitByte(argCount);
     } else {
@@ -397,23 +397,9 @@ static bool identifiersEqual(Token* a, Token* b) {
 }
 
 static void list(bool canAssign) {
-    int itemCount = 0;
-    if (!check(TOKEN_RIGHT_BRACKET)) {
-        do {
-            if (check(TOKEN_RIGHT_BRACKET)) {
-                break; // trailing comma
-            }
-
-            expression();
-
-            if (itemCount == UINT8_COUNT) {
-                error("Can't have more than 256 items in a list literal.");
-            }
-            itemCount++;
-        } while (match(TOKEN_COMMA));
-    }
-    consume(TOKEN_RIGHT_BRACKET, "Expect ']' after list literal.");
-    emitBytes(OP_LIST, (uint8_t)itemCount);
+    bool isVarArg = false;
+    uint8_t argCount = argumentList(&isVarArg, TOKEN_RIGHT_BRACKET);
+    emitBytes(isVarArg ? OP_VLIST : OP_LIST, argCount);
 }
 
 static int resolveLocal(Compiler* compiler, Token* name) {
@@ -558,7 +544,7 @@ static void super_(bool canAssign) {
 
     namedVariable(syntheticToken("this"), false);
     if (match(TOKEN_LEFT_PAREN)) {
-        argCount = argumentList(&isVarArg);
+        argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
         namedVariable(syntheticToken("super"), false);
         emitBytes(isVarArg ? OP_VSUPER_INVOKE : OP_SUPER_INVOKE, name);
         emitByte(argCount);
@@ -707,10 +693,10 @@ static void defineVariable(uint8_t global) {
     emitBytes(OP_DEF_GLOBAL, global);
 }
 
-static uint8_t argumentList(bool* isVarArg) {
+static uint8_t argumentList(bool* isVarArg, TokenType terminator) {
     uint8_t argCount = 0;
 
-    if (!check(TOKEN_RIGHT_PAREN)) {
+    if (!check(terminator)) {
         do {
             if (match(TOKEN_DOT_DOT)) {
                 // First UNPACK, introduce count of arguments from lists
@@ -721,11 +707,17 @@ static uint8_t argumentList(bool* isVarArg) {
             } else {
                 expression();
                 if (*isVarArg) emitByte(OP_SWAP); // bubble list arguments count to TOS
+                if (argCount == UINT8_MAX) {
+                    error("Can't have more than 255 items in an argument list.");
+                }
                 argCount++;
             }
         } while (match(TOKEN_COMMA));
     }
-    consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
+    if (terminator == TOKEN_RIGHT_PAREN)
+        consume(terminator, "Expect ')' after arguments.");
+    else
+        consume(terminator, "Expect ']' after list.");
     return argCount;
 }
 

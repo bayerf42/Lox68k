@@ -733,14 +733,19 @@ static InterpretResult run(void) {
                 break;
             case OP_LIST: {
                 aLst = newList();
-                itemCount = READ_BYTE();
-
+                argCount = READ_BYTE();
+            cont_list:
                 push(OBJ_VAL(aLst)); // protect from GC
-                for (i = itemCount; i > 0; i--) {
+                for (i = argCount; i > 0; i--) {
                     appendToList(aLst, peek(i));
                 }
-                dropNpush(itemCount + 1, OBJ_VAL(aLst));
+                dropNpush(argCount + 1, OBJ_VAL(aLst));
                 break;
+            }
+            case OP_VLIST: {
+                aLst = newList();
+                argCount = READ_BYTE() + AS_NUMBER(pop());
+                goto cont_list;
             }
             case OP_UNPACK: {
                 aVal = pop();

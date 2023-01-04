@@ -73,7 +73,7 @@ But you should rather combine the Monitor and Lox into a single ROM image, see b
   no line feed is printed.
 * Anonymous functions (*lambdas*) as expressions.
 * Functions can have a rest parameter packing all additional arguments into a list.
-* Lists can be unpacked as arguments into a function/method call.
+* Lists can be unpacked as arguments into a function/method call or list constructor.
 * Real number arithmetic and native transcendental functions.
 
 ### Omissions

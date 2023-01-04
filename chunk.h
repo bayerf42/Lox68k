@@ -53,6 +53,7 @@ typedef enum {
     OP_VCALL,
     OP_VINVOKE,
     OP_VSUPER_INVOKE,
+    OP_VLIST,
 } OpCode;
 
 

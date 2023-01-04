@@ -126,6 +126,7 @@ int disassembleInstruction(Chunk* chunk, int offset) {
         case OP_VCALL:         return byteInstruction("VCALL", chunk, offset);
         case OP_VINVOKE:       return invokeInstruction("VINVOKE", chunk, offset);
         case OP_VSUPER_INVOKE: return invokeInstruction("VSUP_INV", chunk, offset);
+        case OP_VLIST:         return byteInstruction("VLIST", chunk, offset);
         default:
             printf("Unknown opcode %d", instruction);
             return offset + 1;
