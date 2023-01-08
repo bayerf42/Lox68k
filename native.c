@@ -438,9 +438,6 @@ static bool dbgStatNative(int argCount, Value* args) {
     return true;
 }
 
-#ifdef KIT68K
-
-#include "monitor4x.h"
 
 // Remember your old 80s home computers?
 
@@ -490,6 +487,10 @@ static bool addrNative(int argCount, Value* args) {
         args[-1] = NIL_VAL;
     return true;
 }
+
+#ifdef KIT68K
+
+#include "monitor4x.h"
 
 static bool lcdClearNative(int argCount, Value* args) {
     lcd_clear();
@@ -697,13 +698,13 @@ void defineAllNatives(void) {
     defineNative("valid",       "T",    validNative);
     defineNative("next",        "T",    nextNative);
 
-#ifdef KIT68K
     defineNative("peek",        "N",    peekNative);
     defineNative("poke",        "NN",   pokeNative);
     defineNative("exec",        "Naaa", execNative);
     defineNative("addr",        "A",    addrNative);
-    defineNative("trap",        "",     trapNative);
 
+#ifdef KIT68K
+    defineNative("trap",        "",     trapNative);
     defineNative("lcd_clear",   "",     lcdClearNative);
     defineNative("lcd_goto",    "NN",   lcdGotoNative);
     defineNative("lcd_puts",    "S",    lcdPutsNative);

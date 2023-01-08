@@ -208,21 +208,23 @@ void nextIterator(ObjIterator* iter) {
             return;
         }
     }
-    iter->valid = false;
+    iter->position = -1;
 }
 
 bool isValidIterator(ObjIterator* iter) {
-    return iter->valid &&
+    return iter->position >= 0 &&
            iter->position < iter->table->capacity &&
            !IS_EMPTY(iter->table->entries[iter->position].key);
 }
 
 Value getIterator(ObjIterator* iter, bool wantKey) {
+    // Valid iterator has already been checked
     Entry* entry = &iter->table->entries[iter->position];
     return wantKey ? entry->key : entry->value;
 }
 
 void setIterator(ObjIterator* iter, Value value) {
+    // Valid iterator has already been checked
     Entry* entry = &iter->table->entries[iter->position];
     entry->value = value;
 }

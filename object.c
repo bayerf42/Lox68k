@@ -438,13 +438,11 @@ ObjIterator* newIterator(Table* table) {
     ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
     int16_t i;
     iter->table = table;
-    iter->position = 0;
-    iter->valid = false;
+    iter->position = -1;
     if (table->count > 0) {
         for (i = 0; i < table->capacity; i++) {
             if (!IS_EMPTY(table->entries[i].key)) {
                 iter->position = i;
-                iter->valid = true;
                 return iter;
             }
         }

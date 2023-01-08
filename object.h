@@ -144,8 +144,7 @@ struct ObjIterator {
     OBJ_HEADER
 
     Table*      table;
-    int16_t     position;
-    bool        valid;
+    int16_t     position; // -1 means invalid
 };
 
 
