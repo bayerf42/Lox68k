@@ -54,9 +54,9 @@ typedef enum {
     OP_VINVOKE,
     OP_VSUPER_INVOKE,
     OP_VLIST,
-    OP_GET_ITER,
-    OP_SET_ITER,
-    OP_KEY_ITER,
+    OP_GET_ITVAL,
+    OP_SET_ITVAL,
+    OP_GET_ITKEY,
 } OpCode;
 
 

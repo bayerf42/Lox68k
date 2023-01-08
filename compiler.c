@@ -354,13 +354,13 @@ static void iter(bool canAssign) {
     if (canAssign && match(TOKEN_EQUAL)) {
         if (accessor == TOKEN_HAT) {
             expression();
-            emitByte(OP_SET_ITER);
+            emitByte(OP_SET_ITVAL);
         } else {
             error("Iterator key is not writable.");
         }
         
     } else {
-        emitByte(accessor == TOKEN_HAT ? OP_GET_ITER : OP_KEY_ITER);
+        emitByte(accessor == TOKEN_HAT ? OP_GET_ITVAL : OP_GET_ITKEY);
     }
 }
 
@@ -1062,6 +1062,7 @@ ObjFunction* compile(const char* source) {
 
     vm.totallyAllocated = 0;
     vm.numGCs = 0;
+    errno = 0;
 
     initScanner(source);
     initCompiler(&compiler, TYPE_SCRIPT);

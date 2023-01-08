@@ -873,8 +873,8 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
             }
-            case OP_GET_ITER:
-            case OP_KEY_ITER: {
+            case OP_GET_ITVAL:
+            case OP_GET_ITKEY: {
                 aVal = peek(0); // iterator
                 if (!IS_ITERATOR(aVal)) {
                     runtimeError("Not an iterator.");
@@ -885,11 +885,11 @@ static InterpretResult run(void) {
                     runtimeError("Invalid iterator.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                resVal = getIterator(aIt, instruction==OP_KEY_ITER);
+                resVal = getIterator(aIt, instruction==OP_GET_ITKEY);
                 dropNpush(1, resVal);
                 break;
             }
-            case OP_SET_ITER: {
+            case OP_SET_ITVAL: {
                 bVal = peek(0); // item
                 aVal = peek(1); // iterator
                 if (!IS_ITERATOR(aVal)) {
@@ -927,7 +927,6 @@ InterpretResult interpret(const char* source) {
     call(closure, 0);
 
     vm.interrupted = false;
-    errno = 0;
 #ifndef KIT68K
     vm.started = clock();
 #endif

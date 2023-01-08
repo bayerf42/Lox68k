@@ -12,7 +12,7 @@ reverse     move.l  4(sp),d0         ; First parameter
             andi.l  #$80000001,d0    ; Test for Object
             bne.s   .wrong_type
             movea.l 4(sp),a1         ; Load first parameter (address of Lox list object)
-            cmpi.b  #5,4(a1)         ; test for list subtype
+            cmpi.b  #6,4(a1)         ; test for list subtype
             bne.s   .wrong_type
             move.w  6(a1),d0         ; length of list
             asl.w   #2,d0            ; * 4 ( = sizeof(Value) )

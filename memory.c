@@ -241,6 +241,13 @@ static void markRoots(void) {
     markObject((Obj*)vm.initString);
 }
 
+static void traceReferences(void) {
+    while (vm.grayCount > 0) {
+        Obj* object = vm.grayStack[--vm.grayCount];
+        blackenObject(object);
+    }
+}
+
 static void sweep(void) {
     Obj* previous = NULL;
     Obj* object = vm.objects;
@@ -264,12 +271,6 @@ static void sweep(void) {
     }
 }
 
-static void traceReferences(void) {
-    while (vm.grayCount > 0) {
-        Obj* object = vm.grayStack[--vm.grayCount];
-        blackenObject(object);
-    }
-}
 
 void collectGarbage(bool checkReclaim) {
     size_t before = vm.bytesAllocated;

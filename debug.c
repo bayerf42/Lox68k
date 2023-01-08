@@ -127,9 +127,9 @@ int disassembleInstruction(Chunk* chunk, int offset) {
         case OP_VINVOKE:       return invokeInstruction("VINVOKE", chunk, offset);
         case OP_VSUPER_INVOKE: return invokeInstruction("VSUP_INV", chunk, offset);
         case OP_VLIST:         return byteInstruction("VLIST", chunk, offset);
-        case OP_GET_ITER:      return simpleInstruction("GET_ITER", offset);
-        case OP_SET_ITER:      return simpleInstruction("SET_ITER", offset);
-        case OP_KEY_ITER:      return simpleInstruction("KEY_ITER", offset);
+        case OP_GET_ITVAL:     return simpleInstruction("GET_ITVAL", offset);
+        case OP_SET_ITVAL:     return simpleInstruction("SET_ITVAL", offset);
+        case OP_GET_ITKEY:     return simpleInstruction("GET_ITKEY", offset);
         default:
             printf("Unknown opcode %d", instruction);
             return offset + 1;
