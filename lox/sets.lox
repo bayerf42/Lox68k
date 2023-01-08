@@ -7,7 +7,7 @@ class Set {
     }
 
     clone() {
-        var res=[];
+        var res=Set();
         for (var it=slots(this); valid(it); next(it))
             res[it@]=it^;
         return res;
