@@ -265,6 +265,7 @@ static InterpretResult run(void) {
     Value  aVal=NIL_VAL, bVal, cVal, resVal;
     ObjString *aStr, *bStr, *resStr;
     ObjList   *aLst, *bLst, *resLst;
+    ObjIterator *aIt;
     ObjClass  *superclass, *subclass;
     ObjInstance* instance;
     uint8_t slotNr;
@@ -871,6 +872,38 @@ static InterpretResult run(void) {
                     runtimeError("Invalid type to slice into.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
+            }
+            case OP_GET_ITER:
+            case OP_KEY_ITER: {
+                aVal = peek(0); // iterator
+                if (!IS_ITERATOR(aVal)) {
+                    runtimeError("Not an iterator.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                aIt = AS_ITERATOR(aVal);
+                if (!isValidIterator(aIt)) {
+                    runtimeError("Invalid iterator.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                resVal = getIterator(aIt, instruction==OP_KEY_ITER);
+                dropNpush(1, resVal);
+                break;
+            }
+            case OP_SET_ITER: {
+                bVal = peek(0); // item
+                aVal = peek(1); // iterator
+                if (!IS_ITERATOR(aVal)) {
+                    runtimeError("Not an iterator.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                aIt = AS_ITERATOR(aVal);
+                if (!isValidIterator(aIt)) {
+                    runtimeError("Invalid iterator.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                setIterator(aIt, bVal);
+                dropNpush(2, bVal);
+                break;
             }
         }
     }

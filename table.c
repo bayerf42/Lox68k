@@ -198,3 +198,31 @@ void markTable(Table* table) {
         markValue(entry->value);
     }
 }
+
+void nextIterator(ObjIterator* iter) {
+    int16_t i;
+    Table* table = iter->table;
+    for (i = iter->position + 1; i < table->capacity; i++) {
+        if (!IS_EMPTY(table->entries[i].key)) {
+            iter->position = i;
+            return;
+        }
+    }
+    iter->valid = false;
+}
+
+bool isValidIterator(ObjIterator* iter) {
+    return iter->valid &&
+           iter->position < iter->table->capacity &&
+           !IS_EMPTY(iter->table->entries[iter->position].key);
+}
+
+Value getIterator(ObjIterator* iter, bool wantKey) {
+    Entry* entry = &iter->table->entries[iter->position];
+    return wantKey ? entry->key : entry->value;
+}
+
+void setIterator(ObjIterator* iter, Value value) {
+    Entry* entry = &iter->table->entries[iter->position];
+    entry->value = value;
+}

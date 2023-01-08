@@ -349,6 +349,21 @@ static void index_(bool canAssign) {
     }
 }
 
+static void iter(bool canAssign) {
+    TokenType accessor = parser.previous.type;
+    if (canAssign && match(TOKEN_EQUAL)) {
+        if (accessor == TOKEN_HAT) {
+            expression();
+            emitByte(OP_SET_ITER);
+        } else {
+            error("Iterator key is not writable.");
+        }
+        
+    } else {
+        emitByte(accessor == TOKEN_HAT ? OP_GET_ITER : OP_KEY_ITER);
+    }
+}
+
 static void literal(bool canAssign) {
     switch (parser.previous.type) {
         case TOKEN_FALSE: emitByte(OP_FALSE); break;
@@ -612,6 +627,8 @@ const ParseRule rules[] = {
     /* [TOKEN_SLASH]         = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_STAR]          = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_PERCENT]       = */ {NULL,     binary, PREC_FACTOR},
+    /* [TOKEN_AT]            = */ {NULL,     iter,   PREC_SUBSCRIPT},
+    /* [TOKEN_HAT]           = */ {NULL,     iter,   PREC_SUBSCRIPT},
     /* [TOKEN_BANG]          = */ {unary,    NULL,   PREC_NONE},
     /* [TOKEN_BANG_EQUAL]    = */ {NULL,     binary, PREC_EQUALITY},
     /* [TOKEN_EQUAL]         = */ {NULL,     NULL,   PREC_NONE},

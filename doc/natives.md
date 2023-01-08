@@ -30,13 +30,12 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | exec        | int, val?, val?, val?  | val         | Kit, Emu     | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
 | exp         | num                    | real        | all          | exponential                                                                       |  
 | gc          | -                      | int         | all          | forces garbage collection, returns size of allocated memory                       |  
-| globals     | -                      | list        | all          | list of all global variable names                                                 |  
+| globals     | -                      | iterator    | all          | iterator over all global variables                                                |  
 | hex         | int                    | string      | all          | *int* as hexadecimal string                                                       |
 | index       | val, list, int?        | int or nil  | all          | search *val* in *list*, returns index where found, optional search start *int*    |  
 | input       | string?                | string      | all          | input string from terminal with optional prompt                                   |
 | insert      | list, int, val         | -           | all          | inserts *val* into *list* at position *int*                                       |
 | keycode     | -                      | int or nil  | Kit          | code of key currently pressed or nil                                              |  
-| keys        | instance or class      | list        | all          | list of all field names/dictionary keys of an instance or methods in a class      |
 | lcd_clear   | -                      | -           | Kit          | clears LCD                                                                        |  
 | lcd_defchar | int, list *of 8 bytes* | -           | Kit          | creates a user-defined char with code *int* for LCD with bit pattern from *list*  |  
 | lcd_goto    | int *col*, int *line*  | -           | Kit          | set cursor position on LCD                                                        |  
@@ -44,6 +43,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | length      | list or string         | int         | all          | length of *list* or *string*                                                      |
 | log         | num                    | real        | all          | natural logarithm                                                                 |  
 | lower       | string                 | string      | all          | lower case of string                                                              |  
+| next        | iterator               | bool        | all          | advances *iterator* to next entry, returns true when valid                        |  
 | parse_int   | string                 | int or nil  | all          | parses *string* as integer                                                        |
 | parse_real  | string                 | real or nil | all          | parses *string* as real                                                           |
 | peek        | int                    | int         | Kit, Emu     | reads byte from address *int*                                                     |  
@@ -56,6 +56,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | sin         | num                    | real        | all          | sine                                                                              |  
 | sinh        | num                    | real        | all          | hyperbolic sine                                                                   |  
 | sleep       | int *dur*              | -           | all          | busy waits for *dur* milliseconds                                                 |  
+| slots       | instance               | iterator    | all          | iterator over all slots in *instance*                                             |
 | sound       | int *rate*, int *dur*  | -           | Kit          | plays a sound on speaker, cycle length *rate*, for *dur* milliseconds             |  
 | sqrt        | num                    | real        | all          | square root                                                                       |  
 | tan         | num                    | real        | all          | tangent                                                                           |  
@@ -64,4 +65,5 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | trunc       | num                    | int         | all          | truncate real to integer                                                          |  
 | type        | val                    | string      | all          | type (as string) of *val*                                                         |  
 | upper       | string                 | string      | all          | upper case of string                                                              |  
+| valid       | iterator               | bool        | all          | does *iterator* address a valid entry?                                            |  
 

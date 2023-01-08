@@ -17,6 +17,7 @@
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 #define IS_STRING(value) isObjType(value, OBJ_STRING)
 #define IS_REAL(value) isObjType(value, OBJ_REAL)
+#define IS_ITERATOR(value) isObjType(value, OBJ_ITERATOR)
 
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass*)AS_OBJ(value))
@@ -29,6 +30,7 @@
 #define AS_STRING(value) ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value) (((ObjString*)AS_OBJ(value))->chars)
 #define AS_REAL(value) (((ObjReal*)AS_OBJ(value))->content)
+#define AS_ITERATOR(value) ((ObjIterator*)AS_OBJ(value))
 
 typedef enum {
     OBJ_BOUND_METHOD,
@@ -36,6 +38,7 @@ typedef enum {
     OBJ_CLOSURE,
     OBJ_FUNCTION,
     OBJ_INSTANCE,
+    OBJ_ITERATOR,
     OBJ_LIST,
     OBJ_NATIVE,
     OBJ_REAL,
@@ -137,6 +140,15 @@ typedef struct {
     Real        content;
 } ObjReal;
 
+struct ObjIterator {
+    OBJ_HEADER
+
+    Table*      table;
+    int16_t     position;
+    bool        valid;
+};
+
+
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
 ObjClass* newClass(ObjString* name);
 ObjClosure* newClosure(ObjFunction* function);
@@ -145,8 +157,10 @@ ObjInstance* newInstance(ObjClass* klass);
 ObjList* newList(void);
 Value newReal(Real val);
 ObjNative* newNative(const char* signature, NativeFn function);
-ObjString* copyString(const char* chars, int length);
+ObjIterator* newIterator(Table* table);
 ObjUpvalue* newUpvalue(Value* slot);
+ObjString* copyString(const char* chars, int length);
+
 void printObject(Value value, bool compact, bool machine);
 const char* typeName(ObjType type);
 
@@ -166,8 +180,6 @@ ObjString* concatStrings(ObjString* a, ObjString* b);
 ObjList* concatLists(ObjList* a, ObjList* b);
 
 ObjString* caseString(ObjString* a, bool toUpper);
-
-ObjList* allKeys(Table* table);
 
 bool isObjType(Value value, ObjType type);
 

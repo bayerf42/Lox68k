@@ -11,7 +11,8 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * prefix `..` before last parameter name for vararg parameter in function declaration
 * prefix `..` before argument to unpack list into arguments in function call
 * Real numbers with exponential part
-
+* postfix `@` to read key part of a hashtable iterator entry
+* postfix `^` to read/write value part of a hashtable iterator entry
 
 ``` ebnf
 program        → declaration* EOF ;
@@ -49,6 +50,7 @@ expression     → assignment ;
 
 assignment     → ( call "." )? IDENTIFIER "=" assignment
                | call "[" index "]" "=" assignment
+               | call "^" "=" assignment
                | logic_or ;
 
 logic_or       → logic_and ( "or" logic_and )* ;
@@ -60,7 +62,7 @@ factor         → unary ( ( "/" | "*" | "%") unary )* ;
 
 unary          → ( "!" | "-" ) unary | call ;
 call           → subscript ( "(" arguments? ")" | "." IDENTIFIER )* ;
-subscript      → primary ( "[" index | slice "]" )* ;
+subscript      → primary ( ( "[" index | slice "]") | "^" | "@" )* ;
 index          → expression ;
 slice          → expression ":" expression | expression ":" | ":" expression | ":" ;
 primary        → "true" | "false" | "nil" | "this"

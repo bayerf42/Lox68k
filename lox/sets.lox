@@ -7,40 +7,40 @@ class Set {
     }
 
     clone() {
-        return Set(..keys(this));
+        var res=[];
+        for (var it=slots(this); valid(it); next(it))
+            res[it@]=it^;
+        return res;
     }
 
     display() {
-        var els = keys(this);
         var first = true;
         print "{",; 
-        for (var i=0; i<length(els); i=i+1) {
+        for (var it=slots(this); valid(it); next(it)) {
             if (!first) print ", ",;
             first = false;  
-            print els[i],;
+            print it@,;
         }
         print "}";
     }  
 
     union(that) {
-        var els = keys(that); 
-        for (var i=0; i<length(els); i=i+1)
-            this[els[i]] = true;
+        for (var it=slots(that); valid(it); next(it))
+            this[it@] = true;
         return this;
     }
 
     intersect(that) {
-        var els = keys(this); 
-        for (var i=0; i<length(els); i=i+1)
-            if (!that.contains(els[i]))
-               remove(this,els[i]);
+        for (var it=slots(this); valid(it); next(it))
+            if (!that.contains(it@))
+               remove(this,it@);
+               // it^ = nil;
         return this;
     }
 
     subtract(that) {
-        var els = keys(that); 
-        for (var i=0; i<length(els); i=i+1)
-            remove(this,els[i]);
+        for (var it=slots(that); valid(it); next(it))
+            remove(this,it@);
         return this;
     }
 

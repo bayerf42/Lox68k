@@ -23,7 +23,7 @@ static const char* matchesType(Value value, char type) {
         case 'Q': return IS_STRING(value) || IS_LIST(value) ? NULL : "a sequence";
         case 'B': return IS_BOOL(value) ? NULL : "a bool";
         case 'I': return IS_INSTANCE(value) ? NULL : "an instance";
-        case 'O': return IS_INSTANCE(value) || IS_CLASS(value) ? NULL : "an object";
+        case 'T': return IS_ITERATOR(value) ? NULL : "an iterator";
         default:  return "an unknown type";
     }
 }
@@ -210,19 +210,6 @@ static bool indexNative(int argCount, Value* args) {
     return true;
 }
 
-static bool keysNative(int argCount, Value* args) {
-    ObjInstance* instance;
-    ObjClass* klass;
-    if (IS_INSTANCE(args[0])) {
-        instance = AS_INSTANCE(args[0]);
-        args[-1] = OBJ_VAL(allKeys(&instance->fields));
-    } else {
-        klass = AS_CLASS(args[0]);
-        args[-1] = OBJ_VAL(allKeys(&klass->methods));
-    }
-    return true;
-}
-
 static bool removeNative(int argCount, Value* args) {
     ObjInstance* instance = AS_INSTANCE(args[0]);
     bool removed = tableDelete(&instance->fields, args[1]);
@@ -231,7 +218,7 @@ static bool removeNative(int argCount, Value* args) {
 }
 
 static bool globalsNative(int argCount, Value* args) {
-    args[-1] = OBJ_VAL(allKeys(&vm.globals));
+    args[-1] = OBJ_VAL(newIterator(&vm.globals));
     return true;
 }
 
@@ -239,6 +226,28 @@ static bool typeNative(int argCount, Value* args) {
     args[-1] = OBJ_VAL(valueType(args[0]));
     return true;
 }
+
+// Iterators
+
+static bool slotsNative(int argCount, Value* args) {
+    ObjInstance* instance = AS_INSTANCE(args[0]);
+    args[-1] = OBJ_VAL(newIterator(&instance->fields));
+    return true;
+}
+
+static bool validNative(int argCount, Value* args) {
+    ObjIterator* iter = AS_ITERATOR(args[0]);
+    args[-1] = BOOL_VAL(isValidIterator(iter));
+    return true;
+}
+
+static bool nextNative(int argCount, Value* args) {
+    ObjIterator* iter = AS_ITERATOR(args[0]);
+    nextIterator(iter);
+    args[-1] = BOOL_VAL(isValidIterator(iter));
+    return true;
+}
+
 
 // Some datatype conversions
 
@@ -677,13 +686,16 @@ void defineAllNatives(void) {
     defineNative("delete",      "LN",   deleteNative);
     defineNative("index",       "ALn",  indexNative);
 
-    defineNative("keys",        "O",    keysNative);
     defineNative("remove",      "IA",   removeNative);
     defineNative("globals",     "",     globalsNative);
     defineNative("type",        "A",    typeNative);
     defineNative("clock",       "",     clockNative);
     defineNative("sleep",       "N",    sleepNative);
     defineNative("gc",          "",     gcNative);
+
+    defineNative("slots",       "I",    slotsNative);
+    defineNative("valid",       "T",    validNative);
+    defineNative("next",        "T",    nextNative);
 
 #ifdef KIT68K
     defineNative("peek",        "N",    peekNative);

@@ -5,6 +5,7 @@
 
 typedef struct Obj Obj;
 typedef struct ObjString ObjString;
+typedef struct ObjIterator ObjIterator;
 
 // 68008 Value tagging scheme
 // Integers         sxxx xxxx ... xxxx xxx1 (shift 1 bit for arithmetic)

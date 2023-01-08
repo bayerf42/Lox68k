@@ -148,6 +148,11 @@ static void blackenObject(Obj* object) {
         case OBJ_UPVALUE:
             markValue(((ObjUpvalue*)object)->closed);
             break;
+        case OBJ_ITERATOR: {
+            ObjIterator* iter = (ObjIterator*)object;
+            markTable((Obj*)iter->table);
+            break;
+        }
     }
 }
 
@@ -205,6 +210,10 @@ static void freeObject(Obj* object) {
         }
         case OBJ_REAL: {
             FREE(ObjReal, object);
+            break;
+        }
+        case OBJ_ITERATOR: {
+            FREE(ObjIterator, object);
             break;
         }
     }

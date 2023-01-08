@@ -167,14 +167,15 @@ const char* typeName(ObjType type) {
         case OBJ_BOUND_METHOD: return "bound";
         case OBJ_CLASS:        return "class";
         case OBJ_CLOSURE:      return "closure";
-        case OBJ_FUNCTION:     return "*fun";      // internal
+        case OBJ_FUNCTION:     return "fun";      // internal
         case OBJ_INSTANCE:     return "instance";
+        case OBJ_ITERATOR:     return "iterator";
         case OBJ_LIST:         return "list";
         case OBJ_NATIVE:       return "native";
         case OBJ_REAL:         return "real";
         case OBJ_STRING:       return "string";
-        case OBJ_UPVALUE:      return "*upvalue";  // internal
-        default:               return "*unknown";  // shouldn't happen
+        case OBJ_UPVALUE:      return "upvalue";  // internal
+        default:               return "unknown";  // shouldn't happen
     }
 }
 
@@ -194,6 +195,7 @@ void printObject(Value value, bool compact, bool machine) {
         case OBJ_CLOSURE: printFunction("closure", AS_CLOSURE(value)->function); break;
         case OBJ_FUNCTION: printFunction("fun", AS_FUNCTION(value)); break;
         case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
+        case OBJ_ITERATOR: printf("<iterator %d>", AS_ITERATOR(value)->position); break;
         case OBJ_LIST: if (compact) printf("<list %d>",AS_LIST(value)->count); else printList(AS_LIST(value)); break;
         case OBJ_NATIVE: printf("<native>"); break;
         case OBJ_REAL: printf("%s", formatReal(AS_REAL(value))); break;
@@ -359,22 +361,6 @@ ObjList* concatLists(ObjList* a, ObjList* b) {
     return result;
 }
 
-ObjList* allKeys(Table* table) {
-    ObjList* result = newList();
-    int16_t i;
-    Entry* entry;
-
-    push(OBJ_VAL(result));
-    for (i = 0; i < table->capacity; i++) {
-        entry = &table->entries[i];
-        if (!IS_EMPTY(entry->key)) {
-            appendToList(result, OBJ_VAL(entry->key));
-        }
-    }
-    drop();
-    return result;
-}
-
 Value newReal(Real val) {
     ObjReal* real = ALLOCATE_OBJ(ObjReal, OBJ_REAL);
 
@@ -447,3 +433,22 @@ const char* formatHex(Number val) {
     sprintf(numBuffer, "%lx", val);
     return numBuffer;
 }
+
+ObjIterator* newIterator(Table* table) {
+    ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
+    int16_t i;
+    iter->table = table;
+    iter->position = 0;
+    iter->valid = false;
+    if (table->count > 0) {
+        for (i = 0; i < table->capacity; i++) {
+            if (!IS_EMPTY(table->entries[i].key)) {
+                iter->position = i;
+                iter->valid = true;
+                return iter;
+            }
+        }
+    }
+    return iter;
+}
+

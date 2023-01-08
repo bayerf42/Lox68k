@@ -47,10 +47,8 @@ it as Windows/Linux executables, too.
 
 If you just want to checkout Lox with the IDE68K emulator, you need nothing else,
 just compile it as described below. But if you want to execute it on the Kit itself,
-you need the Monitor ROM, available either in `rom_image/monitor.bin` or with sources at
-https://kswichit.net/68008/Fred/MonitorV4.7.zip or from
-[its Github project](https://github.com/bayerf42/Monitor).
-But you should rather combine the Monitor and Lox into a single ROM image, see below.
+you need the [Monitor ROM](https://github.com/bayerf42/Monitor)
+and the [Motorola FFP library](https://github.com/bayerf42/MotoFFP).
 
 
 ## Differences to the [original Lox language](https://craftinginterpreters.com/the-lox-language.html)
@@ -62,7 +60,7 @@ But you should rather combine the Monitor and Lox into a single ROM image, see b
 * [Slicing syntax](grammar.md) to extract subsequences from strings or lists,
   including negative indices to index from the end of the list or string,
   [like in Python](https://www.w3schools.com/python/python_strings_slicing.asp).
-* Several [native functions](natives.md) for type conversion, list handling
+* 60 [native functions](natives.md) for type conversion, collections, math, 
   and low-level functions on the 68008 kit.
 * The compile-time debugging options are now selectable at runtime via the `dbg_*` native functions.
 * Runtime statistics via `dbg_stat()`.
@@ -75,6 +73,8 @@ But you should rather combine the Monitor and Lox into a single ROM image, see b
 * Functions can have a rest parameter packing all additional arguments into a list.
 * Lists can be unpacked as arguments into a function/method call or list constructor.
 * Real number arithmetic and native transcendental functions.
+* Hashtable iterators, created with `slots()`, iterate with `valid()` and `next()`, access key
+  with `it@` and value with `it^`.
 
 ### Omissions
 
@@ -105,7 +105,9 @@ and doesn't support modern *C99*.
   * lists, modifiable resizable arrays of arbitrary values
   * closures, proper lexically-scoped functions
   * classes containing methods and supporting single inheritance
-  * object instances using dictionary for fields, but also indexable by any value
+  * object instances using a hashtable for fields, but also indexable by any value
+  * bound methods, combining an instance with a method
+  * iterators for traversing hashtables
 
 
 ## The 4 varieties of Lox buildable

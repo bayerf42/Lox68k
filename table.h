@@ -25,5 +25,9 @@ ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t
 void tableRemoveWhite(Table* table);
 void tableShrink(Table* table);
 void markTable(Table* table);
+void nextIterator(ObjIterator* iter);
+bool isValidIterator(ObjIterator* iter);
+Value getIterator(ObjIterator* iter, bool wantKey);
+void setIterator(ObjIterator* iter, Value value);
 
 #endif

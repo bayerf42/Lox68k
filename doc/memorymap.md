@@ -23,8 +23,8 @@ and constants into ROM. Build this version via the project file `clox_rom.prj`, 
 | `$1c000`      | `$1ffff`       |  16 k | RAM  | processor stack                      |
 | `$20000`      | `$3ffff`       | 128 k | -    | unassigned                           |
 | `$40000`      | `$43fff`       |  16 k | ROM  | Monitor code and constants           |
-| `$44000`      | `$4ffff`       |  48 k | ROM  | Lox code and constants               |
-| `$50000`      | `$5efff`       |  60 k | ROM  | free                                 |
+| `$44000`      | `$50fff`       |  52 k | ROM  | Lox code and constants               |
+| `$51000`      | `$5efff`       |  56 k | ROM  | free                                 |
 | `$5f000`      | `$5ffff`       |   4 k | ROM  | Motorola FFP library                 |
 | `$60000`      | `$fffff`       | 640 k | -    | I/O or unassigned                    |
 
@@ -44,8 +44,8 @@ Build this version via the project file `clox.prj` and upload the resulting hex 
 | `$00000`      | `$001ff`       |   ½ k | RAM  | Exception vectors                    |
 | `$00200`      | `$003ff`       |   ½ k | RAM  | Monitor variables                    |
 | `$00400`      | `$0ffff`       |  63 k | RAM  | Lox constants and variables          |
-| `$10000`      | `$19fff`       |  40 k | RAM  | Lox code                             |
-| `$1a000`      | `$1bfff`       |   8 k | RAM  | free                                 |
+| `$10000`      | `$1afff`       |  44 k | RAM  | Lox code                             |
+| `$1b000`      | `$1bfff`       |   4 k | RAM  | free                                 |
 | `$1c000`      | `$1ffff`       |  16 k | RAM  | processor stack                      |
 | `$20000`      | `$3ffff`       | 128 k | -    | unassigned                           |
 | `$40000`      | `$43fff`       |  16 k | ROM  | Monitor code and constants           |
