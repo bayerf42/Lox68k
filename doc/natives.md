@@ -7,7 +7,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | Name        | Parameters             | Returns     | Availability | Description                                                                       |
 |-------------|------------------------|-------------|--------------|-----------------------------------------------------------------------------------|
 | abs         | num                    | num         | all          | absolute value                                                                    |  
-| addr        | val                    | int or nil  | Kit, Emu     | address of an object in heap, nil for immediate values                            |  
+| addr        | val                    | int or nil  | all          | address of an object in heap, nil for immediate values                            |  
 | append      | list, val              | -           | all          | appends *val* to end of *list*                                                    |
 | asc         | string, int?           | int         | all          | ASCII code of first character or at index *int*                                   |  
 | atan        | num                    | real        | all          | arc tangent                                                                       |  
@@ -27,7 +27,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | dbg_trace   | bool                   | -           | all          | trace each VM instruction executed, prints stack                                  |  
 | dec         | num                    | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int              | -           | all          | deletes element at *int* from *list*                                              |
-| exec        | int, val?, val?, val?  | val         | Kit, Emu     | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
+| exec        | int, val?, val?, val?  | val         | all          | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
 | exp         | num                    | real        | all          | exponential                                                                       |  
 | gc          | -                      | int         | all          | forces garbage collection, returns size of allocated memory                       |  
 | globals     | -                      | iterator    | all          | iterator over all global variables                                                |  
@@ -46,8 +46,8 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | next        | iterator               | bool        | all          | advances *iterator* to next entry, returns true when valid                        |  
 | parse_int   | string                 | int or nil  | all          | parses *string* as integer                                                        |
 | parse_real  | string                 | real or nil | all          | parses *string* as real                                                           |
-| peek        | int                    | int         | Kit, Emu     | reads byte from address *int*                                                     |  
-| poke        | int *addr*, int *byte* | -           | Kit, Emu     | writes *byte* to *addr*                                                           |  
+| peek        | int                    | int         | all          | reads byte from address *int*                                                     |  
+| poke        | int *addr*, int *byte* | -           | all          | writes *byte* to *addr*                                                           |  
 | pow         | num, num               | real        | all          | power                                                                             |  
 | random      | -                      | int         | all          | a pseudo-random positive integer                                                  |
 | real        | num                    | real        | all          | convert any number to real                                                        |  

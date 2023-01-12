@@ -733,9 +733,9 @@ static InterpretResult run(void) {
                 defineMethod(aStr);
                 break;
             case OP_LIST: {
-                aLst = newList();
                 argCount = READ_BYTE();
             cont_list:
+                aLst = newList();
                 push(OBJ_VAL(aLst)); // protect from GC
                 for (i = argCount; i > 0; i--) {
                     appendToList(aLst, peek(i));
@@ -744,7 +744,6 @@ static InterpretResult run(void) {
                 break;
             }
             case OP_VLIST: {
-                aLst = newList();
                 argCount = READ_BYTE() + AS_NUMBER(pop());
                 goto cont_list;
             }

@@ -106,53 +106,44 @@ static void blackenObject(Obj* object) {
     }
 
     switch (object->type) {
-        case OBJ_BOUND_METHOD: {
-            ObjBoundMethod* bound = (ObjBoundMethod*)object;
-            markValue(bound->receiver);
-            markObject((Obj*)bound->method);
+        case OBJ_BOUND_METHOD:
+            markValue(((ObjBoundMethod*)object)->receiver);
+            markObject((Obj*)((ObjBoundMethod*)object)->method);
             break;
-        }
-        case OBJ_CLASS: {
-            ObjClass* klass = (ObjClass*)object;
-            markObject((Obj*)klass->name);
-            markTable(&klass->methods);
+
+        case OBJ_CLASS:
+            markObject((Obj*)((ObjClass*)object)->name);
+            markTable(&((ObjClass*)object)->methods);
             break;
-        }
-        case OBJ_CLOSURE: {
-            ObjClosure* closure = (ObjClosure*)object;
-            markObject((Obj*)closure->function);
-            for (i = 0; i < closure->upvalueCount; i++) {
-                markObject((Obj*)closure->upvalues[i]);
-            }
+
+        case OBJ_CLOSURE:
+            markObject((Obj*)((ObjClosure*)object)->function);
+            for (i = 0; i < ((ObjClosure*)object)->upvalueCount; i++)
+                markObject((Obj*)((ObjClosure*)object)->upvalues[i]);
             break;
-        }
-        case OBJ_FUNCTION: {
-            ObjFunction* function = (ObjFunction*)object;
-            markObject((Obj*)function->name);
-            markArray(&function->chunk.constants);
+
+        case OBJ_FUNCTION:
+            markObject((Obj*)((ObjFunction*)object)->name);
+            markArray(&((ObjFunction*)object)->chunk.constants);
             break;
-        }
-        case OBJ_INSTANCE: {
-            ObjInstance* instance = (ObjInstance*)object;
-            markObject((Obj*)instance->klass);
-            markTable(&instance->fields);
+
+        case OBJ_INSTANCE:
+            markObject((Obj*)((ObjInstance*)object)->klass);
+            markTable(&((ObjInstance*)object)->fields);
             break;
-        }
-        case OBJ_LIST: {
-            ObjList* list = (ObjList*)object;
-            for (i = 0; i < list->count; i++) {
-                markValue(list->items[i]);
-            }
+
+        case OBJ_LIST:
+            for (i = 0; i < ((ObjList*)object)->count; i++)
+                markValue(((ObjList*)object)->items[i]);
             break;
-        }
+
         case OBJ_UPVALUE:
             markValue(((ObjUpvalue*)object)->closed);
             break;
-        case OBJ_ITERATOR: {
-            ObjIterator* iter = (ObjIterator*)object;
-            markTable((Obj*)iter->table);
+
+        case OBJ_ITERATOR:
+            markTable(((ObjIterator*)object)->table);
             break;
-        }
     }
 }
 
@@ -166,56 +157,51 @@ static void freeObject(Obj* object) {
         case OBJ_BOUND_METHOD:
             FREE(ObjBoundMethod, object);
             break;
-        case OBJ_CLASS: {
-            ObjClass* klass = (ObjClass*)object;
-            freeTable(&klass->methods);
+
+        case OBJ_CLASS:
+            freeTable(&((ObjClass*)object)->methods);
             FREE(ObjClass, object);
             break;
-        }
-        case OBJ_CLOSURE: {
-            ObjClosure* closure = (ObjClosure*)object;
-            reallocate(object, sizeof(ObjClosure) + sizeof(ObjUpvalue*) * closure->upvalueCount, 0);  
+
+        case OBJ_CLOSURE:
+            reallocate(object, sizeof(ObjClosure) + sizeof(ObjUpvalue*) *
+                                                    ((ObjClosure*)object)->upvalueCount, 0);  
             break;
-        }
-        case OBJ_FUNCTION: {
-            ObjFunction* function = (ObjFunction*)object;
-            freeChunk(&function->chunk);
+
+        case OBJ_FUNCTION:
+            freeChunk(&((ObjFunction*)object)->chunk);
             FREE(ObjFunction, object);
             break;
-        }
-        case OBJ_INSTANCE: {
-            ObjInstance* instance = (ObjInstance*)object;
-            freeTable(&instance->fields);
+
+        case OBJ_INSTANCE: 
+            freeTable(&((ObjInstance*)object)->fields);
             FREE(ObjInstance, object);
             break;
-        }
-        case OBJ_LIST: {
-            ObjList* list = (ObjList*)object;
-            FREE_ARRAY(Value, list->items, list->capacity);
+
+        case OBJ_LIST: 
+            FREE_ARRAY(Value, ((ObjList*)object)->items, ((ObjList*)object)->capacity);
             FREE(ObjList, object);
             break;
-        }
-        case OBJ_NATIVE: {
+
+        case OBJ_NATIVE:
             FREE(ObjNative, object);
             break;
-        }
-        case OBJ_STRING: {
-            ObjString* string = (ObjString*)object;
-            reallocate(object, sizeof(ObjString) + string->length + 1, 0);  
+
+        case OBJ_STRING:
+            reallocate(object, sizeof(ObjString) + ((ObjString*)object)->length + 1, 0);  
             break;
-        }
-        case OBJ_UPVALUE: {
+
+        case OBJ_UPVALUE:
             FREE(ObjUpvalue, object);
             break;
-        }
-        case OBJ_REAL: {
+
+        case OBJ_REAL:
             FREE(ObjReal, object);
             break;
-        }
-        case OBJ_ITERATOR: {
+
+        case OBJ_ITERATOR:
             FREE(ObjIterator, object);
             break;
-        }
     }
 }
 
@@ -224,17 +210,14 @@ static void markRoots(void) {
     int i;
     ObjUpvalue* upvalue;
 
-    for (slot = vm.stack; slot < vm.stackTop; slot++) {
+    for (slot = vm.stack; slot < vm.stackTop; slot++)
         markValue(*slot);
-    }
 
-    for (i = 0; i < vm.frameCount; i++) {
+    for (i = 0; i < vm.frameCount; i++)
         markObject((Obj*)vm.frames[i].closure);
-    }
 
-    for (upvalue = vm.openUpvalues; upvalue != NULL; upvalue = upvalue->nextUpvalue) {
+    for (upvalue = vm.openUpvalues; upvalue != NULL; upvalue = upvalue->nextUpvalue)
         markObject((Obj*)upvalue);
-    }
 
     markTable(&vm.globals);
     markCompilerRoots();
@@ -261,16 +244,14 @@ static void sweep(void) {
         } else {
             unreached = object;
             object = object->nextObj;
-            if (previous != NULL) {
+            if (previous != NULL) 
                 previous->nextObj = object;
-            } else {
+            else
                 vm.objects = object;
-            }
             freeObject(unreached);
         }
     }
 }
-
 
 void collectGarbage(bool checkReclaim) {
     size_t before = vm.bytesAllocated;
@@ -295,7 +276,8 @@ void collectGarbage(bool checkReclaim) {
                before - vm.bytesAllocated, before, vm.bytesAllocated);
     }
 
-    tableShrink(&vm.strings);
+    if (!vm.debug_stress_gc) // Avoid endless recursion
+        tableShrink(&vm.strings);
     vm.numGCs++;
 }
 
