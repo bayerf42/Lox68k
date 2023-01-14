@@ -50,6 +50,8 @@ just compile it as described below. But if you want to execute it on the Kit its
 you need the [Monitor ROM](https://github.com/bayerf42/Monitor)
 and the [Motorola FFP library](https://github.com/bayerf42/MotoFFP).
 
+If you don't want to build the ROM yourself, the final ROM image `mon_ffp_lox.bin` is included
+in the release. Just burn it into an EPROM or flash chip.
 
 ## Differences to the [original Lox language](https://craftinginterpreters.com/the-lox-language.html)
 
@@ -86,6 +88,9 @@ including plenty of RAM and a FPU where the principal `Value` type is
 For the 68008 port the `Value` type has been shrunk to 32 bit, where numbers
 are 31 bit signed integers, using 1 bit to discriminate from pointers or special values.
 
+All memory sizes have been shrunk to 16 bit to save memory, so the maximum heap size is 64k, which
+is adequate for the Sirichote Kit.
+
 **New:** Floating point numbers have been re-introduced as heap-based objects. They can be freely
 mixed with integers in calculations. Also a standard set of transcendental functions has been
 added. 
@@ -104,13 +109,14 @@ and doesn't support modern *C99*.
   * strings, non-modifiable and interned for quick comparisons
   * lists, modifiable resizable arrays of arbitrary values
   * closures, proper lexically-scoped functions
+  * natives, library functions written in C or assembly
   * classes containing methods and supporting single inheritance
   * object instances using a hashtable for fields, but also indexable by any value
   * bound methods, combining an instance with a method
   * iterators for traversing hashtables
 
 
-## The 4 varieties of Lox buildable
+## The 3 varieties of Lox buildable
 
 All varieties are compiled from the same source files as described in the following sections.
 
@@ -154,8 +160,8 @@ Be sure to compile it for 32 bit architecture, Lox68k assumes 32 bit `int`, `lon
 
 
 ### Lox compiled for the 68008 kit in ROM
-It is burnt into ROM (together with the Monitor code)
-and can [utilize the entire RAM for data](memorymap.md#ROM) and the kit's hardware like LCD, keyboard,
+It is burnt into ROM (together with the Monitor code and the FFP library)
+and can [utilize the entire RAM for data](memorymap.md) and the kit's hardware like LCD, keyboard,
 sound, and terminal communication via the serial port.
 
 To build this version, load project `clox_rom.prj` in *IDE68K* and build it.
@@ -164,7 +170,7 @@ by executing
 ```sh
 python makerom.py
 ```
-creating `rom_image/mon-lox.bin`, which you burn into EPROM/Flash and plug into the Kit.
+creating `../roms/mon_ffp_lox.bin`, which you burn into EPROM/Flash and plug into the Kit.
 
 To start it, start a terminal emulation, either from *IDE68K*, or preferrably by typing
 ```sh
@@ -177,18 +183,8 @@ To interrupt long-running computations, press the **IRQ** key bringing you back 
 prompt. Be sure to put the interrupt source switch to *IRQ*, not to *10ms TICK*.
 
 You can also run this version in the *IDE68K* emulator, but you have to set its start address
-`$44000` manually into the PC register.
-
-### Lox compiled for the 68008 kit in RAM
-It is uploaded into RAM (which takes quite some time)
-and has some [tighter memory limits](memorymap.md#RAM) to fit everything into the
-available 128k RAM, but you don't have to burn a ROM image after every modification
-while testing.
-
-To build this version, load project `clox.prj` and build it. A hex file `clox.hex` is generated,
-which can be uploaded to the Kit, or executed with the *IDE68K* emulator.
-
-The start address is `$00400` as usual, you interact with it the same way as the ROM version.
+`$44000` manually into the PC register. Since the FFP library is not contained in the hex file,
+you cannot use floating point numbers in the emulator.
 
 
 ## The terminal emulator
