@@ -109,7 +109,7 @@ static void runFile(const char* path) {
 //   tcc *.c -o wlox.exe -m32
 //
 // To compile it for Linux, invoke
-//   gcc -O2 -std=gnu89 -o llox -m32 *.c
+//   gcc -O2 -std=gnu89 -o llox -m32 -lm *.c
 //
 // Usage: [lw]lox [ <source>* [-]]
 // - starts REPL after loading all sources.
