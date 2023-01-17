@@ -142,6 +142,7 @@ static void blackenObject(Obj* object) {
             break;
 
         case OBJ_ITERATOR:
+            markObject((Obj*)((ObjIterator*)object)->instance);
             markTable(((ObjIterator*)object)->table);
             break;
     }

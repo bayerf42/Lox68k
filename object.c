@@ -434,15 +434,17 @@ const char* formatHex(Number val) {
     return numBuffer;
 }
 
-ObjIterator* newIterator(Table* table) {
+ObjIterator* newIterator(Table* table, ObjInstance* instance) {
     ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
     int16_t i;
     iter->table = table;
     iter->position = -1;
+    iter->instance = NULL;
     if (table->count > 0) {
         for (i = 0; i < table->capacity; i++) {
             if (!IS_EMPTY(table->entries[i].key)) {
                 iter->position = i;
+                iter->instance = instance;
                 return iter;
             }
         }

@@ -143,8 +143,9 @@ typedef struct {
 struct ObjIterator {
     OBJ_HEADER
 
-    Table*      table;
-    int16_t     position; // -1 means invalid
+    ObjInstance* instance;  // for GC
+    Table*       table;
+    int16_t      position;  // -1 means invalid
 };
 
 
@@ -156,7 +157,7 @@ ObjInstance* newInstance(ObjClass* klass);
 ObjList* newList(void);
 Value newReal(Real val);
 ObjNative* newNative(const char* signature, NativeFn function);
-ObjIterator* newIterator(Table* table);
+ObjIterator* newIterator(Table* table, ObjInstance* instance);
 ObjUpvalue* newUpvalue(Value* slot);
 ObjString* copyString(const char* chars, int length);
 

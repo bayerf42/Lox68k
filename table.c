@@ -209,12 +209,15 @@ void nextIterator(ObjIterator* iter) {
         }
     }
     iter->position = -1;
+    iter->instance = NULL;
 }
 
 bool isValidIterator(ObjIterator* iter) {
-    return iter->position >= 0 &&
-           iter->position < iter->table->capacity &&
-           !IS_EMPTY(iter->table->entries[iter->position].key);
+    bool valid = iter->position >= 0 &&
+         iter->position < iter->table->capacity &&
+         !IS_EMPTY(iter->table->entries[iter->position].key);
+    if (!valid) iter->instance = NULL;
+    return valid;
 }
 
 Value getIterator(ObjIterator* iter, bool wantKey) {

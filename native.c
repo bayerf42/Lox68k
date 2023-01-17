@@ -218,7 +218,7 @@ static bool removeNative(int argCount, Value* args) {
 }
 
 static bool globalsNative(int argCount, Value* args) {
-    args[-1] = OBJ_VAL(newIterator(&vm.globals));
+    args[-1] = OBJ_VAL(newIterator(&vm.globals, NULL));
     return true;
 }
 
@@ -231,7 +231,7 @@ static bool typeNative(int argCount, Value* args) {
 
 static bool slotsNative(int argCount, Value* args) {
     ObjInstance* instance = AS_INSTANCE(args[0]);
-    args[-1] = OBJ_VAL(newIterator(&instance->fields));
+    args[-1] = OBJ_VAL(newIterator(&instance->fields, instance));
     return true;
 }
 
