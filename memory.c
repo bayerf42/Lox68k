@@ -60,7 +60,7 @@ void markObject(Obj* object) {
     if (object->isMarked) return;
 
     if (vm.debug_log_gc) {
-        printf("%lx mark ", (void*) object);
+        printf("%05x mark ", (void*) object);
         printValue(OBJ_VAL(object), true, true);
         printf("\n");
     }
@@ -100,7 +100,7 @@ static void blackenObject(Obj* object) {
     int16_t i;
 
     if (vm.debug_log_gc) {
-        printf("%lx blacken ", (void*)object);
+        printf("%05x blacken ", (void*)object);
         printValue(OBJ_VAL(object), true, true);
         printf("\n");
     }
@@ -150,7 +150,7 @@ static void blackenObject(Obj* object) {
 static void freeObject(Obj* object) {
 
     if (vm.debug_log_gc) {
-        printf("%lx free type %s\n", (void*)object, typeName(object->type));
+        printf("%05x free type %s\n", (void*)object, typeName(object->type));
     }
 
     switch (object->type) {

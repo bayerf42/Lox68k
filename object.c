@@ -28,7 +28,7 @@ static Obj* allocateObject(size_t size, ObjType type) {
     vm.objects = object;
 
     if (vm.debug_log_gc) {
-        printf("%lx allocate %d for %s\n", (void*)object, size, typeName(type));
+        printf("%05x allocate %d for %s\n", (void*)object, size, typeName(type));
     }
 
     return object;
@@ -196,8 +196,8 @@ void printObject(Value value, bool compact, bool machine) {
         case OBJ_FUNCTION: printFunction("fun", AS_FUNCTION(value)); break;
         case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
         case OBJ_ITERATOR: printf("<iterator %d>", AS_ITERATOR(value)->position); break;
-        case OBJ_LIST: if (compact) printf("<list %d>",AS_LIST(value)->count); else printList(AS_LIST(value)); break;
-        case OBJ_NATIVE: printf("<native>"); break;
+        case OBJ_LIST: if (compact) printf("<list %d>", AS_LIST(value)->count); else printList(AS_LIST(value)); break;
+        case OBJ_NATIVE: printf("<native %05x>", (void*) AS_NATIVE(value)); break;
         case OBJ_REAL: printf("%s", formatReal(AS_REAL(value))); break;
         case OBJ_STRING:
             if (machine) fix_printf("\"");
