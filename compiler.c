@@ -207,7 +207,12 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     current = compiler;
 
     if (type != TYPE_SCRIPT) {
-        current->function->name = copyString(parser.previous.start, parser.previous.length);
+        if (parser.previous.type == TOKEN_FUN) {
+            sprintf(numBuffer, "#%d", vm.lambdaCount++);
+            current->function->name = copyString(numBuffer, strlen(numBuffer));
+        } else {
+            current->function->name = copyString(parser.previous.start, parser.previous.length);
+        }
     }
 
     local = &current->locals[current->localCount++];
@@ -222,9 +227,9 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     }
 }
 
-static ObjFunction* endCompiler(void) {
+static ObjFunction* endCompiler(bool addReturn) {
     ObjFunction* function;
-    emitReturn();
+    if (addReturn) emitReturn();
     function = current->function;
 
     if (vm.debug_print_code) {
@@ -638,6 +643,7 @@ const ParseRule rules[] = {
     /* [TOKEN_LESS]          = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_LESS_EQUAL]    = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_DOT_DOT]       = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_ARROW]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_IDENTIFIER]    = */ {variable, NULL,   PREC_NONE},
     /* [TOKEN_STRING]        = */ {string,   NULL,   PREC_NONE},
     /* [TOKEN_NUMBER]        = */ {number,   NULL,   PREC_NONE},
@@ -785,10 +791,17 @@ static void function(FunctionType type) {
         } while (match(TOKEN_COMMA));
     }
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameter.");
-    consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
-    block();
 
-    function = endCompiler();
+    if (match(TOKEN_ARROW)) {
+        expression();
+        emitByte(OP_RETURN);
+        function = endCompiler(false);
+    } else {
+        consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+        block();
+        function = endCompiler(true);
+    }
+
     emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
 
     for (i = 0; i < function->upvalueCount; i++) {
@@ -1076,7 +1089,7 @@ ObjFunction* compile(const char* source) {
         declaration();
     }
 
-    function = endCompiler();
+    function = endCompiler(true);
     return parser.hadError ? NULL : function;
 }
 

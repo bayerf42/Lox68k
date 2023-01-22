@@ -51,6 +51,7 @@ void initVM(void) {
     vm.objects = NULL;
     vm.bytesAllocated = 0;
     vm.grayCount = 0;
+    vm.lambdaCount = 0;
 
     initTable(&vm.globals);
     initTable(&vm.strings);

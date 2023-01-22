@@ -15,9 +15,8 @@ fun filter(fn, list) {
   return res;
 }
 
-fun complement(fn) {
-  return fun (x) {return !fn(x);};
-}
+fun complement(fn) -> fun (x) -> !fn(x)
+
 
 fun reduce(fn, list) {
   var len = length(list);
@@ -43,7 +42,7 @@ fun range(lower, upper) {
 }
 
 fun sum(n) {
-  return reduce(fun (x,y) {return x+y;}, range(1, n));
+  return reduce(fun (x,y) -> x+y, range(1, n));
 }
 
 
@@ -61,9 +60,9 @@ fun sso(a, b) {
   
 fun sso2(a, b) {
   // same, but with lambdas
-  return reduce(fun (x,y) {return x+y;},
-                map(fun (x) {return x*x;},
-                    filter(complement(fun (n) {return n%2==0;}),
+  return reduce(fun (x,y) -> x+y,
+                map(fun (x) -> x*x,
+                    filter(complement(fun (n) -> n%2 == 0),
                            range(a, b))));
 }
   

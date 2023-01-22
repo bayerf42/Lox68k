@@ -32,7 +32,7 @@ fun test(n) {
 
     print arr;
 
-    quicksort(arr, fun (a,b) {return a<b;});
+    quicksort(arr, fun (a,b) -> a<b);
 
     print arr;
 }

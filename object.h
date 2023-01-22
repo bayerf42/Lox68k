@@ -187,4 +187,6 @@ const char* formatReal(Real val);
 const char* formatInt(Number val);
 const char* formatHex(Number val);
 
+extern char numBuffer[];
+
 #endif

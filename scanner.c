@@ -237,7 +237,7 @@ Token scanToken(void) {
         case ':': return makeToken(TOKEN_COLON);
         case ',': return makeToken(TOKEN_COMMA);
         case '.': return makeToken(match('.') ? TOKEN_DOT_DOT       : TOKEN_DOT);
-        case '-': return makeToken(TOKEN_MINUS);
+        case '-': return makeToken(match('>') ? TOKEN_ARROW         : TOKEN_MINUS);
         case '+': return makeToken(TOKEN_PLUS);
         case '/': return makeToken(TOKEN_SLASH);
         case '*': return makeToken(TOKEN_STAR);

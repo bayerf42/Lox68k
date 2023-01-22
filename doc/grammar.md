@@ -13,6 +13,8 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * Real numbers with exponential part
 * postfix `@` to read key part of a hashtable iterator entry
 * postfix `^` to read/write value part of a hashtable iterator entry
+* function body `{ return expr;}` can be abbreviated by `-> expr`. 
+
 
 ``` ebnf
 program        → declaration* EOF ;
@@ -70,7 +72,7 @@ primary        → "true" | "false" | "nil" | "this"
                | "[" arguments? "]" | "super" "." IDENTIFIER
                | "fun" function ;
 
-function       → "(" parameters? ")" block ;
+function       → "(" parameters? ")" (block | "->" expression) ;
 parameters     → ".."? IDENTIFIER | IDENTIFIER ( "," IDENTIFIER )* ( "," ".." IDENTIFIER )? ;
 arguments      → ".."? expression ( "," ".."? expression )* ;
 

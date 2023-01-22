@@ -9,7 +9,7 @@
 #include "value.h"
 #include "vm.h"
 
-static char numBuffer[32];
+char numBuffer[32];
 
 bool isObjType(Value value, ObjType type) {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;

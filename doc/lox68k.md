@@ -77,6 +77,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * Real number arithmetic and native transcendental functions.
 * Hashtable iterators, created with `slots()`, iterate with `valid()` and `next()`, access key
   with `it@` and value with `it^`.
+* Function body `{ return expr;}` can be abbreviated by `-> expr`. 
 
 ### Omissions
 

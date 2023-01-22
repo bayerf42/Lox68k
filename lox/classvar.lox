@@ -11,13 +11,10 @@ fun FooFactory ()
       classVar = v;
     }
 
-    getCV() {
-      return classVar;
-    }
+    getCV() -> classVar
 
-    getX() {
-      return this.x;
-    }
+    getX() -> this.x
+
   }
 
   return Foo;

@@ -24,6 +24,7 @@ typedef struct {
     Table strings;
     ObjString* initString;
     ObjUpvalue* openUpvalues;
+    int lambdaCount;
 
     bool interrupted;
     bool hadStackoverflow;

@@ -6,17 +6,12 @@ fun fmod(a, b) {
   return b * (q-trunc(q));
 }
 
-fun radians(deg) {
-  return pi/180*deg;
-}
+fun radians(deg) -> pi/180*deg
 
-fun asin(x) {
-  return atan(x/sqrt(1-x*x));
-}
+fun asin(x) -> atan(x/sqrt(1-x*x))
 
-fun acos(x) {
-  return pi/2 - asin(x);
-}
+fun acos(x) -> pi/2 - asin(x)
+
 
 fun max(a,b) {
   if (a>b) return a; else return b;
@@ -103,9 +98,7 @@ class Time {
         if (this.hours >= 24) print "Overflow!";
     }
 
-    format() {
-        return dec(this.hours) + ":" + ("0" + dec(this.minutes))[-2:];
-    }
+    format() -> dec(this.hours) + ":" + ("0" + dec(this.minutes))[-2:]
 }
 
 
