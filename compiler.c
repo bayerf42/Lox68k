@@ -793,6 +793,8 @@ static void function(FunctionType type) {
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameter.");
 
     if (match(TOKEN_ARROW)) {
+        if (type == TYPE_INITIALIZER)
+            errorAtCurrent("'->' not allowed for initializer.");
         expression();
         emitByte(OP_RETURN);
         function = endCompiler(false);
@@ -874,15 +876,15 @@ static void classDeclaration(void) {
 }
 
 static void funDeclaration(void) {
-    uint8_t global = parseVariable("Expect function name.");
+    uint8_t fname = parseVariable("Expect function name.");
 
     markInitialized();
     function(TYPE_FUNCTION);
-    defineVariable(global);
+    defineVariable(fname);
 }
 
 static void varDeclaration(void) {
-    uint8_t global = parseVariable("Expect variable name.");
+    uint8_t vname = parseVariable("Expect variable name.");
 
     if (match(TOKEN_EQUAL)) {
         expression();
@@ -891,7 +893,7 @@ static void varDeclaration(void) {
     }
     consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
 
-    defineVariable(global);
+    defineVariable(vname);
 }
 
 static void expressionStatement(void) {
