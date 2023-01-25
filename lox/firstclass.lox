@@ -20,9 +20,7 @@ fun counted(cl) {
             num = num + 1;
         }
 
-        num_instances() {
-            return num;
-        }
+        num_instances() -> num
     }
 
     return Deco;

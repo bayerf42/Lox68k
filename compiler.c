@@ -794,7 +794,7 @@ static void function(FunctionType type) {
 
     if (match(TOKEN_ARROW)) {
         if (type == TYPE_INITIALIZER)
-            errorAtCurrent("'->' not allowed for initializer.");
+            error("Can't return a value from an initializer.");
         expression();
         emitByte(OP_RETURN);
         function = endCompiler(false);
