@@ -1,0 +1,39 @@
+// Datatypes in Lox68k
+
+
+fun map(fn, list) {
+  var res = [];
+  for (var i=0; i<length(list); i=i+1)
+    append(res, fn(list[i]));
+  return res;
+}
+
+class Spam {
+  init(x) {
+    this.value = x;
+  }
+
+  test() {
+    return this.value;
+  }
+}
+
+var inst = Spam(1138);
+
+var all_types = [
+  nil,        // 
+  true,       // 
+  42,         // 
+  3.145,      // 
+  "Fred",     //
+  [1,2,3],    //
+  map,        //
+  type,       //
+  Spam,       // 
+  inst,       // 
+  inst.test,  //
+  slots(inst) //
+]; 
+
+print all_types;
+print map(type, all_types);
