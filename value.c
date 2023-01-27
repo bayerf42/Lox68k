@@ -30,7 +30,7 @@ void printValue(Value value, bool compact, bool machine) {
     if (IS_BOOL(value))        printf(AS_BOOL(value) ? "true" : "false");
     else if (IS_NIL(value))    printf("nil");
     else if (IS_EMPTY(value))  printf("<empty>");
-    else if (IS_NUMBER(value)) printf("%ld", AS_NUMBER(value));
+    else if (IS_INT(value))    printf("%ld", AS_INT(value));
     else if (IS_OBJ(value))    printObject(value, compact, machine);
 }
 
@@ -40,7 +40,7 @@ ObjString* valueType(Value value) {
     if (IS_BOOL(value))        type = "bool";
     else if (IS_NIL(value))    type = "nil";
     else if (IS_EMPTY(value))  type = "empty"; // internal
-    else if (IS_NUMBER(value)) type = "int";
+    else if (IS_INT(value))    type = "int";
     else if (IS_OBJ(value))    type = typeName(OBJ_TYPE(value));
 
     return copyString(type, strlen(type));

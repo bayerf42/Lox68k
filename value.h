@@ -13,7 +13,7 @@ typedef struct ObjIterator ObjIterator;
 // Object pointers  0xxx xxxx ... xxxx xxx0 (even address, < 2GB)
 
 typedef uint32_t Value;
-typedef int32_t Number;
+typedef int32_t  Int;
 
 #define EMPTY_VAL        0x80000000
 #define NIL_VAL          0x80000002
@@ -23,16 +23,16 @@ typedef int32_t Number;
 #define IS_BOOL(value)   (((value) | 2) == FALSE_VAL)
 #define IS_NIL(value)    ((value) == NIL_VAL)
 #define IS_EMPTY(value)  ((value) == EMPTY_VAL)
-#define IS_NUMBER(value) (((value) & 1) == 1)
+#define IS_INT(value)    (((value) & 1) == 1)
 #define IS_OBJ(value)    (((value) & 0x80000001) == 0)
 #define IS_FALSEY(value) (((value) | 4) == FALSE_VAL)
 
 #define AS_BOOL(value)   ((value) == TRUE_VAL)
-#define AS_NUMBER(value) (((Number)(value))>>1)
+#define AS_INT(value)    (((Int)(value))>>1)
 #define AS_OBJ(value)    ((Obj*)(value))
 
 #define BOOL_VAL(b)      ((b) ? TRUE_VAL : FALSE_VAL)
-#define NUMBER_VAL(num)  ((Value)(((num)<<1) | 1))
+#define INT_VAL(num)     ((Value)(((num)<<1) | 1))
 #define OBJ_VAL(obj)     ((Value)(obj))
 
 typedef struct {

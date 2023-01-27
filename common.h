@@ -70,7 +70,7 @@ typedef double Real;
 #include <math.h>
 
 #define intToReal(x) (x)
-#define realToInt(x) ((Number)(x))
+#define realToInt(x) ((Int)(x))
 #define neg(x)       (-(x))
 #define add(x,y)     ((x)+(y))
 #define sub(x,y)     ((x)-(y))

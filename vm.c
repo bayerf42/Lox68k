@@ -261,7 +261,7 @@ static InterpretResult run(void) {
 
     // The IDE68K ancient C compiler generates wrong code for local vars in case branches.
     // Thus, we declare all needed variables at function start..
-    Number aNum, bNum;
+    Int aInt, bInt;
     Real aReal, bReal, cReal;
     Value  aVal=NIL_VAL, bVal, cVal, resVal;
     ObjString *aStr, *bStr, *resStr;
@@ -419,21 +419,21 @@ static InterpretResult run(void) {
                 push(BOOL_VAL(valuesEqual(aVal, bVal)));
                 break;
             case OP_LESS: {
-                if (IS_NUMBER(peek(0))) {
-                    if (IS_NUMBER(peek(1))) {
-                        bNum = AS_NUMBER(pop());
-                        aNum = AS_NUMBER(pop());
-                        push(BOOL_VAL(aNum < bNum));
+                if (IS_INT(peek(0))) {
+                    if (IS_INT(peek(1))) {
+                        bInt = AS_INT(pop());
+                        aInt = AS_INT(pop());
+                        push(BOOL_VAL(aInt < bInt));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
-                        bReal = intToReal(AS_NUMBER(peek(0)));
+                        bReal = intToReal(AS_INT(peek(0)));
                         goto lessReals;
                     } else goto typeErrorLess;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
-                    if (IS_NUMBER(peek(1))) {
-                        aReal = intToReal(AS_NUMBER(peek(1)));
+                    if (IS_INT(peek(1))) {
+                        aReal = intToReal(AS_INT(peek(1)));
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
                     } else goto typeErrorLess;
@@ -451,21 +451,21 @@ static InterpretResult run(void) {
                 break;
             }
             case OP_ADD: {
-                if (IS_NUMBER(peek(0))) {
-                    if (IS_NUMBER(peek(1))) {
-                        bNum = AS_NUMBER(pop());
-                        aNum = AS_NUMBER(pop());
-                        push(NUMBER_VAL(aNum + bNum));
+                if (IS_INT(peek(0))) {
+                    if (IS_INT(peek(1))) {
+                        bInt = AS_INT(pop());
+                        aInt = AS_INT(pop());
+                        push(INT_VAL(aInt + bInt));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
-                        bReal = intToReal(AS_NUMBER(peek(0)));
+                        bReal = intToReal(AS_INT(peek(0)));
                         goto addReals;
                     } else goto typeErrorAdd;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
-                    if (IS_NUMBER(peek(1))) {
-                        aReal = intToReal(AS_NUMBER(peek(1)));
+                    if (IS_INT(peek(1))) {
+                        aReal = intToReal(AS_INT(peek(1)));
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
                     } else goto typeErrorAdd;
@@ -493,20 +493,20 @@ static InterpretResult run(void) {
                 break;
             }
             case OP_SUB: {
-                if (IS_NUMBER(peek(0))) {
-                    if (IS_NUMBER(peek(1))) {
-                        bNum = AS_NUMBER(pop());
-                        aNum = AS_NUMBER(pop());
-                        push(NUMBER_VAL(aNum - bNum));
+                if (IS_INT(peek(0))) {
+                    if (IS_INT(peek(1))) {
+                        bInt = AS_INT(pop());
+                        aInt = AS_INT(pop());
+                        push(INT_VAL(aInt - bInt));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
-                        bReal = intToReal(AS_NUMBER(peek(0)));
+                        bReal = intToReal(AS_INT(peek(0)));
                     } else goto typeErrorNum;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
-                    if (IS_NUMBER(peek(1))) {
-                        aReal = intToReal(AS_NUMBER(peek(1)));
+                    if (IS_INT(peek(1))) {
+                        aReal = intToReal(AS_INT(peek(1)));
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
                     } else goto typeErrorNum;
@@ -523,20 +523,20 @@ static InterpretResult run(void) {
                 break;
             }
             case OP_MUL: {
-                if (IS_NUMBER(peek(0))) {
-                    if (IS_NUMBER(peek(1))) {
-                        bNum = AS_NUMBER(pop());
-                        aNum = AS_NUMBER(pop());
-                        push(NUMBER_VAL(aNum * bNum));
+                if (IS_INT(peek(0))) {
+                    if (IS_INT(peek(1))) {
+                        bInt = AS_INT(pop());
+                        aInt = AS_INT(pop());
+                        push(INT_VAL(aInt * bInt));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
-                        bReal = intToReal(AS_NUMBER(peek(0)));
+                        bReal = intToReal(AS_INT(peek(0)));
                     } else goto typeErrorNum;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
-                    if (IS_NUMBER(peek(1))) {
-                        aReal = intToReal(AS_NUMBER(peek(1)));
+                    if (IS_INT(peek(1))) {
+                        aReal = intToReal(AS_INT(peek(1)));
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
                     } else goto typeErrorNum;
@@ -549,20 +549,20 @@ static InterpretResult run(void) {
                 break;
             }
             case OP_DIV: {
-                if (IS_NUMBER(peek(0))) {
-                    if (IS_NUMBER(peek(1))) {
-                        bNum = AS_NUMBER(pop());
-                        aNum = AS_NUMBER(pop());
-                        push(NUMBER_VAL(aNum / bNum));
+                if (IS_INT(peek(0))) {
+                    if (IS_INT(peek(1))) {
+                        bInt = AS_INT(pop());
+                        aInt = AS_INT(pop());
+                        push(INT_VAL(aInt / bInt));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
-                        bReal = intToReal(AS_NUMBER(peek(0)));
+                        bReal = intToReal(AS_INT(peek(0)));
                     } else goto typeErrorNum;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
-                    if (IS_NUMBER(peek(1))) {
-                        aReal = intToReal(AS_NUMBER(peek(1)));
+                    if (IS_INT(peek(1))) {
+                        aReal = intToReal(AS_INT(peek(1)));
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
                     } else goto typeErrorNum;
@@ -575,10 +575,10 @@ static InterpretResult run(void) {
                 break;
             }
             case OP_MOD: {
-                if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
-                    bNum = AS_NUMBER(pop());
-                    aNum = AS_NUMBER(pop());
-                    push(NUMBER_VAL(aNum % bNum));
+                if (IS_INT(peek(0)) && IS_INT(peek(1))) {
+                    bInt = AS_INT(pop());
+                    aInt = AS_INT(pop());
+                    push(INT_VAL(aInt % bInt));
                 } else {
                     runtimeError("Operands must be integers.");
                     return INTERPRET_RUNTIME_ERROR;
@@ -589,8 +589,8 @@ static InterpretResult run(void) {
                 peek(0) = BOOL_VAL(IS_FALSEY(peek(0)));
                 break;
             case OP_NEG:
-                if (IS_NUMBER(peek(0)))
-                    peek(0) = NUMBER_VAL(-AS_NUMBER(peek(0)));
+                if (IS_INT(peek(0)))
+                    peek(0) = INT_VAL(-AS_INT(peek(0)));
                 else if (IS_REAL(peek(0)))
                     peek(0) = newReal(neg(AS_REAL(peek(0))));
                 else {
@@ -635,7 +635,7 @@ static InterpretResult run(void) {
                 break;
             }
             case OP_VCALL: {
-                argCount = READ_BYTE() + AS_NUMBER(pop());
+                argCount = READ_BYTE() + AS_INT(pop());
                 goto cont_call;
             }
             case OP_INVOKE: {
@@ -652,7 +652,7 @@ static InterpretResult run(void) {
             }
             case OP_VINVOKE: {
                 index = READ_BYTE();
-                argCount = READ_BYTE() + AS_NUMBER(pop());
+                argCount = READ_BYTE() + AS_INT(pop());
                 goto cont_invoke;
             }
             case OP_SUPER_INVOKE: {
@@ -671,7 +671,7 @@ static InterpretResult run(void) {
             case OP_VSUPER_INVOKE: {
                 index = READ_BYTE();
                 superclass = AS_CLASS(pop());
-                argCount = READ_BYTE() + AS_NUMBER(pop());
+                argCount = READ_BYTE() + AS_INT(pop());
                 goto cont_super_invoke;
             }
             case OP_CLOSURE: {
@@ -745,12 +745,12 @@ static InterpretResult run(void) {
                 break;
             }
             case OP_VLIST: {
-                argCount = READ_BYTE() + AS_NUMBER(pop());
+                argCount = READ_BYTE() + AS_INT(pop());
                 goto cont_list;
             }
             case OP_UNPACK: {
                 aVal = pop();
-                argCount = AS_NUMBER(pop());
+                argCount = AS_INT(pop());
                 if (!IS_LIST(aVal)) {
                     runtimeError("Item to unpack is not a list.");
                     return INTERPRET_RUNTIME_ERROR;
@@ -760,7 +760,7 @@ static InterpretResult run(void) {
                 for (i = 0; i < itemCount && !vm.hadStackoverflow; i++) {
                     push(aLst->items[i]);
                 }
-                push(NUMBER_VAL(itemCount + argCount));
+                push(INT_VAL(itemCount + argCount));
                 break;
             }
             case OP_GET_INDEX : {
@@ -769,11 +769,11 @@ static InterpretResult run(void) {
 
                 if (IS_LIST(bVal)) {
                     bLst = AS_LIST(bVal);
-                    if (!IS_NUMBER(aVal)) {
+                    if (!IS_INT(aVal)) {
                         runtimeError("List index is not an integer.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
-                    index = AS_NUMBER(aVal);
+                    index = AS_INT(aVal);
                     if (!isValidListIndex(bLst, index)) {
                         runtimeError("List index out of range.");
                         return INTERPRET_RUNTIME_ERROR;
@@ -784,11 +784,11 @@ static InterpretResult run(void) {
 
                 } else if (IS_STRING(bVal)) {
                     bStr = AS_STRING(bVal);
-                    if (!IS_NUMBER(aVal)) {
+                    if (!IS_INT(aVal)) {
                         runtimeError("String index is not an integer.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
-                    index = AS_NUMBER(aVal);
+                    index = AS_INT(aVal);
                     if (!isValidStringIndex(bStr, index)) {
                         runtimeError("String index out of range.");
                         return INTERPRET_RUNTIME_ERROR;
@@ -816,11 +816,11 @@ static InterpretResult run(void) {
 
                 if (IS_LIST(bVal)) {
                     bLst = AS_LIST(bVal);
-                    if (!IS_NUMBER(aVal)) {
+                    if (!IS_INT(aVal)) {
                         runtimeError("List index is not an integer.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
-                    index = AS_NUMBER(aVal);
+                    index = AS_INT(aVal);
                     if (!isValidListIndex(bLst, index)) {
                         runtimeError("List index out of range.");
                         return INTERPRET_RUNTIME_ERROR;
@@ -845,16 +845,16 @@ static InterpretResult run(void) {
                 bVal = pop();   // begin
                 cVal = peek(0); // object
 
-                if (!IS_NUMBER(bVal)) {
+                if (!IS_INT(bVal)) {
                     runtimeError("Slice begin is not an integer.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                begin = AS_NUMBER(bVal);
-                if (!IS_NUMBER(aVal)) {
+                begin = AS_INT(bVal);
+                if (!IS_INT(aVal)) {
                     runtimeError("Slice end is not an integer.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                end = AS_NUMBER(aVal);
+                end = AS_INT(aVal);
 
                 if (IS_LIST(cVal)) {
                     aLst = AS_LIST(cVal);

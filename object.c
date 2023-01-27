@@ -424,12 +424,12 @@ const char* formatReal(Real val) {
     return numBuffer;
 }
 
-const char* formatInt(Number val) {
+const char* formatInt(Int val) {
     sprintf(numBuffer, "%ld", val);
     return numBuffer;
 }
 
-const char* formatHex(Number val) {
+const char* formatHex(Int val) {
     sprintf(numBuffer, "%lx", val);
     return numBuffer;
 }

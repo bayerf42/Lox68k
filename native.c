@@ -16,8 +16,8 @@
 static const char* matchesType(Value value, char type) {
     switch (type) {
         case 'A': return NULL; // any value
-        case 'N': return IS_NUMBER(value) ? NULL : "an int";
-        case 'R': return IS_NUMBER(value) || IS_REAL(value) ? NULL : "a number";
+        case 'N': return IS_INT(value) ? NULL : "an int";
+        case 'R': return IS_INT(value) || IS_REAL(value) ? NULL : "a number";
         case 'S': return IS_STRING(value) ? NULL : "a string";
         case 'L': return IS_LIST(value) ? NULL : "a list";
         case 'Q': return IS_STRING(value) || IS_LIST(value) ? NULL : "a sequence";
@@ -58,26 +58,26 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
 
 
 static bool realNative(int argCount, Value* args) {
-    if (IS_NUMBER(args[0]))
-        args[-1] = newReal(intToReal(AS_NUMBER(args[0])));
+    if (IS_INT(args[0]))
+        args[-1] = newReal(intToReal(AS_INT(args[0])));
     else
         args[-1] = args[0];
     return true;
 }
 
 static bool absNative(int argCount, Value* args) {
-    if (IS_NUMBER(args[0]))
-        args[-1] = NUMBER_VAL(abs(AS_NUMBER(args[0])));
+    if (IS_INT(args[0]))
+        args[-1] = INT_VAL(abs(AS_INT(args[0])));
     else
         args[-1] = newReal(fabs(AS_REAL(args[0])));
     return true;
 }
 
 static bool truncNative(int argCount, Value* args) {
-    if (IS_NUMBER(args[0]))
+    if (IS_INT(args[0]))
         args[-1] = args[0];
     else
-        args[-1] = NUMBER_VAL(realToInt(AS_REAL(args[0])));
+        args[-1] = INT_VAL(realToInt(AS_REAL(args[0])));
     if (errno != 0) {
         runtimeError("Arithmetic error.");
         return false;
@@ -88,8 +88,8 @@ static bool truncNative(int argCount, Value* args) {
 typedef Real (*RealFun)(Real);
 
 static bool transcendentalNative(int argCount, Value* args, RealFun fn) {
-    if (IS_NUMBER(args[0]))
-        args[-1] = newReal((*fn)(intToReal(AS_NUMBER(args[0]))));
+    if (IS_INT(args[0]))
+        args[-1] = newReal((*fn)(intToReal(AS_INT(args[0]))));
     else
         args[-1] = newReal((*fn)(AS_REAL(args[0])));
     if (errno != 0) {
@@ -140,8 +140,8 @@ static bool atanNative(int argCount, Value* args) {
 }
 
 static bool powNative(int argCount, Value* args) {
-    Real x = (IS_NUMBER(args[0])) ? intToReal(AS_NUMBER(args[0])) : AS_REAL(args[0]);
-    Real y = (IS_NUMBER(args[1])) ? intToReal(AS_NUMBER(args[1])) : AS_REAL(args[1]);
+    Real x = (IS_INT(args[0])) ? intToReal(AS_INT(args[0])) : AS_REAL(args[0]);
+    Real y = (IS_INT(args[1])) ? intToReal(AS_INT(args[1])) : AS_REAL(args[1]);
     args[-1] = newReal(pow(x,y));
     if (errno != 0) {
         runtimeError("Arithmetic error.");
@@ -152,9 +152,9 @@ static bool powNative(int argCount, Value* args) {
 
 static bool lengthNative(int argCount, Value* args) {
     if (IS_STRING(args[0])) {
-        args[-1] = NUMBER_VAL(AS_STRING(args[0])->length);
+        args[-1] = INT_VAL(AS_STRING(args[0])->length);
     } else {
-        args[-1] = NUMBER_VAL(AS_LIST(args[0])->count);
+        args[-1] = INT_VAL(AS_LIST(args[0])->count);
     }
     return true;
 }
@@ -168,14 +168,14 @@ static bool appendNative(int argCount, Value* args) {
 
 static bool insertNative(int argCount, Value* args) {
     ObjList* list = AS_LIST(args[0]);
-    insertIntoList(list, args[2], AS_NUMBER(args[1]));
+    insertIntoList(list, args[2], AS_INT(args[1]));
     args[-1] = NIL_VAL;
     return true;
 }
 
 static bool deleteNative(int argCount, Value* args) {
     ObjList* list = AS_LIST(args[0]);
-    int index = AS_NUMBER(args[1]);
+    int index = AS_INT(args[1]);
     if (!isValidListIndex(list, index)) {
         runtimeError("List index out of bound.");
         return false;
@@ -188,7 +188,7 @@ static bool deleteNative(int argCount, Value* args) {
 static bool indexNative(int argCount, Value* args) {
     ObjList* list = AS_LIST(args[1]);
     Value item = args[0];
-    int start = (argCount == 2) ? 0 : AS_NUMBER(args[2]);
+    int start = (argCount == 2) ? 0 : AS_INT(args[2]);
     int i;
 
     args[-1] = NIL_VAL;
@@ -203,7 +203,7 @@ static bool indexNative(int argCount, Value* args) {
 
     for (i = start; i < list->count; i++) {
         if (valuesEqual(item, list->items[i])) {
-            args[-1] = NUMBER_VAL(i);
+            args[-1] = INT_VAL(i);
             break;
         }
     }
@@ -253,8 +253,8 @@ static bool nextNative(int argCount, Value* args) {
 
 static bool ascNative(int argCount, Value* args) {
     ObjString* string = AS_STRING(args[0]);
-    Number code;
-    int index = (argCount == 1) ? 0 : AS_NUMBER(args[1]);
+    Int code;
+    int index = (argCount == 1) ? 0 : AS_INT(args[1]);
 
     if (!isValidStringIndex(string, index)) {
         runtimeError("String index out of range.");
@@ -262,12 +262,12 @@ static bool ascNative(int argCount, Value* args) {
     }
     if (index < 0) index += string->length;
     code = string->chars[index] & 0xff;
-    args[-1] = NUMBER_VAL(code);
+    args[-1] = INT_VAL(code);
     return true;
 }
 
 static bool chrNative(int argCount, Value* args) {
-    Number code = AS_NUMBER(args[0]);
+    Int code = AS_INT(args[0]);
     char codepoint;
 
     if (code < 0 || code > 255) {
@@ -281,8 +281,8 @@ static bool chrNative(int argCount, Value* args) {
 
 static bool decNative(int argCount, Value* args) {
     const char* res;
-    if (IS_NUMBER(args[0]))
-        res = formatInt(AS_NUMBER(args[0]));
+    if (IS_INT(args[0]))
+        res = formatInt(AS_INT(args[0]));
     else
         res = formatReal(AS_REAL(args[0]));
     args[-1] = OBJ_VAL(copyString(res, strlen(res)));
@@ -290,7 +290,7 @@ static bool decNative(int argCount, Value* args) {
 }
 
 static bool hexNative(int argCount, Value* args) {
-    const char* res = formatHex(AS_NUMBER(args[0]));
+    const char* res = formatHex(AS_INT(args[0]));
     args[-1] = OBJ_VAL(copyString(res, strlen(res)));
     return true;
 }
@@ -298,7 +298,7 @@ static bool hexNative(int argCount, Value* args) {
 static bool parseIntNative(int argCount, Value* args) {
     char* start = AS_CSTRING(args[0]);
     char* end = start;
-    Number number;
+    Int number;
 
     if (*start == '$')
         number = strtol(start + 1, &end, 16);
@@ -306,7 +306,7 @@ static bool parseIntNative(int argCount, Value* args) {
         number = strtol(start, &end, 10);
 
     if (start + strlen(start) == end)
-        args[-1] = NUMBER_VAL(number);
+        args[-1] = INT_VAL(number);
     else
         args[-1] = NIL_VAL;
     return true;
@@ -370,12 +370,12 @@ static bool bitNotNative(int argCount, Value* args) {
 }
 
 static bool bitShiftNative(int argCount, Value* args) {
-    Number value = AS_NUMBER(args[0]);
-    Number amount = AS_NUMBER(args[1]);
+    Int value = AS_INT(args[0]);
+    Int amount = AS_INT(args[1]);
     if (amount > 0)
-        args[-1] = NUMBER_VAL(value << amount);
+        args[-1] = INT_VAL(value << amount);
     else
-        args[-1] = NUMBER_VAL(value >> (-amount));
+        args[-1] = INT_VAL(value >> (-amount));
     return true;
 }
 
@@ -385,13 +385,13 @@ static bool randomNative(int argCount, Value* args) {
     rand32 ^= rand32 << 13;
     rand32 ^= rand32 >> 17;
     rand32 ^= rand32 << 5;
-    args[-1] = NUMBER_VAL(rand32 & 0x3fffffff);
+    args[-1] = INT_VAL(rand32 & 0x3fffffff);
     return true;
 }
 
 static bool seedRandNative(int argCount, Value* args) {
-    args[-1] = NUMBER_VAL(rand32);
-    rand32 = AS_NUMBER(args[0]);
+    args[-1] = INT_VAL(rand32);
+    rand32 = AS_INT(args[0]);
     return true;
 }
 
@@ -442,15 +442,15 @@ static bool dbgStatNative(int argCount, Value* args) {
 // Remember your old 80s home computers?
 
 static bool peekNative(int argCount, Value* args) {
-    int32_t address = AS_NUMBER(args[0]);
-    Number byte = *((uint8_t*)address);
-    args[-1] = NUMBER_VAL(byte);
+    int32_t address = AS_INT(args[0]);
+    Int byte = *((uint8_t*)address);
+    args[-1] = INT_VAL(byte);
     return true;
 }
 
 static bool pokeNative(int argCount, Value* args) {
-    int32_t address = AS_NUMBER(args[0]);
-    Number  byte = AS_NUMBER(args[1]);
+    int32_t address = AS_INT(args[0]);
+    Int  byte = AS_INT(args[1]);
     if (byte < 0 || byte > 255) {
         runtimeError("Value not in range 0-255.");
         return false;
@@ -466,7 +466,7 @@ static bool execNative(int argCount, Value* args) {
     typedef Value sub2(Value,Value);
     typedef Value sub3(Value,Value,Value);
 
-    int32_t address = AS_NUMBER(args[0]);
+    int32_t address = AS_INT(args[0]);
     Value result;
 
     switch (argCount) {
@@ -482,7 +482,7 @@ static bool execNative(int argCount, Value* args) {
 
 static bool addrNative(int argCount, Value* args) {
     if (IS_OBJ(args[0]))
-        args[-1] = NUMBER_VAL((uint32_t)AS_OBJ(args[0]));
+        args[-1] = INT_VAL((uint32_t)AS_OBJ(args[0]));
     else
         args[-1] = NIL_VAL;
     return true;
@@ -499,7 +499,7 @@ static bool lcdClearNative(int argCount, Value* args) {
 }
 
 static bool lcdGotoNative(int argCount, Value* args) {
-    lcd_goto(AS_NUMBER(args[0]), AS_NUMBER(args[1]));
+    lcd_goto(AS_INT(args[0]), AS_INT(args[1]));
     args[-1] = NIL_VAL;
     return true;
 }
@@ -511,10 +511,10 @@ static bool lcdPutsNative(int argCount, Value* args) {
 }
 
 static bool lcdDefcharNative(int argCount, Value* args) {
-    int udc = AS_NUMBER(args[0]);
+    int udc = AS_INT(args[0]);
     ObjList* pattern = AS_LIST(args[1]);
     char bitmap[8];
-    Number byte;
+    Int byte;
     int i;
 
     if (udc < 0 || udc > 7) {
@@ -526,8 +526,8 @@ static bool lcdDefcharNative(int argCount, Value* args) {
         return false;
     }
     for (i = 0; i < 8; i++) {
-        if (IS_NUMBER(pattern->items[i])) {
-            byte = AS_NUMBER(pattern->items[i]);
+        if (IS_INT(pattern->items[i])) {
+            byte = AS_INT(pattern->items[i]);
             if (byte < 0 || byte > 255) {
                 runtimeError("Byte %d out of range.", i);
                 return false;
@@ -549,7 +549,7 @@ static bool keycodeNative(int argCount, Value* args) {
     if (code == 255)
         args[-1] = NIL_VAL;
     else
-        args[-1] = NUMBER_VAL(code);
+        args[-1] = INT_VAL(code);
     return true;
 }
 
@@ -557,8 +557,8 @@ static bool keycodeNative(int argCount, Value* args) {
 #define LOOPS_NOTE 91900 // for register variables
 
 static bool soundNative(int argCount, Value* args) {
-    int delay = AS_NUMBER(args[0]);
-    int len  = AS_NUMBER(args[1]);
+    int delay = AS_INT(args[0]);
+    int len  = AS_INT(args[1]);
     int loops = LOOPS_NOTE;
     int i,j;
 
@@ -582,7 +582,7 @@ static bool soundNative(int argCount, Value* args) {
 #define LOOPS_PER_MILLI 142 // for register variables
 
 static bool sleepNative(int argCount, Value* args) {
-    int32_t millis = AS_NUMBER(args[0]);
+    int32_t millis = AS_INT(args[0]);
     int32_t i, j;
 
     for (i = 0; i < millis; i++) {
@@ -608,7 +608,7 @@ static bool trapNative(int argCount, Value* args) {
 #endif
 
 static bool sleepNative(int argCount, Value* args) {
-    int32_t millis = AS_NUMBER(args[0]);
+    int32_t millis = AS_INT(args[0]);
 
 #ifdef _WIN32
     Sleep(millis);
@@ -624,16 +624,16 @@ static bool sleepNative(int argCount, Value* args) {
 
 static bool clockNative(int argCount, Value* args) {
 #ifdef KIT68K
-    args[-1] = NUMBER_VAL(0); // not available
+    args[-1] = INT_VAL(0); // not available
 #else
-    args[-1] = NUMBER_VAL(clock() * 1000 / CLOCKS_PER_SEC); // in milliseconds
+    args[-1] = INT_VAL(clock() * 1000 / CLOCKS_PER_SEC); // in milliseconds
 #endif
     return true;
 }
 
 static bool gcNative(int argCount, Value* args) {
     collectGarbage(false);
-    args[-1] = NUMBER_VAL(vm.bytesAllocated);
+    args[-1] = INT_VAL(vm.bytesAllocated);
     return true;
 }
 

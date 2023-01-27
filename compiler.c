@@ -325,7 +325,7 @@ static void slice(bool canAssign) {
 
 static void slice_right(bool canAssign) {
     if (match(TOKEN_RIGHT_BRACKET)) {
-        emitConstant(NUMBER_VAL(INT32_MAX>>1));
+        emitConstant(INT_VAL(INT32_MAX>>1));
     } else {
         expression();
         consume(TOKEN_RIGHT_BRACKET, "Expect ']' after slice.");
@@ -335,7 +335,7 @@ static void slice_right(bool canAssign) {
 
 static void index_(bool canAssign) {
     if (match(TOKEN_COLON)) {
-        emitConstant(NUMBER_VAL(0));
+        emitConstant(INT_VAL(0));
         slice_right(canAssign);
     } else {
         expression();
@@ -386,7 +386,7 @@ static void grouping(bool canAssign) {
 static void number(bool canAssign) {
     Value value;
     if (parser.previous.start[0] == '$') {
-        value = NUMBER_VAL(strtol(parser.previous.start+1, NULL, 16));
+        value = INT_VAL(strtol(parser.previous.start+1, NULL, 16));
     } else {
         if (parser.previous.real) {
 #ifdef KIT68K
@@ -398,7 +398,7 @@ static void number(bool canAssign) {
 #endif
         }
         else
-            value = NUMBER_VAL(strtol(parser.previous.start, NULL, 10));
+            value = INT_VAL(strtol(parser.previous.start, NULL, 10));
     }
     emitConstant(value);
 }
@@ -723,7 +723,7 @@ static uint8_t argumentList(bool* isVarArg, TokenType terminator) {
         do {
             if (match(TOKEN_DOT_DOT)) {
                 // First UNPACK, introduce count of arguments from lists
-                if (!*isVarArg) emitConstant(NUMBER_VAL(0)); 
+                if (!*isVarArg) emitConstant(INT_VAL(0)); 
                 *isVarArg = true;
                 expression();
                 emitByte(OP_UNPACK); // this also adapts list arguments count

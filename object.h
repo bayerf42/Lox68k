@@ -184,8 +184,8 @@ ObjString* caseString(ObjString* a, bool toUpper);
 bool isObjType(Value value, ObjType type);
 
 const char* formatReal(Real val);
-const char* formatInt(Number val);
-const char* formatHex(Number val);
+const char* formatInt(Int val);
+const char* formatHex(Int val);
 
 extern char numBuffer[];
 
