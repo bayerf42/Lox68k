@@ -17,9 +17,8 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     void* result;
 
     if (vm.debug_stress_gc) {
-        if (newSize > oldSize) {
+        if (newSize > oldSize)
             collectGarbage(false);
-        }
     }
 
     vm.bytesAllocated += newSize - oldSize;
@@ -33,9 +32,8 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     result = nano_malloc(newSize);
 
     if (result == NULL) {
-        if (vm.debug_log_gc) {
+        if (vm.debug_log_gc)
             printf("-- malloc failed, now trying gc.\n");
-        }
 
         collectGarbage(true);
 
@@ -90,9 +88,8 @@ void markValue(Value value) {
 
 static void markArray(ValueArray* array) {
     int i;
-    for (i = 0; i < array->count; i++) {
+    for (i = 0; i < array->count; i++)
         markValue(array->values[i]);
-    }
 }
 
 
@@ -149,9 +146,8 @@ static void blackenObject(Obj* object) {
 
 static void freeObject(Obj* object) {
 
-    if (vm.debug_log_gc) {
+    if (vm.debug_log_gc)
         printf("%05x free type %s\n", (void*)object, typeName(object->type));
-    }
 
     switch (object->type) {
         case OBJ_BOUND_METHOD:
@@ -256,9 +252,8 @@ static void sweep(void) {
 void collectGarbage(bool checkReclaim) {
     size_t before = vm.bytesAllocated;
 
-    if (vm.debug_log_gc) {
+    if (vm.debug_log_gc)
         printf("-- gc begin\n");
-    }
 
     markRoots();
     traceReferences();

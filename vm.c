@@ -37,11 +37,10 @@ void runtimeError(const char* format, ...) {
         function = frame->closure->function;
         instruction = frame->ip - function->chunk.code - 1;
         printf("[line %d] in ", getLine(&function->chunk, instruction));
-        if (function->name == NULL) {
+        if (function->name == NULL)
             printf("<script>\n");
-        } else {
+        else
             printf("%s\n", function->name->chars);
-        }
     }
     resetStack();
 }
@@ -103,9 +102,8 @@ static bool call(ObjClosure* closure, int argCount) {
         args = newList();
         itemCount = argCount - closure->function->arity + 1;
         push(OBJ_VAL(args)); // protect from GC
-        for (i = itemCount; i>0; --i) {
+        for (i = itemCount; i>0; --i)
             appendToList(args, peek(i));
-        }
         dropNpush(itemCount + 1, OBJ_VAL(args));
         argCount = closure->function->arity; // actual parameter count
     }
@@ -142,9 +140,9 @@ static bool callValue(Value callee, int argCount) {
             case OBJ_CLASS: {
                 klass = AS_CLASS(callee);
                 vm.stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
-                if (tableGet(&klass->methods, OBJ_VAL(vm.initString), &initializer)) {
+                if (tableGet(&klass->methods, OBJ_VAL(vm.initString), &initializer))
                     return call(AS_CLOSURE(initializer), argCount);
-                } else if (argCount != 0) {
+                else if (argCount != 0) {
                     runtimeError("Expected 0 arguments but got %d.", argCount);
                     return false;
                 }
@@ -217,18 +215,15 @@ static ObjUpvalue* captureUpvalue(Value* local) {
         upvalue = upvalue->nextUpvalue;
     }
 
-    if (upvalue != NULL && upvalue->location == local) {
-        return upvalue;
-    }
+    if (upvalue != NULL && upvalue->location == local) return upvalue;
 
     createdUpvalue = newUpvalue(local);
     createdUpvalue->nextUpvalue = upvalue;
 
-    if (prevUpvalue == NULL) {
+    if (prevUpvalue == NULL)
         vm.openUpvalues = createdUpvalue;
-    } else {
+    else
         prevUpvalue->nextUpvalue = createdUpvalue;
-    }
 
     return createdUpvalue;
 }
@@ -307,28 +302,28 @@ static InterpretResult run(void) {
         ++vm.stepsExecuted;
         instruction = READ_BYTE();
         switch (instruction) {
-            case OP_CONSTANT: {
+            case OP_CONSTANT:
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 push(constant);
                 break;
-            }
+
             case OP_NIL:   push(NIL_VAL); break;
             case OP_TRUE:  push(BOOL_VAL(true)); break;
             case OP_FALSE: push(BOOL_VAL(false)); break;
             case OP_POP:   drop(); break;
             case OP_SWAP:  aVal = peek(0); peek(0) = peek(1); peek(1) = aVal; break;
-            case OP_GET_LOCAL: {
+            case OP_GET_LOCAL:
                 slotNr = READ_BYTE();
                 push(frame->slots[slotNr]);
                 break;
-            }
-            case OP_SET_LOCAL: {
+
+            case OP_SET_LOCAL:
                 slotNr = READ_BYTE();
                 frame->slots[slotNr] = peek(0);
                 break;
-            }
-            case OP_GET_GLOBAL: {
+
+            case OP_GET_GLOBAL:
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
@@ -338,15 +333,15 @@ static InterpretResult run(void) {
                 }
                 push(aVal);
                 break;
-            }
-            case OP_DEF_GLOBAL: {
+
+            case OP_DEF_GLOBAL:
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 tableSet(&vm.globals, constant, peek(0));
                 drop();
                 break;
-            }
-            case OP_SET_GLOBAL: {
+
+            case OP_SET_GLOBAL:
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
@@ -356,18 +351,18 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-            }
-            case OP_GET_UPVALUE: {
+
+            case OP_GET_UPVALUE:
                 slotNr = READ_BYTE();
                 push(*frame->closure->upvalues[slotNr]->location);
                 break;
-            }
-            case OP_SET_UPVALUE: {
+
+            case OP_SET_UPVALUE:
                 slotNr = READ_BYTE();
                 *frame->closure->upvalues[slotNr]->location = peek(0);
                 break;
-            }
-            case OP_GET_PROPERTY: {
+
+            case OP_GET_PROPERTY:
                 if (!IS_INSTANCE(peek(0))) {
                     runtimeError("Only instances have properties.");
                     return INTERPRET_RUNTIME_ERROR;
@@ -383,12 +378,11 @@ static InterpretResult run(void) {
                 }
 
                 aStr = AS_STRING(constant);
-                if (!bindMethod(instance->klass, aStr)) {
+                if (!bindMethod(instance->klass, aStr))
                     return INTERPRET_RUNTIME_ERROR;
-                }
                 break;
-            }
-            case OP_SET_PROPERTY: {
+
+            case OP_SET_PROPERTY:
                 if (!IS_INSTANCE(peek(1))) {
                     runtimeError("Only instances have properties.");
                     return INTERPRET_RUNTIME_ERROR;
@@ -401,8 +395,8 @@ static InterpretResult run(void) {
                 aVal = pop();
                 dropNpush(1, aVal);
                 break;
-            }
-            case OP_GET_SUPER: {
+
+            case OP_GET_SUPER:
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
@@ -412,13 +406,14 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-            }
+
             case OP_EQUAL:
                 bVal = pop();
                 aVal = pop();
                 push(BOOL_VAL(valuesEqual(aVal, bVal)));
                 break;
-            case OP_LESS: {
+
+            case OP_LESS:
                 if (IS_INT(peek(0))) {
                     if (IS_INT(peek(1))) {
                         bInt = AS_INT(pop());
@@ -449,8 +444,8 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-            }
-            case OP_ADD: {
+
+            case OP_ADD:
                 if (IS_INT(peek(0))) {
                     if (IS_INT(peek(1))) {
                         bInt = AS_INT(pop());
@@ -491,8 +486,8 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-            }
-            case OP_SUB: {
+
+            case OP_SUB:
                 if (IS_INT(peek(0))) {
                     if (IS_INT(peek(1))) {
                         bInt = AS_INT(pop());
@@ -521,8 +516,8 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-            }
-            case OP_MUL: {
+
+            case OP_MUL:
                 if (IS_INT(peek(0))) {
                     if (IS_INT(peek(1))) {
                         bInt = AS_INT(pop());
@@ -547,8 +542,8 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-            }
-            case OP_DIV: {
+
+            case OP_DIV:
                 if (IS_INT(peek(0))) {
                     if (IS_INT(peek(1))) {
                         bInt = AS_INT(pop());
@@ -573,8 +568,8 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-            }
-            case OP_MOD: {
+
+            case OP_MOD:
                 if (IS_INT(peek(0)) && IS_INT(peek(1))) {
                     bInt = AS_INT(pop());
                     aInt = AS_INT(pop());
@@ -584,10 +579,11 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-            }
+
             case OP_NOT:
                 peek(0) = BOOL_VAL(IS_FALSEY(peek(0)));
                 break;
+
             case OP_NEG:
                 if (IS_INT(peek(0)))
                     peek(0) = INT_VAL(-AS_INT(peek(0)));
@@ -598,34 +594,37 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
+
             case OP_PRINT:
                 printValue(pop(), false, false);
                 break;
+
             case OP_PRINTLN:
                 printValue(pop(), false, false);
                 printf("\n");
                 break;
-            case OP_JUMP: {
+
+            case OP_JUMP:
                 offset = READ_USHORT();
                 frame->ip += offset;
                 break;
-            }
-            case OP_JUMP_TRUE: {
+
+            case OP_JUMP_TRUE:
                 offset = READ_USHORT();
                 if (IS_FALSEY(peek(0))) drop(); else frame->ip += offset;
                 break;
-            }
-            case OP_JUMP_FALSE: {
+
+            case OP_JUMP_FALSE:
                 offset = READ_USHORT();
                 if (IS_FALSEY(peek(0))) frame->ip += offset; else drop();
                 break;
-            }
-            case OP_LOOP: {
+
+            case OP_LOOP:
                 offset = READ_USHORT();
                 frame->ip -= offset;
                 break;
-            }
-            case OP_CALL: {
+
+            case OP_CALL:
                 argCount = READ_BYTE();
             cont_call:
                 if (!callValue(peek(argCount), argCount)) {
@@ -633,12 +632,12 @@ static InterpretResult run(void) {
                 }
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
-            }
-            case OP_VCALL: {
+
+            case OP_VCALL:
                 argCount = READ_BYTE() + AS_INT(pop());
                 goto cont_call;
-            }
-            case OP_INVOKE: {
+
+            case OP_INVOKE:
                 index = READ_BYTE();
                 argCount = READ_BYTE();
             cont_invoke:
@@ -649,13 +648,13 @@ static InterpretResult run(void) {
                 }
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
-            }
-            case OP_VINVOKE: {
+
+            case OP_VINVOKE:
                 index = READ_BYTE();
                 argCount = READ_BYTE() + AS_INT(pop());
                 goto cont_invoke;
-            }
-            case OP_SUPER_INVOKE: {
+
+            case OP_SUPER_INVOKE:
                 index = READ_BYTE();
                 superclass = AS_CLASS(pop());
                 argCount = READ_BYTE();
@@ -667,14 +666,14 @@ static InterpretResult run(void) {
                 }
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
-            }
-            case OP_VSUPER_INVOKE: {
+
+            case OP_VSUPER_INVOKE:
                 index = READ_BYTE();
                 superclass = AS_CLASS(pop());
                 argCount = READ_BYTE() + AS_INT(pop());
                 goto cont_super_invoke;
-            }
-            case OP_CLOSURE: {
+
+            case OP_CLOSURE:
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 function = AS_FUNCTION(constant);
@@ -690,13 +689,13 @@ static InterpretResult run(void) {
                     }
                 }
                 break;
-            }
-            case OP_CLOSE_UPVALUE: {
+
+            case OP_CLOSE_UPVALUE:
                 closeUpvalues(vm.stackTop - 1);
                 drop();
                 break;
-            }
-            case OP_RETURN: {
+
+            case OP_RETURN:
                 resVal = pop();
                 closeUpvalues(frame->slots);
                 vm.frameCount--;
@@ -709,14 +708,15 @@ static InterpretResult run(void) {
                 push(resVal);
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
-            }
+
             case OP_CLASS:
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
                 push(OBJ_VAL(newClass(aStr)));
                 break;
-            case OP_INHERIT: {
+
+            case OP_INHERIT:
                 aVal = peek(1);
                 if (!IS_CLASS(aVal)) {
                     runtimeError("Superclass must be a class.");
@@ -726,14 +726,15 @@ static InterpretResult run(void) {
                 tableAddAll(&AS_CLASS(aVal)->methods, &subclass->methods);
                 drop();
                 break;
-            }
+
             case OP_METHOD:
                 index = READ_BYTE();
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
                 defineMethod(aStr);
                 break;
-            case OP_LIST: {
+
+            case OP_LIST:
                 argCount = READ_BYTE();
             cont_list:
                 aLst = newList();
@@ -743,12 +744,12 @@ static InterpretResult run(void) {
                 }
                 dropNpush(argCount + 1, OBJ_VAL(aLst));
                 break;
-            }
-            case OP_VLIST: {
+
+            case OP_VLIST:
                 argCount = READ_BYTE() + AS_INT(pop());
                 goto cont_list;
-            }
-            case OP_UNPACK: {
+
+            case OP_UNPACK:
                 aVal = pop();
                 argCount = AS_INT(pop());
                 if (!IS_LIST(aVal)) {
@@ -762,8 +763,8 @@ static InterpretResult run(void) {
                 }
                 push(INT_VAL(itemCount + argCount));
                 break;
-            }
-            case OP_GET_INDEX : {
+
+            case OP_GET_INDEX:
                 aVal = peek(0); // index
                 bVal = peek(1); // object
 
@@ -808,8 +809,8 @@ static InterpretResult run(void) {
                     runtimeError("Invalid type to index into.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-            }
-            case OP_SET_INDEX : {
+
+            case OP_SET_INDEX:
                 cVal = peek(0); // item
                 aVal = peek(1); // index
                 bVal = peek(2); // object   
@@ -839,8 +840,8 @@ static InterpretResult run(void) {
                     runtimeError("Invalid type to store into.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-            }
-            case OP_GET_SLICE: {
+
+            case OP_GET_SLICE:
                 aVal = pop();   // end
                 bVal = pop();   // begin
                 cVal = peek(0); // object
@@ -872,9 +873,9 @@ static InterpretResult run(void) {
                     runtimeError("Invalid type to slice into.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-            }
+
             case OP_GET_ITVAL:
-            case OP_GET_ITKEY: {
+            case OP_GET_ITKEY:
                 aVal = peek(0); // iterator
                 if (!IS_ITERATOR(aVal)) {
                     runtimeError("Not an iterator.");
@@ -888,8 +889,8 @@ static InterpretResult run(void) {
                 resVal = getIterator(aIt, instruction==OP_GET_ITKEY);
                 dropNpush(1, resVal);
                 break;
-            }
-            case OP_SET_ITVAL: {
+
+            case OP_SET_ITVAL:
                 bVal = peek(0); // item
                 aVal = peek(1); // iterator
                 if (!IS_ITERATOR(aVal)) {
@@ -904,7 +905,6 @@ static InterpretResult run(void) {
                 setIterator(aIt, bVal);
                 dropNpush(2, bVal);
                 break;
-            }
         }
     }
     return INTERPRET_RUNTIME_ERROR; // not reached

@@ -49,12 +49,7 @@ extern void _stackoverflow(void);
   _word(0x6c06); \
   _stackoverflow();
 
-
-// HEAP_SIZE, INPUT_SIZE, and STACK_MAX are set in project file, different for RAM and ROM version.
-
-
 #else
-
 
 /////////////////////////////////////////////////////////////////
 // Now for the more modern compilers Tiny C and GNU C
@@ -63,7 +58,6 @@ extern void _stackoverflow(void);
 #include <stdbool.h>
 #include <stdint.h>
 #include <errno.h>
-
 
 typedef double Real;
 
@@ -78,24 +72,20 @@ typedef double Real;
 #define div(x,y)     ((x)/(y))
 #define less(x,y)    ((x)<(y))
 
-
 #define CHECK_STACKOVERFLOW
 
-#define HEAP_SIZE   65536
-#define STACK_MAX    4096
-#define INPUT_SIZE  65536
-
 #endif
-
 
 /////////////////////////////////////////////////////////////////
 // Common definitions
 /////////////////////////////////////////////////////////////////
 
-#define DEDUPLICATE_CONSTANTS
 #define UINT8_COUNT (UINT8_MAX + 1)
 
-#define FRAMES_MAX  128
-#define GRAY_MAX   1024
+#define HEAP_SIZE   65536
+#define STACK_MAX    4096
+#define INPUT_SIZE  16384
+#define FRAMES_MAX    128
+#define GRAY_MAX     1024
 
 #endif

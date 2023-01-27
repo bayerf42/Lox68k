@@ -151,11 +151,10 @@ static bool powNative(int argCount, Value* args) {
 }
 
 static bool lengthNative(int argCount, Value* args) {
-    if (IS_STRING(args[0])) {
+    if (IS_STRING(args[0]))
         args[-1] = INT_VAL(AS_STRING(args[0])->length);
-    } else {
+    else
         args[-1] = INT_VAL(AS_LIST(args[0])->count);
-    }
     return true;
 }
 

@@ -123,9 +123,8 @@ void tableAddAll(Table* from, Table* to) {
 
     for (i = 0; i < from->capacity; i++) {
         entry = &from->entries[i];
-        if (!IS_EMPTY(entry->key)) {
+        if (!IS_EMPTY(entry->key))
             tableSet(to, entry->key, entry->value);
-        }
     }
 }
 
@@ -133,16 +132,14 @@ void tableShrink(Table* table) {
   int16_t num_entries = 0;
   int16_t i, capacity;
   
-  for (i = 0; i < table->capacity; i++) {
+  for (i = 0; i < table->capacity; i++)
       if (!IS_EMPTY(table->entries[i].key)) num_entries++;
-  }
 
   // Find optimal capacity for load factor 0.75
   for (capacity = 8; num_entries > ((capacity + capacity + capacity) >> 2); capacity <<= 1);
   if (capacity < table->capacity) {
-      if (vm.debug_log_gc) {
+      if (vm.debug_log_gc) 
           printf("   shrink strings from %d to %d\n", table->capacity, capacity);
-      }
       adjustCapacity(table, capacity);
   }
 }
@@ -182,9 +179,8 @@ void tableRemoveWhite(Table* table) {
     for (i = 0; i < table->capacity; i++) {
         entry = &table->entries[i];
         // keys either empty or ObjString*
-        if (!IS_EMPTY(entry->key) && !(AS_OBJ(entry->key))->isMarked) {
+        if (!IS_EMPTY(entry->key) && !(AS_OBJ(entry->key))->isMarked)
             tableDelete(table, entry->key);
-        }
     }
 }
 

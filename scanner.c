@@ -36,21 +36,10 @@ static bool isHexDigit(char c) {
 }
 
 #define isAtEnd() (*scanner.current == '\0')
-//static bool isAtEnd(void) {
-//    return *scanner.current == '\0';
-//}
-
 
 #define advance() (*scanner.current++)
-//static char advance(void) {
-//    return *scanner.current++;
-//}
-
 
 #define peek() (*scanner.current)
-//static char peek(void) {
-//    return *scanner.current;
-//}
 
 static char peekNext(void) {
     if (isAtEnd()) return '\0';
@@ -109,9 +98,8 @@ static void skipWhitespace(void) {
                 if (peekNext() == '/') {
                     // A comment goes until the end of the line.
                     while (peek() != '\n' && peek() != '\x1e' && !isAtEnd()) advance();
-                } else {
+                } else
                     return;
-                }
                 break;
             default:
                 return;
@@ -121,9 +109,8 @@ static void skipWhitespace(void) {
 
 static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
     if (scanner.current - scanner.start == start + length &&
-        fix_memcmp(scanner.start + start, rest, length) == 0) {
+        fix_memcmp(scanner.start + start, rest, length) == 0)
             return type;
-    }
     return TOKEN_IDENTIFIER;
 }
 

@@ -27,9 +27,8 @@ static Obj* allocateObject(size_t size, ObjType type) {
     object->nextObj = vm.objects;
     vm.objects = object;
 
-    if (vm.debug_log_gc) {
+    if (vm.debug_log_gc)
         printf("%05x allocate %d for %s\n", (void*)object, size, typeName(type));
-    }
 
     return object;
 }
@@ -56,9 +55,8 @@ ObjClosure* newClosure(ObjFunction* function) {
                        OBJ_CLOSURE);
     int i;
 
-    for (i = 0; i < function->upvalueCount; i++) {
+    for (i = 0; i < function->upvalueCount; i++)
         closure->upvalues[i] = NULL;
-    }
     closure->function = function;
     closure->upvalueCount = function->upvalueCount;
 
@@ -156,9 +154,8 @@ static void printList(ObjList* list) {
         printValue(list->items[i], false, false);
         printf(", ");
     }
-    if (list->count != 0) {
+    if (list->count != 0)
         printValue(list->items[list->count - 1], false, false);
-    }
     printf("]");
 }
 
@@ -239,9 +236,8 @@ void insertIntoList(ObjList* list, Value value, int index) {
     }
     if (index < 0) index = (index < -count) ? 0 : index + count;
     if (index > count) index = count;
-    for (i = count; i >= index; i--) {
+    for (i = count; i >= index; i--)
         list->items[i + 1] = list->items[i];
-    }
     list->items[index] = value;
     ++list->count;
 }
@@ -269,9 +265,8 @@ ObjList* sliceFromList(ObjList* list, int begin, int end) {
     if (end > n)    end = n;
 
     push(OBJ_VAL(result));
-    for (i = begin; i < end; i++) {
+    for (i = begin; i < end; i++)
         appendToList(result, list->items[i]);
-    }
     drop();
     return result;
 }
@@ -280,9 +275,8 @@ void deleteFromList(ObjList* list, int index) {
     int i;
 
     if (index < 0) index += list->count;
-    for (i = index; i < list->count - 1; i++) {
+    for (i = index; i < list->count - 1; i++)
         list->items[i] = list->items[i + 1];
-    }
     list->items[--list->count] = NIL_VAL;
 }
 
