@@ -22,7 +22,6 @@ void freeChunk(Chunk* chunk) {
 }
 
 void writeChunk(Chunk* chunk, uint8_t byte, int line) {
-    // Including line number compression
     int16_t oldCapacity;
     LineStart* lineStart;
 

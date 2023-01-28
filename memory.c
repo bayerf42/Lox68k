@@ -46,8 +46,8 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     vm.totallyAllocated += newSize;
 
     if (oldSize != 0) {
-    	fix_memcpy(result, pointer, (oldSize < newSize) ? oldSize : newSize);
-	nano_free(pointer);
+        fix_memcpy(result, pointer, (oldSize < newSize) ? oldSize : newSize);
+        nano_free(pointer);
     }
     return result;
 }

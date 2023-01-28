@@ -257,17 +257,18 @@ Value indexFromList(ObjList* list, int index) {
     return list->items[index];
 }
 
+#define LIMIT_SLICE(var) \
+    if (var < 0) var += n; \
+    if (var < 0) var  = 0; \
+    if (var > n) var  = n;
+
 ObjList* sliceFromList(ObjList* list, int begin, int end) {
     ObjList* result = newList();
     int n = list->count;
     int i;
 
-    if (begin < 0)  begin += n;
-    if (begin < 0)  begin = 0;
-    if (begin >= n) begin = n;
-    if (end < 0)    end += n;
-    if (end <= 0)   end = 0;
-    if (end > n)    end = n;
+    LIMIT_SLICE(begin)
+    LIMIT_SLICE(end)
 
     push(OBJ_VAL(result));
     for (i = begin; i < end; i++)
@@ -288,7 +289,7 @@ void deleteFromList(ObjList* list, int index) {
 
 bool isValidListIndex(ObjList* list, int index) {
     return (index >= 0) && (index < list->count) ||
-           (index < 0) && (index >= -list->count);
+           (index < 0)  && (index >= -list->count);
 }
 
 ObjString* indexFromString(ObjString* string, int index) {
@@ -299,18 +300,14 @@ ObjString* indexFromString(ObjString* string, int index) {
 
 bool isValidStringIndex(ObjString* string, int index) {
     return (index >= 0) && (index < string->length) ||
-           (index < 0) && (index >= -string->length);
+           (index < 0)  && (index >= -string->length);
 }
 
 ObjString* sliceFromString(ObjString* string, int begin, int end) {
     int n = string->length;
 
-    if (begin < 0)  begin += n;
-    if (begin < 0)  begin = 0;
-    if (begin >= n) begin = n;
-    if (end < 0)    end += n;
-    if (end <= 0)   end = 0;
-    if (end > n)    end = n;
+    LIMIT_SLICE(begin)
+    LIMIT_SLICE(end)
 
     return copyString(string->chars + begin, (end > begin) ? end - begin : 0);
 }
@@ -415,9 +412,11 @@ const char* formatReal(Real val) {
     for (dest = estr ? estr : numBuffer + strlen(numBuffer);
          dest[-1] == '0' && dest[-2] != '.';)
         *--dest = '\0';
-    if (estr) memmove(dest, estr, 6);
+    if (estr)
+        memmove(dest, estr, 6);
 
-    if (numBuffer[0] == '+') return numBuffer + 1;
+    if (numBuffer[0] == '+')
+        return numBuffer + 1;
 
 #else
     sprintf(numBuffer, "%.15g", val);
@@ -442,15 +441,13 @@ ObjIterator* newIterator(Table* table, ObjInstance* instance) {
     iter->table = table;
     iter->position = -1;
     iter->instance = NULL;
-    if (table->count > 0) {
-        for (i = 0; i < table->capacity; i++) {
+    if (table->count > 0)
+        for (i = 0; i < table->capacity; i++)
             if (!IS_EMPTY(table->entries[i].key)) {
                 iter->position = i;
                 iter->instance = instance;
                 return iter;
             }
-        }
-    }
     return iter;
 }
 

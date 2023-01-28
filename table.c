@@ -140,7 +140,8 @@ void tableShrink(Table* table) {
           num_entries++;
 
   // Find optimal capacity for load factor 0.75
-  for (capacity = 8; num_entries > ((capacity + capacity + capacity) >> 2); capacity <<= 1);
+  for (capacity = 8; num_entries > ((capacity + capacity + capacity) >> 2); capacity <<= 1)
+      ;
   if (capacity < table->capacity) {
       if (vm.debug_log_gc) 
           printf("   shrink strings from %d to %d\n", table->capacity, capacity);

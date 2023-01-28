@@ -631,9 +631,8 @@ static InterpretResult run(void) {
             case OP_CALL:
                 argCount = READ_BYTE();
             cont_call:
-                if (!callValue(peek(argCount), argCount)) {
+                if (!callValue(peek(argCount), argCount))
                     return INTERPRET_RUNTIME_ERROR;
-                }
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
 
@@ -647,9 +646,8 @@ static InterpretResult run(void) {
             cont_invoke:
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
-                if (!invoke(aStr, argCount)) {
+                if (!invoke(aStr, argCount))
                     return INTERPRET_RUNTIME_ERROR;
-                }
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
 
@@ -665,9 +663,8 @@ static InterpretResult run(void) {
             cont_super_invoke:
                 constant = frame->closure->function->chunk.constants.values[index];
                 aStr = AS_STRING(constant);
-                if (!invokeFromClass(superclass, aStr, argCount)) {
+                if (!invokeFromClass(superclass, aStr, argCount))
                     return INTERPRET_RUNTIME_ERROR;
-                }
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
 
@@ -686,11 +683,10 @@ static InterpretResult run(void) {
                 for (i = 0; i < closure->upvalueCount; i++) {
                     isLocal = READ_BYTE();
                     upIndex = READ_BYTE();
-                    if (isLocal) {
+                    if (isLocal)
                         closure->upvalues[i] = captureUpvalue(frame->slots + upIndex);
-                    } else {
+                    else
                         closure->upvalues[i] = frame->closure->upvalues[upIndex];
-                    }
                 }
                 break;
 
@@ -743,9 +739,8 @@ static InterpretResult run(void) {
             cont_list:
                 aLst = newList();
                 push(OBJ_VAL(aLst)); // protect from GC
-                for (i = argCount; i > 0; i--) {
+                for (i = argCount; i > 0; i--)
                     appendToList(aLst, peek(i));
-                }
                 dropNpush(argCount + 1, OBJ_VAL(aLst));
                 break;
 
@@ -762,9 +757,8 @@ static InterpretResult run(void) {
                 }
                 aLst = AS_LIST(aVal);
                 itemCount = aLst->count;
-                for (i = 0; i < itemCount && !vm.hadStackoverflow; i++) {
+                for (i = 0; i < itemCount && !vm.hadStackoverflow; i++)
                     push(aLst->items[i]);
-                }
                 push(INT_VAL(itemCount + argCount));
                 break;
 
@@ -922,7 +916,8 @@ InterpretResult interpret(const char* source) {
     ObjClosure* closure;
     InterpretResult result;
 
-    if (function == NULL) return INTERPRET_COMPILE_ERROR;
+    if (function == NULL)
+        return INTERPRET_COMPILE_ERROR;
 
     push(OBJ_VAL(function));
     closure = newClosure(function);

@@ -118,7 +118,6 @@ static void consume(TokenType type, const char* message) {
         advance();
         return;
     }
-
     errorAtCurrent(message);
 }
 
@@ -793,7 +792,7 @@ static void function(FunctionType type) {
 }
 
 static void method(void) {
-    uint8_t constant;
+    uint8_t      constant;
     FunctionType type;
 
     consume(TOKEN_IDENTIFIER, "Expect method name.");
@@ -806,8 +805,8 @@ static void method(void) {
 }
 
 static void classDeclaration(void) {
-    uint8_t nameConstant;
-    Token className;
+    uint8_t       nameConstant;
+    Token         className;
     ClassCompiler classCompiler;
 
     consume(TOKEN_IDENTIFIER, "Expect class name.");

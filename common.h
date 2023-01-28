@@ -27,24 +27,25 @@ typedef short          bool;
 
 extern void memmove(void *, void *, int);
 
-typedef int Real;
+typedef int32_t Real; // sic!
 
 #include "ffp_glue.h"
 
 
 // Code at the very beginning of a function to check for stack overflow:
 //
-// cmp.l STACKPOINTER.W,A7
+// cmp.l STACKLIMIT_ADDR.W,A7
 // bge   *+6
 // jsr   __stackoverflow
 //
-// please adapt the definition of STACKPOINTER in the project file when the address
-// of variable __stack in the assembler startup file changes, I haven't found a way
-// to automate this... 
+// please adapt the definition of STACKLIMIT_ADDR in the project file when the address
+// of variable __stack in the assembler startup file changes, _word only works wit constants.
+
+#define STACKLIMIT_ADDR 0x2004
 
 extern void _stackoverflow(void);
 #define CHECK_STACKOVERFLOW \
-  _word(0xbff8); _word(STACKPOINTER); \
+  _word(0xbff8); _word(STACKLIMIT_ADDR); \
   _word(0x6c06); \
   _stackoverflow();
 
@@ -78,8 +79,6 @@ typedef double Real;
 /////////////////////////////////////////////////////////////////
 // Common definitions
 /////////////////////////////////////////////////////////////////
-
-#define UINT8_COUNT (UINT8_MAX + 1)
 
 #define HEAP_SIZE   65536
 #define STACK_MAX    4096
