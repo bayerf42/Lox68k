@@ -77,16 +77,10 @@ void push(Value value) {
     *vm.stackTop++ = value;
 }
 
-//static void dropNpush(int n, Value value) {
-//    vm.stackTop -= n - 1;
-//    vm.stackTop[-1] = value;
-//}
-
 #define dropNpush(n,value) {\
     vm.stackTop -= (n) - 1; \
     vm.stackTop[-1] = (value); \
 }
-
 
 static bool call(ObjClosure* closure, int argCount) {
     CallFrame* frame;
@@ -132,12 +126,12 @@ static bool callValue(Value callee, int argCount) {
 
     if (IS_OBJ(callee)) {
         switch (OBJ_TYPE(callee)) {
-            case OBJ_BOUND_METHOD: {
+            case OBJ_BOUND_METHOD:
                 bound = AS_BOUND_METHOD(callee);
                 vm.stackTop[-argCount - 1] = bound->receiver;
                 return call(bound->method, argCount);
-            }
-            case OBJ_CLASS: {
+
+            case OBJ_CLASS:
                 klass = AS_CLASS(callee);
                 vm.stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
                 if (tableGet(&klass->methods, OBJ_VAL(vm.initString), &initializer))
@@ -147,16 +141,19 @@ static bool callValue(Value callee, int argCount) {
                     return false;
                 }
                 return true;
-            }
+
             case OBJ_CLOSURE:
                 return call(AS_CLOSURE(callee), argCount);
-            case OBJ_NATIVE: {
+
+            case OBJ_NATIVE:
                 native = AS_NATIVE(callee);
-                if (!checkNativeSignature(AS_NATIVE_SIG(callee), argCount, vm.stackTop - argCount)) return false;
-                if (!(*native)(argCount, vm.stackTop - argCount)) return false;
+                if (!checkNativeSignature(AS_NATIVE_SIG(callee), argCount, vm.stackTop - argCount))
+                    return false;
+                if (!(*native)(argCount, vm.stackTop - argCount))
+                    return false;
                 vm.stackTop -= argCount;
                 return true;
-            }
+
             default:
                 break; // Non-callable object type
         }
@@ -249,29 +246,29 @@ static void defineMethod(ObjString* name) {
 #define READ_USHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 
 static InterpretResult run(void) {
-    Value* slot;
+    Value*  slot;
     uint8_t instruction;
-    int index, begin, end, i;
-    Value constant;
+    int     index, begin, end, i;
+    Value   constant;
 
     // The IDE68K ancient C compiler generates wrong code for local vars in case branches.
     // Thus, we declare all needed variables at function start..
-    Int aInt, bInt;
-    Real aReal, bReal, cReal;
-    Value  aVal=NIL_VAL, bVal, cVal, resVal;
-    ObjString *aStr, *bStr, *resStr;
-    ObjList   *aLst, *bLst, *resLst;
-    ObjIterator *aIt;
-    ObjClass  *superclass, *subclass;
-    ObjInstance* instance;
-    uint8_t slotNr;
-    ObjFunction* function;
-    ObjClosure* closure;
-    int argCount, itemCount;
-    uint16_t offset;
-    uint8_t isLocal, upIndex;
+    Int          aInt, bInt;
+    Real         aReal, bReal, cReal;
+    Value        aVal=NIL_VAL, bVal, cVal, resVal;
+    ObjString    *aStr, *bStr, *resStr;
+    ObjList      *aLst, *bLst, *resLst;
+    ObjIterator  *aIt;
+    ObjClass     *superclass, *subclass;
+    ObjInstance  *instance;
+    uint8_t      slotNr;
+    ObjFunction  *function;
+    ObjClosure   *closure;
+    int          argCount, itemCount;
+    uint16_t     offset;
+    uint8_t      isLocal, upIndex;
+    CallFrame    *frame = &vm.frames[vm.frameCount - 1];
 
-    CallFrame* frame = &vm.frames[vm.frameCount - 1];
     vm.hadStackoverflow = false;
     vm.stepsExecuted = 0;
 
@@ -301,6 +298,7 @@ static InterpretResult run(void) {
 
         ++vm.stepsExecuted;
         instruction = READ_BYTE();
+
         switch (instruction) {
             case OP_CONSTANT:
                 index = READ_BYTE();
@@ -308,11 +306,18 @@ static InterpretResult run(void) {
                 push(constant);
                 break;
 
-            case OP_NIL:   push(NIL_VAL); break;
-            case OP_TRUE:  push(BOOL_VAL(true)); break;
+            case OP_NIL:   push(NIL_VAL);         break;
+            case OP_TRUE:  push(BOOL_VAL(true));  break;
             case OP_FALSE: push(BOOL_VAL(false)); break;
-            case OP_POP:   drop(); break;
-            case OP_SWAP:  aVal = peek(0); peek(0) = peek(1); peek(1) = aVal; break;
+
+            case OP_POP:   drop();                break;
+
+            case OP_SWAP:
+                aVal = peek(0);
+                peek(0) = peek(1);
+                peek(1) = aVal;
+                break;
+
             case OP_GET_LOCAL:
                 slotNr = READ_BYTE();
                 push(frame->slots[slotNr]);
@@ -402,9 +407,8 @@ static InterpretResult run(void) {
                 aStr = AS_STRING(constant);
                 superclass = AS_CLASS(pop());
 
-                if (!bindMethod(superclass, aStr)) {
+                if (!bindMethod(superclass, aStr))
                     return INTERPRET_RUNTIME_ERROR;
-                }
                 break;
 
             case OP_EQUAL:
@@ -427,11 +431,11 @@ static InterpretResult run(void) {
                     } else goto typeErrorLess;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
-                    if (IS_INT(peek(1))) {
+                    if (IS_INT(peek(1)))
                         aReal = intToReal(AS_INT(peek(1)));
-                    } else if (IS_REAL(peek(1))) {
+                    else if (IS_REAL(peek(1)))
                         aReal = AS_REAL(peek(1));
-                    } else goto typeErrorLess;
+                    else goto typeErrorLess;
                 lessReals: 
                     dropNpush(2, BOOL_VAL(less(aReal,bReal)));
                 } else if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
@@ -459,11 +463,11 @@ static InterpretResult run(void) {
                     } else goto typeErrorAdd;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
-                    if (IS_INT(peek(1))) {
+                    if (IS_INT(peek(1)))
                         aReal = intToReal(AS_INT(peek(1)));
-                    } else if (IS_REAL(peek(1))) {
+                    else if (IS_REAL(peek(1)))
                         aReal = AS_REAL(peek(1));
-                    } else goto typeErrorAdd;
+                    else goto typeErrorAdd;
                 addReals: 
                     dropNpush(2, newReal(add(aReal,bReal)));
                     if (errno != 0) {
@@ -500,11 +504,11 @@ static InterpretResult run(void) {
                     } else goto typeErrorNum;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
-                    if (IS_INT(peek(1))) {
+                    if (IS_INT(peek(1)))
                         aReal = intToReal(AS_INT(peek(1)));
-                    } else if (IS_REAL(peek(1))) {
+                    else if (IS_REAL(peek(1)))
                         aReal = AS_REAL(peek(1));
-                    } else goto typeErrorNum;
+                    else goto typeErrorNum;
                 } else {
                 typeErrorNum:
                     runtimeError("Operands must be numbers.");
@@ -530,11 +534,11 @@ static InterpretResult run(void) {
                     } else goto typeErrorNum;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
-                    if (IS_INT(peek(1))) {
+                    if (IS_INT(peek(1)))
                         aReal = intToReal(AS_INT(peek(1)));
-                    } else if (IS_REAL(peek(1))) {
+                    else if (IS_REAL(peek(1)))
                         aReal = AS_REAL(peek(1));
-                    } else goto typeErrorNum;
+                    else goto typeErrorNum;
                 } else goto typeErrorNum;
                 dropNpush(2, newReal(mul(aReal,bReal)));
                 if (errno != 0) {
@@ -556,11 +560,11 @@ static InterpretResult run(void) {
                     } else goto typeErrorNum;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
-                    if (IS_INT(peek(1))) {
+                    if (IS_INT(peek(1)))
                         aReal = intToReal(AS_INT(peek(1)));
-                    } else if (IS_REAL(peek(1))) {
+                    else if (IS_REAL(peek(1)))
                         aReal = AS_REAL(peek(1));
-                    } else goto typeErrorNum;
+                    else goto typeErrorNum;
                 } else goto typeErrorNum;
                 dropNpush(2, newReal(div(aReal,bReal)));
                 if (errno != 0) {

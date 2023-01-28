@@ -54,8 +54,8 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
 
 
 void markObject(Obj* object) {
-    if (object == NULL) return;
-    if (object->isMarked) return;
+    if (object == NULL || object->isMarked)
+        return;
 
     if (vm.debug_log_gc) {
         printf("%05x mark ", (void*) object);
@@ -160,8 +160,8 @@ static void freeObject(Obj* object) {
             break;
 
         case OBJ_CLOSURE:
-            reallocate(object, sizeof(ObjClosure) + sizeof(ObjUpvalue*) *
-                                                    ((ObjClosure*)object)->upvalueCount, 0);  
+            reallocate(object, sizeof(ObjClosure)  +
+                               sizeof(ObjUpvalue*) * ((ObjClosure*)object)->upvalueCount, 0);  
             break;
 
         case OBJ_FUNCTION:
@@ -301,7 +301,8 @@ int fix_memcmp(const char* a, const char* b, size_t size) {
 
     while (size--) {
         delta = *b++ - *a++;
-        if (delta) return delta;
+        if (delta)
+            return delta;
     }
     return 0;
 }

@@ -111,7 +111,8 @@ ObjString* copyString(const char* chars, int length) {
     uint32_t hash = hashString(chars, length);
     ObjString* string;
     ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
-    if (interned != NULL) return interned;
+    if (interned != NULL)
+        return interned;
 
     // Create new string
     string = (ObjString*)allocateObject(sizeof(ObjString) + length + 1, OBJ_STRING);
@@ -234,8 +235,10 @@ void insertIntoList(ObjList* list, Value value, int index) {
         list->capacity = GROW_CAPACITY(oldCapacity);
         list->items = GROW_ARRAY(Value, list->items, oldCapacity, list->capacity);
     }
-    if (index < 0) index = (index < -count) ? 0 : index + count;
-    if (index > count) index = count;
+    if (index < 0)
+        index = (index < -count) ? 0 : index + count;
+    if (index > count)
+        index = count;
     for (i = count; i >= index; i--)
         list->items[i + 1] = list->items[i];
     list->items[index] = value;
@@ -243,12 +246,14 @@ void insertIntoList(ObjList* list, Value value, int index) {
 }
 
 void storeToList(ObjList* list, int index, Value value) {
-    if (index < 0) index += list->count;
+    if (index < 0)
+        index += list->count;
     list->items[index] = value;
 }
 
 Value indexFromList(ObjList* list, int index) {
-    if (index < 0) index += list->count;
+    if (index < 0)
+        index += list->count;
     return list->items[index];
 }
 
@@ -274,7 +279,8 @@ ObjList* sliceFromList(ObjList* list, int begin, int end) {
 void deleteFromList(ObjList* list, int index) {
     int i;
 
-    if (index < 0) index += list->count;
+    if (index < 0)
+        index += list->count;
     for (i = index; i < list->count - 1; i++)
         list->items[i] = list->items[i + 1];
     list->items[--list->count] = NIL_VAL;
@@ -286,7 +292,8 @@ bool isValidListIndex(ObjList* list, int index) {
 }
 
 ObjString* indexFromString(ObjString* string, int index) {
-    if (index < 0) index += string->length;
+    if (index < 0)
+        index += string->length;
     return copyString(string->chars + index, 1);
 }
 
@@ -368,7 +375,8 @@ const char* formatReal(Real val) {
     char* estr;
     char* dest;
 
-    if (val==0) return "0.0";
+    if (val==0)
+        return "0.0";
 
     printReal(numBuffer, val);
     expo = atoi(numBuffer + 11);

@@ -15,15 +15,15 @@
 
 static const char* matchesType(Value value, char type) {
     switch (type) {
-        case 'A': return NULL; // any value
-        case 'N': return IS_INT(value) ? NULL : "an int";
-        case 'R': return IS_INT(value) || IS_REAL(value) ? NULL : "a number";
-        case 'S': return IS_STRING(value) ? NULL : "a string";
-        case 'L': return IS_LIST(value) ? NULL : "a list";
+        case 'A': return                                      NULL;  // any value
+        case 'N': return IS_INT(value)                      ? NULL : "an int";
+        case 'R': return IS_INT(value) || IS_REAL(value)    ? NULL : "a number";
+        case 'S': return IS_STRING(value)                   ? NULL : "a string";
+        case 'L': return IS_LIST(value)                     ? NULL : "a list";
         case 'Q': return IS_STRING(value) || IS_LIST(value) ? NULL : "a sequence";
-        case 'B': return IS_BOOL(value) ? NULL : "a bool";
-        case 'I': return IS_INSTANCE(value) ? NULL : "an instance";
-        case 'T': return IS_ITERATOR(value) ? NULL : "an iterator";
+        case 'B': return IS_BOOL(value)                     ? NULL : "a bool";
+        case 'I': return IS_INSTANCE(value)                 ? NULL : "an instance";
+        case 'T': return IS_ITERATOR(value)                 ? NULL : "an iterator";
         default:  return "an unknown type";
     }
 }
@@ -36,13 +36,15 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
 
     // Trailing lower-case letters in signature indicate optional arguments.
 
-    while (minParmCount > 0 && islower(signature[minParmCount-1])) minParmCount--;
+    while (minParmCount > 0 && islower(signature[minParmCount-1]))
+        minParmCount--;
 
     if (minParmCount > argCount || argCount > maxParmCount) {
         if (minParmCount == maxParmCount)
             runtimeError("Expected %d arguments but got %d.", maxParmCount, argCount);
         else
-            runtimeError("Expected %d to %d arguments but got %d.", minParmCount, maxParmCount, argCount);
+            runtimeError("Expected %d to %d arguments but got %d.",
+                          minParmCount, maxParmCount, argCount);
         return false;
     }
 
@@ -191,7 +193,8 @@ static bool indexNative(int argCount, Value* args) {
     int i;
 
     args[-1] = NIL_VAL;
-    if (list->count == 0) return true;
+    if (list->count == 0)
+        return true;
 
     if (!isValidListIndex(list, start)) {
         runtimeError("Start index out of bound.");
@@ -259,7 +262,8 @@ static bool ascNative(int argCount, Value* args) {
         runtimeError("String index out of range.");
         return false;
     }
-    if (index < 0) index += string->length;
+    if (index < 0)
+        index += string->length;
     code = string->chars[index] & 0xff;
     args[-1] = INT_VAL(code);
     return true;
@@ -510,11 +514,11 @@ static bool lcdPutsNative(int argCount, Value* args) {
 }
 
 static bool lcdDefcharNative(int argCount, Value* args) {
-    int udc = AS_INT(args[0]);
-    ObjList* pattern = AS_LIST(args[1]);
-    char bitmap[8];
-    Int byte;
-    int i;
+    int      udc        = AS_INT(args[0]);
+    ObjList* pattern    = AS_LIST(args[1]);
+    char     bitmap[8];
+    Int      byte;
+    int      i;
 
     if (udc < 0 || udc > 7) {
         runtimeError("UDC number out of range.");
@@ -557,7 +561,7 @@ static bool keycodeNative(int argCount, Value* args) {
 
 static bool soundNative(int argCount, Value* args) {
     int delay = AS_INT(args[0]);
-    int len  = AS_INT(args[1]);
+    int len   = AS_INT(args[1]);
     int loops = LOOPS_NOTE;
     int i,j;
 
@@ -584,10 +588,10 @@ static bool sleepNative(int argCount, Value* args) {
     int32_t millis = AS_INT(args[0]);
     int32_t i, j;
 
-    for (i = 0; i < millis; i++) {
+    for (i = 0; i < millis; i++)
         for (j = 0; j < LOOPS_PER_MILLI; j++)
             ;
-    }
+
     args[-1] = NIL_VAL;
     return true;
 }

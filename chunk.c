@@ -52,7 +52,8 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line) {
 int addConstant(Chunk* chunk, Value value) {
     int i;
     for (i = 0; i < chunk->constants.count; i++)
-        if (valuesEqual(chunk->constants.values[i], value)) return i;
+        if (valuesEqual(chunk->constants.values[i], value))
+            return i;
 
     push(value);
     writeValueArray(&chunk->constants, value);
@@ -69,10 +70,13 @@ int getLine(Chunk* chunk, int offset) {
     for (;;) {
         mid = (start + end) >> 1;
         line = &chunk->lines[mid];
-        if (offset < line->offset)                       end = mid - 1;
+        if (offset < line->offset)
+            end = mid - 1;
         else if (mid == chunk->lineCount - 1 ||
-                 offset < chunk->lines[mid + 1].offset)  return line->line;
-        else                                             start = mid + 1;
+                 offset < chunk->lines[mid + 1].offset)
+            return line->line;
+        else
+            start = mid + 1;
     }
     return -1; // not reached
 }

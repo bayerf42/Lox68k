@@ -99,8 +99,11 @@ static void runFile(const char* path) {
     InterpretResult result = interpret(source);
     free(source);
 
-    if (result == INTERPRET_COMPILE_ERROR) exit(65);
-    if (result == INTERPRET_RUNTIME_ERROR) exit(70);
+    if (result == INTERPRET_COMPILE_ERROR)
+        exit(65);
+
+    if (result == INTERPRET_RUNTIME_ERROR)
+        exit(70);
 }
 
 
@@ -123,9 +126,9 @@ int main(int argc, const char* argv[]) {
     initVM();
 
     printf("Lox68k (compiled for Big Computer) %s by Fred Bayer\n", VERSION);
-    if (argc == 1) {
+    if (argc == 1)
         repl();
-    } else {
+    else {
         for (arg=1; arg<argc; arg++) {
             if (argv[arg][0] == '-') 
                 repl();

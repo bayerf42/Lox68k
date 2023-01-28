@@ -28,17 +28,15 @@ static Entry* findEntry(Entry* entries, int capacity, Value key) {
     for (;;) {
         entry = &entries[index];
         if (IS_EMPTY(entry->key)) {
-            if (IS_NIL(entry->value)) {
-                // Empty entry
-                return tombstone != NULL ? tombstone : entry;
-            } else {
+            if (IS_NIL(entry->value))
+                return tombstone != NULL ? tombstone : entry; // Empty entry
+            else {
                 // We found a tombstone
-                if (tombstone == NULL) tombstone = entry;
+                if (tombstone == NULL)
+                    tombstone = entry;
             }
-        } else if (valuesEqual(key, entry->key)) {
-            // We found the key
-            return entry;
-        }
+        } else if (valuesEqual(key, entry->key))
+            return entry; //We found the key
 
         index = (index + 1) & (capacity - 1);
     }
@@ -48,10 +46,12 @@ static Entry* findEntry(Entry* entries, int capacity, Value key) {
 bool tableGet(Table* table, Value key, Value* value) {
     Entry* entry;
 
-    if (table->count == 0) return false;
+    if (table->count == 0)
+        return false;
 
     entry = findEntry(table->entries, table->capacity, key);
-    if (IS_EMPTY(entry->key)) return false;
+    if (IS_EMPTY(entry->key))
+        return false;
 
     *value = entry->value;
     return true;
@@ -71,7 +71,8 @@ static void adjustCapacity(Table* table, int capacity) {
     table->count = 0;
     for (i = 0; i < table->capacity; i++) {
         entry = &table->entries[i];
-        if (IS_EMPTY(entry->key)) continue;
+        if (IS_EMPTY(entry->key))
+            continue;
         dest = findEntry(entries, capacity, entry->key);
         dest->key = entry->key;
         dest->value = entry->value;
@@ -96,7 +97,8 @@ bool tableSet(Table* table, Value key, Value value) {
 
     entry = findEntry(table->entries, table->capacity, key);
     isNewKey = IS_EMPTY(entry->key);
-    if (isNewKey && IS_NIL(entry->value)) table->count++;
+    if (isNewKey && IS_NIL(entry->value))
+        table->count++;
 
     entry->key = key;
     entry->value = value;
@@ -109,7 +111,8 @@ bool tableDelete(Table* table, Value key) {
     if (table->count == 0) return false;
 
     entry = findEntry(table->entries, table->capacity, key);
-    if (IS_EMPTY(entry->key)) return false;
+    if (IS_EMPTY(entry->key))
+        return false;
 
     // Place a tombstone in the entry.
     entry->key = EMPTY_VAL;
@@ -133,7 +136,8 @@ void tableShrink(Table* table) {
   int16_t i, capacity;
   
   for (i = 0; i < table->capacity; i++)
-      if (!IS_EMPTY(table->entries[i].key)) num_entries++;
+      if (!IS_EMPTY(table->entries[i].key))
+          num_entries++;
 
   // Find optimal capacity for load factor 0.75
   for (capacity = 8; num_entries > ((capacity + capacity + capacity) >> 2); capacity <<= 1);
@@ -157,7 +161,8 @@ ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t
         entry = &table->entries[index];
         if (IS_EMPTY(entry->key)) {
             // Stop if we find an empty non-tombstone entry.
-            if (IS_NIL(entry->value)) return NULL;
+            if (IS_NIL(entry->value))
+                return NULL;
         } else {
             string = AS_STRING(entry->key); // keys will always be strings here!
             if (string->length == length &&
@@ -198,12 +203,11 @@ void markTable(Table* table) {
 void nextIterator(ObjIterator* iter) {
     int16_t i;
     Table* table = iter->table;
-    for (i = iter->position + 1; i < table->capacity; i++) {
+    for (i = iter->position + 1; i < table->capacity; i++)
         if (!IS_EMPTY(table->entries[i].key)) {
             iter->position = i;
             return;
         }
-    }
     iter->position = -1;
     iter->instance = NULL;
 }
@@ -212,7 +216,8 @@ bool isValidIterator(ObjIterator* iter) {
     bool valid = iter->position >= 0 &&
          iter->position < iter->table->capacity &&
          !IS_EMPTY(iter->table->entries[iter->position].key);
-    if (!valid) iter->instance = NULL;
+    if (!valid)
+        iter->instance = NULL;
     return valid;
 }
 

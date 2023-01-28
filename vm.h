@@ -16,37 +16,37 @@ typedef struct {
 } CallFrame;
 
 typedef struct {
-    CallFrame frames[FRAMES_MAX];
-    int frameCount;
-    Value stack[STACK_MAX];
-    Value* stackTop;
-    Table globals;
-    Table strings;
-    ObjString* initString;
+    CallFrame   frames[FRAMES_MAX];
+    int         frameCount;
+    Value       stack[STACK_MAX];
+    Value*      stackTop;
+    Table       globals;
+    Table       strings;
+    ObjString*  initString;
     ObjUpvalue* openUpvalues;
-    int lambdaCount;
+    int         lambdaCount;
 
-    bool interrupted;
-    bool hadStackoverflow;
-    size_t bytesAllocated;
-    Obj* objects;
-    int grayCount;
-    Obj* grayStack[GRAY_MAX];
+    bool        interrupted;
+    bool        hadStackoverflow;
+    size_t      bytesAllocated;
+    Obj*        objects;
+    int         grayCount;
+    Obj*        grayStack[GRAY_MAX];
 
-    size_t   totallyAllocated;
+    size_t      totallyAllocated;
 #ifdef KIT68K
-    uint32_t stepsExecuted;
+    uint32_t    stepsExecuted;
 #else
-    uint64_t stepsExecuted;
-    clock_t started;
+    uint64_t    stepsExecuted;
+    clock_t     started;
 #endif
-    int      numGCs;
+    int         numGCs;
 
-    bool debug_print_code;
-    bool debug_trace_execution;
-    bool debug_stress_gc;
-    bool debug_log_gc;
-    bool debug_statistics;
+    bool        debug_print_code;
+    bool        debug_trace_execution;
+    bool        debug_stress_gc;
+    bool        debug_log_gc;
+    bool        debug_statistics;
 } VM;
 
 typedef enum {

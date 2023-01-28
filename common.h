@@ -27,7 +27,6 @@ typedef short          bool;
 
 extern void memmove(void *, void *, int);
 
-
 typedef int Real;
 
 #include "ffp_glue.h"

@@ -80,15 +80,14 @@ static Chunk* currentChunk(void) {
 }
 
 static void errorAt(Token* token, const char* message) {
-    if (parser.panicMode) return;
+    if (parser.panicMode)
+        return;
     parser.panicMode = true;
     printf("[line %d] Error", token->line);
 
     if (token->type == TOKEN_EOF)
         printf(" at end");
-    else if (token->type == TOKEN_ERROR) {
-        // Nothing
-    } else
+    else if (token->type != TOKEN_ERROR)
         printf(" at '%.*s'", token->length, token->start);
 
     printf(": %s\n", message);
@@ -108,8 +107,8 @@ static void advance(void) {
 
     for (;;) {
         parser.current = scanToken();
-        if (parser.current.type != TOKEN_ERROR) break;
-
+        if (parser.current.type != TOKEN_ERROR)
+            break;
         errorAtCurrent(parser.current.start);
     }
 }
@@ -128,7 +127,8 @@ static bool check(TokenType type) {
 }
 
 static bool match(TokenType type) {
-    if (!check(type)) return false;
+    if (!check(type))
+        return false;
     advance();
     return true;
 }
@@ -147,8 +147,8 @@ static void emitLoop(int loopStart) {
     emitByte(OP_LOOP);
 
     offset = currentChunk()->count - loopStart + 2;
-    if (offset > UINT16_MAX) error("Loop body too large.");
-
+    if (offset > UINT16_MAX)
+        error("Loop body too large.");
     emitByte((offset >> 8) & 0xff);
     emitByte(offset & 0xff);
 }
@@ -229,7 +229,8 @@ static ObjFunction* endCompiler(bool addReturn) {
 
     if (vm.debug_print_code) {
         if (!parser.hadError)
-            disassembleChunk(currentChunk(), function->name != NULL ? function->name->chars : "<script>");
+            disassembleChunk(currentChunk(), function->name != NULL ? function->name->chars
+                                                                    : "<script>");
     }
 
     current = current->enclosing;
@@ -315,9 +316,9 @@ static void slice(bool canAssign) {
 }
 
 static void slice_right(bool canAssign) {
-    if (match(TOKEN_RIGHT_BRACKET)) {
+    if (match(TOKEN_RIGHT_BRACKET))
         emitConstant(INT_VAL(INT32_MAX>>1));
-    } else {
+    else {
         expression();
         consume(TOKEN_RIGHT_BRACKET, "Expect ']' after slice.");
     }
@@ -330,9 +331,9 @@ static void index_(bool canAssign) {
         slice_right(canAssign);
     } else {
         expression();
-        if (match(TOKEN_COLON)) {
+        if (match(TOKEN_COLON))
             slice_right(canAssign);
-        } else {
+        else {
             consume(TOKEN_RIGHT_BRACKET, "Expect ']' after index.");
 
             if (canAssign && match(TOKEN_EQUAL)) {
@@ -373,9 +374,9 @@ static void grouping(bool canAssign) {
 
 static void number(bool canAssign) {
     Value value;
-    if (parser.previous.start[0] == '$') {
+    if (parser.previous.start[0] == '$')
         value = INT_VAL(strtol(parser.previous.start+1, NULL, 16));
-    } else {
+    else {
         if (parser.previous.real) {
 #ifdef KIT68K
             value = newReal(scanReal(parser.previous.start));
@@ -400,7 +401,8 @@ static uint8_t identifierConstant(Token* name) {
 }
 
 static bool identifiersEqual(Token* a, Token* b) {
-    if (a->length != b->length) return false;
+    if (a->length != b->length)
+        return false;
     return fix_memcmp(a->start, b->start, a->length) == 0;
 }
 
@@ -432,9 +434,8 @@ static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal) {
 
     for (i = 0; i < upvalueCount; i++) {
         upvalue = &compiler->upvalues[i];
-        if (upvalue->index == index && upvalue->isLocal == isLocal) {
+        if (upvalue->index == index && upvalue->isLocal == isLocal)
             return i;
-        }
     }
 
     if (upvalueCount == MAX_UPVALUES) {
@@ -450,7 +451,8 @@ static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal) {
 static int resolveUpvalue(Compiler* compiler, Token* name) {
     int local, upvalue;
 
-    if (compiler->enclosing == NULL) return -1;
+    if (compiler->enclosing == NULL)
+        return -1;
 
     local = resolveLocal(compiler->enclosing, name);
     if (local != -1) {
@@ -459,7 +461,8 @@ static int resolveUpvalue(Compiler* compiler, Token* name) {
     }
 
     upvalue = resolveUpvalue(compiler->enclosing, name);
-    if (upvalue != -1) return addUpvalue(compiler, (uint8_t)upvalue, false);
+    if (upvalue != -1)
+        return addUpvalue(compiler, (uint8_t)upvalue, false);
 
     return -1;
 }
@@ -592,10 +595,8 @@ static void unary(bool canAssign) {
 static void function(FunctionType type);
 
 static void lambda(bool canAssign) {
-    // Lambdas store as function name the last token, i.e. 'fun'
     function(TYPE_FUNCTION);
 }
-
 
 const ParseRule rules[] = {
     /* [TOKEN_LEFT_PAREN]    = */ {grouping, call,   PREC_CALL},
@@ -678,13 +679,15 @@ static uint8_t parseVariable(const char* errorMessage) {
     consume(TOKEN_IDENTIFIER, errorMessage);
 
     declareVariable();
-    if (current->scopeDepth > 0) return 0;
+    if (current->scopeDepth > 0)
+        return 0;
 
     return identifierConstant(&parser.previous);
 }
 
 static void markInitialized(void) {
-    if (current->scopeDepth == 0) return;
+    if (current->scopeDepth == 0)
+        return;
     current->locals[current->localCount - 1].depth = current->scopeDepth;
 }
 
@@ -703,13 +706,15 @@ static uint8_t argumentList(bool* isVarArg, TokenType terminator) {
         do {
             if (match(TOKEN_DOT_DOT)) {
                 // First UNPACK, introduce count of arguments from lists
-                if (!*isVarArg) emitConstant(INT_VAL(0)); 
+                if (!*isVarArg)
+                    emitConstant(INT_VAL(0)); 
                 *isVarArg = true;
                 expression();
                 emitByte(OP_UNPACK); // this also adapts list arguments count
             } else {
                 expression();
-                if (*isVarArg) emitByte(OP_SWAP); // bubble list arguments count to TOS
+                if (*isVarArg)
+                    emitByte(OP_SWAP); // bubble list arguments count to TOS
                 if (argCount == UINT8_MAX)
                     error("Can't have more than 255 items in an argument list.");
                 argCount++;
@@ -740,10 +745,10 @@ static void block(void) {
 }
 
 static void function(FunctionType type) {
-    Compiler compiler;
+    Compiler     compiler;
     ObjFunction* function;
-    int i;
-    uint8_t parameter;
+    int          i;
+    uint8_t      parameter;
 
     CHECK_STACKOVERFLOW
 
@@ -840,7 +845,8 @@ static void classDeclaration(void) {
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
     emitByte(OP_POP);
 
-    if (classCompiler.hasSuperclass) endScope();
+    if (classCompiler.hasSuperclass)
+        endScope();
 
     currentClass = currentClass->enclosing;
 }
@@ -878,9 +884,9 @@ static void forStatement(void) {
 
     beginScope();
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
-    if (match(TOKEN_SEMICOLON)) {
-        // No initializer
-    } else if (match(TOKEN_VAR))
+    if (match(TOKEN_SEMICOLON))
+        {}// No initializer
+    else if (match(TOKEN_VAR))
         varDeclaration();
     else
         expressionStatement();
@@ -930,7 +936,8 @@ static void ifStatement(void) {
     patchJump(thenJump);
     emitByte(OP_POP);
 
-    if (match(TOKEN_ELSE)) statement();
+    if (match(TOKEN_ELSE))
+        statement();
     patchJump(elseJump);
 }
 
@@ -942,7 +949,8 @@ static void printStatement(void) {
         expression();
         while (match(TOKEN_COMMA)) {
             emitByte(OP_PRINT);
-            if (match(TOKEN_SEMICOLON)) return;
+            if (match(TOKEN_SEMICOLON))
+                return;
             expression();
         }
         consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
@@ -988,13 +996,13 @@ static void synchronize(void) {
         if (parser.previous.type == TOKEN_SEMICOLON) return;
 
         // Original switch crashed the compiler, no idea, why....
-        if (parser.current.type == TOKEN_CLASS) return;
-        if (parser.current.type == TOKEN_FUN) return;
-        if (parser.current.type == TOKEN_VAR) return;
-        if (parser.current.type == TOKEN_FOR) return;
-        if (parser.current.type == TOKEN_IF) return;
-        if (parser.current.type == TOKEN_WHILE) return;
-        if (parser.current.type == TOKEN_PRINT) return;
+        if (parser.current.type == TOKEN_CLASS)  return;
+        if (parser.current.type == TOKEN_FUN)    return;
+        if (parser.current.type == TOKEN_VAR)    return;
+        if (parser.current.type == TOKEN_FOR)    return;
+        if (parser.current.type == TOKEN_IF)     return;
+        if (parser.current.type == TOKEN_WHILE)  return;
+        if (parser.current.type == TOKEN_PRINT)  return;
         if (parser.current.type == TOKEN_RETURN) return;
 
         advance();

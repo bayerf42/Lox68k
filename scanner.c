@@ -42,13 +42,14 @@ static bool isHexDigit(char c) {
 #define peek() (*scanner.current)
 
 static char peekNext(void) {
-    if (isAtEnd()) return '\0';
+    if (isAtEnd())
+        return '\0';
     return scanner.current[1];
 }
 
 static bool match(char expected) {
-    if (isAtEnd()) return false;
-    if (*scanner.current != expected) return false;
+    if (isAtEnd() || *scanner.current != expected)
+        return false;
     scanner.current++;
     return true;
 }
@@ -97,7 +98,8 @@ static void skipWhitespace(void) {
             case '/':
                 if (peekNext() == '/') {
                     // A comment goes until the end of the line.
-                    while (peek() != '\n' && peek() != '\x1e' && !isAtEnd()) advance();
+                    while (peek() != '\n' && peek() != '\x1e' && !isAtEnd())
+                        advance();
                 } else
                     return;
                 break;
@@ -149,7 +151,8 @@ static TokenType identifierType(void) {
 }
 
 static Token identifier(void) {
-    while (isAlpha(peek()) || isDigit(peek())) advance();
+    while (isAlpha(peek()) || isDigit(peek()))
+        advance();
     return makeToken(identifierType());
 }
 
@@ -159,30 +162,33 @@ static Token number(char start) {
     bool isReal = false;
 
     if (start == '$') {
-        while (isHexDigit(peek())) advance();
+        while (isHexDigit(peek()))
+            advance();
     }
     else {
-        while (isDigit(peek())) advance();
+        while (isDigit(peek()))
+            advance();
 
         // Look for fractional part
         if (peek() == '.' && isDigit(peekNext())) {
             // Consume the ".".
             advance();
             isReal = true;
-            while (isDigit(peek())) advance();
+            while (isDigit(peek()))
+                advance();
         }
         // Look for exponential part
         if (peek() == 'e' || peek() == 'E') {
             advance();
             isReal = true;
-            if (peek() == '+' || peek() == '-') {
+            if (peek() == '+' || peek() == '-')
                 advance();
-            }
             while (isDigit(peek())) {
                 advance();
                 exponentEmpty = false;
             }
-            if (exponentEmpty) return errorToken("Empty exponent in number.");
+            if (exponentEmpty)
+                return errorToken("Empty exponent in number.");
         }
     }
     return makeNumToken(isReal);
@@ -190,11 +196,13 @@ static Token number(char start) {
 
 static Token string(void) {
     while (peek() != '"' && !isAtEnd()) {
-        if (peek() == '\n' || peek() == '\x1e') scanner.line++;
+        if (peek() == '\n' || peek() == '\x1e')
+            scanner.line++;
         advance();
     }
 
-    if (isAtEnd()) return errorToken("Unterminated string.");
+    if (isAtEnd())
+        return errorToken("Unterminated string.");
 
     // the closing quote
     advance();
@@ -206,12 +214,16 @@ Token scanToken(void) {
     skipWhitespace();
     scanner.start = scanner.current;
 
-    if (isAtEnd()) return makeToken(TOKEN_EOF);
+    if (isAtEnd())
+        return makeToken(TOKEN_EOF);
 
     c = advance();
 
-    if (isAlpha(c)) return identifier();
-    if (isDigit(c) || c=='$') return number(c);
+    if (isAlpha(c))
+        return identifier();
+
+    if (isDigit(c) || c=='$')
+        return number(c);
 
     switch (c) {
         case '(': return makeToken(TOKEN_LEFT_PAREN);
