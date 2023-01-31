@@ -21,10 +21,10 @@ static void resetStack(void) {
 }
 
 void runtimeError(const char* format, ...) {
-    va_list args;
-    size_t instruction;
-    int line, i;
-    CallFrame* frame;
+    va_list      args;
+    size_t       instruction;
+    int          line, i;
+    CallFrame*   frame;
     ObjFunction* function;
 
     va_start(args, format);
@@ -84,8 +84,8 @@ void push(Value value) {
 
 static bool call(ObjClosure* closure, int argCount) {
     CallFrame* frame;
-    ObjList* args;
-    int itemCount,i;
+    ObjList*   args;
+    int        itemCount, i;
 
     if (closure->function->isVarArg) {
         if (argCount < closure->function->arity - 1) {
@@ -96,7 +96,7 @@ static bool call(ObjClosure* closure, int argCount) {
         args = newList();
         itemCount = argCount - closure->function->arity + 1;
         push(OBJ_VAL(args)); // protect from GC
-        for (i = itemCount; i>0; --i)
+        for (i = itemCount; i > 0; --i)
             appendToList(args, peek(i));
         dropNpush(itemCount + 1, OBJ_VAL(args));
         argCount = closure->function->arity; // actual parameter count
@@ -119,9 +119,9 @@ static bool call(ObjClosure* closure, int argCount) {
 }
 
 static bool callValue(Value callee, int argCount) {
-    NativeFn native;
-    ObjClass* klass;
-    Value initializer = NIL_VAL;
+    NativeFn        native;
+    ObjClass*       klass;
+    Value           initializer = NIL_VAL;
     ObjBoundMethod* bound;
 
     if (IS_OBJ(callee)) {
@@ -153,9 +153,6 @@ static bool callValue(Value callee, int argCount) {
                     return false;
                 vm.stackTop -= argCount;
                 return true;
-
-            default:
-                break; // Non-callable object type
         }
     }
     runtimeError("Can only call functions and classes.");
@@ -172,9 +169,9 @@ static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
 }
 
 static bool invoke(ObjString* name, int argCount) {
-    Value receiver = peek(argCount);
+    Value        receiver = peek(argCount);
     ObjInstance* instance;
-    Value value = NIL_VAL;
+    Value        value = NIL_VAL;
 
     if (!IS_INSTANCE(receiver)) {
         runtimeError("Only instances have methods.");
@@ -190,7 +187,7 @@ static bool invoke(ObjString* name, int argCount) {
 }
 
 static bool bindMethod(ObjClass* klass, ObjString* name) {
-    Value method = NIL_VAL;
+    Value           method = NIL_VAL;
     ObjBoundMethod* bound;
     if (!tableGet(&klass->methods, OBJ_VAL(name), &method)) {
         runtimeError("Undefined property '%s'.", name->chars);
@@ -204,7 +201,7 @@ static bool bindMethod(ObjClass* klass, ObjString* name) {
 
 static ObjUpvalue* captureUpvalue(Value* local) {
     ObjUpvalue* prevUpvalue = NULL;
-    ObjUpvalue* upvalue = vm.openUpvalues;
+    ObjUpvalue* upvalue     = vm.openUpvalues;
     ObjUpvalue* createdUpvalue;
 
     while (upvalue != NULL && upvalue->location > local) {
@@ -212,7 +209,8 @@ static ObjUpvalue* captureUpvalue(Value* local) {
         upvalue = upvalue->nextUpvalue;
     }
 
-    if (upvalue != NULL && upvalue->location == local) return upvalue;
+    if (upvalue != NULL && upvalue->location == local)
+        return upvalue;
 
     createdUpvalue = newUpvalue(local);
     createdUpvalue->nextUpvalue = upvalue;
@@ -236,8 +234,8 @@ static void closeUpvalues(Value* last) {
 }
 
 static void defineMethod(ObjString* name) {
-    Value method = peek(0);
-    ObjClass* klass = AS_CLASS(peek(1));
+    Value     method = peek(0);
+    ObjClass* klass  = AS_CLASS(peek(1));
     tableSet(&klass->methods, OBJ_VAL(name), method);
     drop();
 }
@@ -270,7 +268,7 @@ static InterpretResult run(void) {
     CallFrame    *frame = &vm.frames[vm.frameCount - 1];
 
     vm.hadStackoverflow = false;
-    vm.stepsExecuted = 0;
+    vm.stepsExecuted    = 0;
 
     for (;;) {
         if (vm.hadStackoverflow) {
@@ -286,9 +284,8 @@ static InterpretResult run(void) {
 
         if (vm.debug_trace_execution) {
             for (slot = vm.stack; slot < vm.stackTop; slot++) {
-                printf("[");
                 printValue(*slot, true, true);
-                printf("] ");
+                printf(" | ");
             }
             printf("\n");
             disassembleInstruction(&frame->closure->function->chunk,
@@ -309,11 +306,10 @@ static InterpretResult run(void) {
             case OP_NIL:   push(NIL_VAL);         break;
             case OP_TRUE:  push(BOOL_VAL(true));  break;
             case OP_FALSE: push(BOOL_VAL(false)); break;
-
             case OP_POP:   drop();                break;
 
             case OP_SWAP:
-                aVal = peek(0);
+                aVal    = peek(0);
                 peek(0) = peek(1);
                 peek(1) = aVal;
                 break;
@@ -615,12 +611,18 @@ static InterpretResult run(void) {
 
             case OP_JUMP_TRUE:
                 offset = READ_USHORT();
-                if (IS_FALSEY(peek(0))) drop(); else frame->ip += offset;
+                if (IS_FALSEY(peek(0)))
+                    drop();
+                else
+                    frame->ip += offset;
                 break;
 
             case OP_JUMP_FALSE:
                 offset = READ_USHORT();
-                if (IS_FALSEY(peek(0))) frame->ip += offset; else drop();
+                if (IS_FALSEY(peek(0)))
+                    frame->ip += offset;
+                else
+                    drop();
                 break;
 
             case OP_LOOP:
@@ -903,6 +905,10 @@ static InterpretResult run(void) {
                 setIterator(aIt, bVal);
                 dropNpush(2, bVal);
                 break;
+
+            default:
+                runtimeError("Invalid byte code $%02x.", instruction);
+                return INTERPRET_RUNTIME_ERROR;
         }
     }
     return INTERPRET_RUNTIME_ERROR; // not reached
@@ -912,8 +918,8 @@ static InterpretResult run(void) {
 #undef READ_USHORT
 
 InterpretResult interpret(const char* source) {
-    ObjFunction* function = compile(source);
-    ObjClosure* closure;
+    ObjFunction*    function = compile(source);
+    ObjClosure*     closure;
     InterpretResult result;
 
     if (function == NULL)
@@ -929,9 +935,11 @@ InterpretResult interpret(const char* source) {
 #ifndef KIT68K
     vm.started = clock();
 #endif
+
     handleInterrupts(true);
     result = run();
     handleInterrupts(false);
+
     if (vm.debug_statistics) {
 #ifdef KIT68K
         printf("[%u steps; %d bytes; %d GCs]\n",

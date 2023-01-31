@@ -20,7 +20,7 @@ static void repl(void) {
     for (;;) {
         printf("> ");
 
-        if (!gets(input_line)) {
+        if (!GETS(input_line)) {
             printf("\n");
             break;
         }
@@ -58,7 +58,7 @@ static void repl(void) {
     for (;;) {
         printf("> ");
 
-        if (!fgets(input_line, sizeof(input_line), stdin)) {
+        if (!GETS(input_line)) {
             printf("\n");
             break;
         }

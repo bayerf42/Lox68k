@@ -44,8 +44,7 @@ typedef struct {
 
     bool        debug_print_code;
     bool        debug_trace_execution;
-    bool        debug_stress_gc;
-    bool        debug_log_gc;
+    int16_t     debug_log_gc;
     bool        debug_statistics;
 } VM;
 

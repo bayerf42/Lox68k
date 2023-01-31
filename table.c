@@ -143,8 +143,8 @@ void tableShrink(Table* table) {
   for (capacity = 8; num_entries > ((capacity + capacity + capacity) >> 2); capacity <<= 1)
       ;
   if (capacity < table->capacity) {
-      if (vm.debug_log_gc) 
-          printf("   shrink strings from %d to %d\n", table->capacity, capacity);
+      if (vm.debug_log_gc & DBG_GC_STRINGS) 
+          printf("GC shrink strings from %d to %d\n", table->capacity, capacity);
       adjustCapacity(table, capacity);
   }
 }

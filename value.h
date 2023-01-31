@@ -3,10 +3,6 @@
 
 #include "common.h"
 
-typedef struct Obj Obj;
-typedef struct ObjString ObjString;
-typedef struct ObjIterator ObjIterator;
-
 // 68008 Value tagging scheme
 // Integers         sxxx xxxx ... xxxx xxx1 (shift 1 bit for arithmetic)
 // Specials         1000 0000 ... 0000 0xx0 (empty, nil, false, true; see below)
@@ -40,6 +36,13 @@ typedef struct {
     int16_t capacity;
     Value*  values;
 } ValueArray;
+
+// referenced by other Objects
+typedef struct Obj         Obj;
+typedef struct ObjString   ObjString;
+typedef struct ObjIterator ObjIterator;
+typedef struct ObjUpvalue  ObjUpvalue;
+
 
 bool valuesEqual(Value a, Value b);
 void initValueArray(ValueArray* array);

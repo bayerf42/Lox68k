@@ -21,9 +21,8 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | cos         | num                    | real        | all          | cosine                                                                            |  
 | cosh        | num                    | real        | all          | hyperbolic cosine                                                                 |  
 | dbg_code    | bool                   | -           | all          | prints byte code after compiling                                                  |  
-| dbg_gc      | bool                   | -           | all          | prints garbage collection diagnostics                                             |  
+| dbg_gc      | int                    | -           | all          | prints garbage collection diagnostics according to bit flags *int*, see `memory.h`|  
 | dbg_stat    | bool                   | -           | all          | print statistics (steps, allocations) after execution                             |  
-| dbg_stress  | bool                   | -           | all          | force garbage collection before each allocation, slow!                            |  
 | dbg_trace   | bool                   | -           | all          | trace each VM instruction executed, prints stack                                  |  
 | dec         | num                    | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int              | -           | all          | deletes element at *int* from *list*                                              |

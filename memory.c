@@ -12,11 +12,10 @@
 
 char input_line[INPUT_SIZE];
 
-
 void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     void* result;
 
-    if (vm.debug_stress_gc) {
+    if (vm.debug_log_gc & DBG_GC_STRESS) {
         if (newSize > oldSize)
             collectGarbage(false);
     }
@@ -32,8 +31,8 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     result = nano_malloc(newSize);
 
     if (result == NULL) {
-        if (vm.debug_log_gc)
-            printf("-- malloc failed, now trying gc.\n");
+        if (vm.debug_log_gc & DBG_GC_GENERAL)
+            printf("GC -- malloc failed, now trying gc.\n");
 
         collectGarbage(true);
 
@@ -52,13 +51,12 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     return result;
 }
 
-
 void markObject(Obj* object) {
     if (object == NULL || object->isMarked)
         return;
 
-    if (vm.debug_log_gc) {
-        printf("%05x mark ", (void*) object);
+    if (vm.debug_log_gc & DBG_GC_MARK) {
+        printf("GC %05x mark ", (void*) object);
         printValue(OBJ_VAL(object), true, true);
         printf("\n");
     }
@@ -74,16 +72,16 @@ void markObject(Obj* object) {
 
         default:
             if (vm.grayCount + 1 > GRAY_MAX) {
-                printf("Gray stack sixe exceeded, exiting.\n");
+                printf("Gray stack size exceeded, exiting.\n");
                 exit(1);
             }
             vm.grayStack[vm.grayCount++] = object;
     }
 }
 
-
 void markValue(Value value) {
-    if (IS_OBJ(value)) markObject(AS_OBJ(value));
+    if (IS_OBJ(value))
+        markObject(AS_OBJ(value));
 }
 
 static void markArray(ValueArray* array) {
@@ -92,12 +90,11 @@ static void markArray(ValueArray* array) {
         markValue(array->values[i]);
 }
 
-
 static void blackenObject(Obj* object) {
     int16_t i;
 
-    if (vm.debug_log_gc) {
-        printf("%05x blacken ", (void*)object);
+    if (vm.debug_log_gc & DBG_GC_BLACK) {
+        printf("GC %05x blak ", (void*)object);
         printValue(OBJ_VAL(object), true, true);
         printf("\n");
     }
@@ -146,8 +143,8 @@ static void blackenObject(Obj* object) {
 
 static void freeObject(Obj* object) {
 
-    if (vm.debug_log_gc)
-        printf("%05x free type %s\n", (void*)object, typeName(object->type));
+    if (vm.debug_log_gc & DBG_GC_FREE)
+        printf("GC %05x free %s\n", (void*)object, typeName(object->type));
 
     switch (object->type) {
         case OBJ_BOUND_METHOD:
@@ -252,8 +249,8 @@ static void sweep(void) {
 void collectGarbage(bool checkReclaim) {
     size_t before = vm.bytesAllocated;
 
-    if (vm.debug_log_gc)
-        printf("-- gc begin\n");
+    if (vm.debug_log_gc & DBG_GC_GENERAL)
+        printf("GC >>> begin\n");
 
     markRoots();
     traceReferences();
@@ -265,17 +262,16 @@ void collectGarbage(bool checkReclaim) {
         exit(1);
     }
 
-    if (vm.debug_log_gc) {
-        printf("-- gc end\n");
-        printf("   collected %d bytes (from %d to %d)\n",
+    if (vm.debug_log_gc & DBG_GC_GENERAL) {
+        printf("GC <<< ended\n");
+        printf("GC collected %d bytes (from %d to %d)\n",
                before - vm.bytesAllocated, before, vm.bytesAllocated);
     }
 
-    if (!vm.debug_stress_gc) // Avoid endless recursion
+    if (!(vm.debug_log_gc & DBG_GC_STRESS)) // Avoid endless recursion
         tableShrink(&vm.strings);
     vm.numGCs++;
 }
-
 
 void freeObjects(void) {
     Obj* object = vm.objects;

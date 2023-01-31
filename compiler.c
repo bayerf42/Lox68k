@@ -223,7 +223,8 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
 
 static ObjFunction* endCompiler(bool addReturn) {
     ObjFunction* function;
-    if (addReturn) emitReturn();
+    if (addReturn)
+        emitReturn();
     function = current->function;
 
     if (vm.debug_print_code) {
@@ -362,7 +363,7 @@ static void literal(bool canAssign) {
         case TOKEN_FALSE: emitByte(OP_FALSE); break;
         case TOKEN_NIL:   emitByte(OP_NIL);   break;
         case TOKEN_TRUE:  emitByte(OP_TRUE);  break;
-        default: return; // Unreachable
+        default: return; // unreachable
     }
 }
 
@@ -438,7 +439,7 @@ static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal) {
     }
 
     if (upvalueCount == MAX_UPVALUES) {
-        error("Too many closure variables in function.");
+        error("Too many upvalues in function.");
         return 0;
     }
 
@@ -483,7 +484,8 @@ static void declareVariable(void) {
     int i;
     Local* local;
 
-    if (current->scopeDepth == 0) return;
+    if (current->scopeDepth == 0)
+        return;
 
     name = &parser.previous;
     for (i = current->localCount - 1; i >= 0; i--) {
@@ -752,7 +754,6 @@ static void function(FunctionType type) {
     CHECK_STACKOVERFLOW
 
     initCompiler(&compiler, type);
-
     beginScope();
 
     consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
@@ -786,7 +787,7 @@ static void function(FunctionType type) {
     emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
 
     for (i = 0; i < function->upvalueCount; i++) {
-        emitByte(compiler.upvalues[i].isLocal ? 1 : 0);
+        emitByte(compiler.upvalues[i].isLocal);
         emitByte(compiler.upvalues[i].index);
     }
 }
@@ -884,7 +885,7 @@ static void forStatement(void) {
     beginScope();
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
     if (match(TOKEN_SEMICOLON))
-        {}// No initializer
+        {}// no initializer
     else if (match(TOKEN_VAR))
         varDeclaration();
     else
@@ -1033,7 +1034,7 @@ static void statement(void) {
 }
 
 ObjFunction* compile(const char* source) {
-    Compiler compiler;
+    Compiler     compiler;
     ObjFunction* function;
 
     vm.totallyAllocated = 0;

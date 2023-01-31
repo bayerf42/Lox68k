@@ -22,7 +22,7 @@ hexPattern = "../FBI/{}.hex"
 encoding   = "ascii" # The Monitor getchar() only reads 7 bits to allow fast processing, so
                      # we restrict the entire serial protocol to pure 7 bit ASCII
 
-RS = b'\x1e' # ASCII record separator, passes thru gets(), but marks new line for Lox (scanner.c:90)
+CHAR_RS = b'\x1e' # ASCII record separator, passes thru gets(), but marks new line for Lox (scanner.c:11)
 anti_stress_delay = 0.0005 # Avoid too much CPU load when waiting for a char from serial or key press
 char_delay = 0.003 # Time to wait for char sent to the Kit is echoed back.
 line_delay = 0.01  # Same for newline char.
@@ -39,7 +39,7 @@ def transcript_char(char):
 
 def response():
     resp = ser.read(1)
-    if resp == RS: resp = b'\n' # Convert back
+    if resp == CHAR_RS: resp = b'\n' # Convert back
     char = resp.decode(encoding, errors="ignore"); 
     print(char, end="", flush=True)
     transcript_char(char)
@@ -67,7 +67,7 @@ def uploadLOX():
                     ser.write(char.encode(encoding, errors="replace"))
                     response()
                 time.sleep(char_delay)
-                ser.write(RS)
+                ser.write(CHAR_RS)
                 response()
                 time.sleep(line_delay)
             ser.write(b'\n')
@@ -102,7 +102,7 @@ def terminal_loop():
                     uploadHEX()
 
             elif key == '\x0a': # Ctrl-ENTER -> new line in input, but not completed yet
-                ser.write(RS) 
+                ser.write(CHAR_RS) 
 
             else:
                 ser.write(key.encode(encoding, errors="replace"))

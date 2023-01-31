@@ -27,8 +27,10 @@ typedef short          bool;
 
 extern void memmove(void *, void *, int);
 
-typedef int32_t Real; // sic!
+#define GETS(var) gets(var)
 
+// Real number implementation
+typedef int32_t Real; // sic!
 #include "ffp_glue.h"
 
 
@@ -59,10 +61,11 @@ extern void _stackoverflow(void);
 #include <stdint.h>
 #include <errno.h>
 
-typedef double Real;
+#define GETS(var) fgets(var, sizeof(var), stdin)
 
+// Real number implementation
 #include <math.h>
-
+typedef double Real;
 #define intToReal(x) (x)
 #define realToInt(x) ((Int)(x))
 #define neg(x)       (-(x))
@@ -71,6 +74,7 @@ typedef double Real;
 #define mul(x,y)     ((x)*(y))
 #define div(x,y)     ((x)/(y))
 #define less(x,y)    ((x)<(y))
+
 
 #define CHECK_STACKOVERFLOW
 

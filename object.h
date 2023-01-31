@@ -52,7 +52,6 @@ typedef enum {
     uint8_t     type;     \
     uint8_t     isMarked;
 
-
 struct Obj {
     OBJ_HEADER
 };
@@ -77,25 +76,25 @@ typedef char Signature[8];
 typedef struct {
     OBJ_HEADER
 
-    Signature   signature;
-    NativeFn    function;
+    Signature    signature;
+    NativeFn     function;
 } ObjNative;
 
 struct ObjString {
     OBJ_HEADER
 
-    int16_t     length;
-    uint32_t    hash;
-    char        chars[]; // chap 19, single alloc for strings, as embedded char array
+    int16_t      length;
+    uint32_t     hash;
+    char         chars[]; // chap 19, single alloc for strings, as embedded char array
 };
 
-typedef struct ObjUpvalue {
+struct ObjUpvalue {
     OBJ_HEADER
 
-    Value*             location;
-    Value              closed;
-    struct ObjUpvalue* nextUpvalue;
-} ObjUpvalue;
+    Value*       location;
+    Value        closed;
+    ObjUpvalue*  nextUpvalue;
+};
 
 typedef struct {
     OBJ_HEADER
@@ -108,36 +107,36 @@ typedef struct {
 typedef struct {
     OBJ_HEADER
 
-    ObjString*  name;
-    Table       methods;
+    ObjString*   name;
+    Table        methods;
 } ObjClass;
 
 typedef struct {
     OBJ_HEADER
 
-    ObjClass*   klass;
-    Table       fields;
+    ObjClass*    klass;
+    Table        fields;
 } ObjInstance;
 
 typedef struct {
     OBJ_HEADER
 
-    Value       receiver;
-    ObjClosure* method;
+    Value        receiver;
+    ObjClosure*  method;
 } ObjBoundMethod;
 
 typedef struct {
     OBJ_HEADER
 
-    int16_t     count;
-    int16_t     capacity;
-    Value*      items;
+    int16_t      count;
+    int16_t      capacity;
+    Value*       items;
 } ObjList;
 
 typedef struct {
     OBJ_HEADER
 
-    Real        content;
+    Real         content;
 } ObjReal;
 
 struct ObjIterator {

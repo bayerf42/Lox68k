@@ -4,6 +4,14 @@
 #include "common.h"
 #include "object.h"
 
+#define DBG_GC_GENERAL  1  // log begin/end of GC and trigger from alloc
+#define DBG_GC_ALLOC    2  // log allocation of an object
+#define DBG_GC_FREE     4  // log de-allocation of an object
+#define DBG_GC_MARK     8  // log each object marked during GC
+#define DBG_GC_BLACK   16  // log each object blackened during GC
+#define DBG_GC_STRINGS 32  // log shrinking of strings table
+#define DBG_GC_STRESS  64  // force GC before each allocation
+
 #define ALLOCATE(type, count) \
     (type*)reallocate(NULL, 0, sizeof(type) * (count))
 

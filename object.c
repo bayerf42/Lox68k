@@ -27,8 +27,8 @@ static Obj* allocateObject(size_t size, ObjType type) {
     object->nextObj = vm.objects;
     vm.objects = object;
 
-    if (vm.debug_log_gc)
-        printf("%05x allocate %d for %s\n", (void*)object, size, typeName(type));
+    if (vm.debug_log_gc & DBG_GC_ALLOC)
+        printf("GC %05x aloc %d %s\n", (void*)object, size, typeName(type));
 
     return object;
 }
@@ -83,7 +83,6 @@ ObjInstance* newInstance(ObjClass* klass) {
     return instance;
 }
 
-
 ObjNative* newNative(const char* signature, NativeFn function) {
     ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
 
@@ -91,7 +90,6 @@ ObjNative* newNative(const char* signature, NativeFn function) {
     native->function = function;
     return native;
 }
-
 
 static uint32_t hashString(const char* chars, int length) {
     // FNV-1 hash with 32 bits
@@ -104,7 +102,6 @@ static uint32_t hashString(const char* chars, int length) {
     }
     return hash;
 }
-
 
 ObjString* copyString(const char* chars, int length) {
     // Check if we already have an equal string
@@ -138,11 +135,10 @@ ObjUpvalue* newUpvalue(Value* slot) {
 }
 
 static void printFunction(const char* subType, ObjFunction* function) {
-    if (function->name == NULL) {
+    if (function->name == NULL)
         printf("<script>");
-        return;
-    }
-    printf("<%s %s>", subType, function->name->chars);
+    else
+        printf("<%s %s>", subType, function->name->chars);
 }
 
 static void printList(ObjList* list) {
@@ -177,7 +173,6 @@ const char* typeName(ObjType type) {
     }
 }
 
-
 static void fix_printf(const char* str) {
     // printf("%s", str) has a bug in IDE68k library, inserting arbitrary spaces for strings
     // longer than 127 characters, so do it manually (again)
@@ -185,24 +180,26 @@ static void fix_printf(const char* str) {
         putchar(*str++);
 }
 
-
 void printObject(Value value, bool compact, bool machine) {
     switch (OBJ_TYPE(value)) {
         case OBJ_BOUND_METHOD: printFunction("bound", AS_BOUND_METHOD(value)->method->function); break;
-        case OBJ_CLASS: printf("<class %s>", AS_CLASS(value)->name->chars); break;
-        case OBJ_CLOSURE: printFunction("closure", AS_CLOSURE(value)->function); break;
-        case OBJ_FUNCTION: printFunction("fun", AS_FUNCTION(value)); break;
-        case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
-        case OBJ_ITERATOR: printf("<iterator %d>", AS_ITERATOR(value)->position); break;
-        case OBJ_LIST: if (compact) printf("<list %d>", AS_LIST(value)->count); else printList(AS_LIST(value)); break;
-        case OBJ_NATIVE: printf("<native %05x>", (void*) AS_NATIVE(value)); break;
-        case OBJ_REAL: printf("%s", formatReal(AS_REAL(value))); break;
-        case OBJ_STRING:
-            if (machine) fix_printf("\"");
-            fix_printf(AS_CSTRING(value));
-            if (machine) fix_printf("\"");
+        case OBJ_CLASS:        printf("<class %s>", AS_CLASS(value)->name->chars); break;
+        case OBJ_CLOSURE:      printFunction("closure", AS_CLOSURE(value)->function); break;
+        case OBJ_FUNCTION:     printFunction("fun", AS_FUNCTION(value)); break;
+        case OBJ_INSTANCE:     printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
+        case OBJ_ITERATOR:     printf("<iterator %d>", AS_ITERATOR(value)->position); break;
+        case OBJ_LIST:
+            if (compact)       printf("<list %d>", AS_LIST(value)->count);
+            else               printList(AS_LIST(value));
             break;
-        case OBJ_UPVALUE: printf("<upvalue>"); break;
+        case OBJ_NATIVE:       printf("<native %05x>", (void*) AS_NATIVE(value)); break;
+        case OBJ_REAL:         printf("%s", formatReal(AS_REAL(value))); break;
+        case OBJ_STRING:
+            if (machine)       fix_printf("\"");
+                               fix_printf(AS_CSTRING(value));
+            if (machine)       fix_printf("\"");
+            break;
+        case OBJ_UPVALUE:      printf("<upvalue>"); break;
     }
 }
 
@@ -299,8 +296,8 @@ ObjString* indexFromString(ObjString* string, int index) {
 }
 
 bool isValidStringIndex(ObjString* string, int index) {
-    return (index >= 0) && (index < string->length) ||
-           (index < 0)  && (index >= -string->length);
+    return (index >= 0) && (index <   string->length) ||
+           (index <  0) && (index >= -string->length);
 }
 
 ObjString* sliceFromString(ObjString* string, int begin, int end) {
@@ -323,7 +320,7 @@ ObjString* concatStrings(ObjString* a, ObjString* b) {
 }
 
 ObjString* caseString(ObjString* a, bool toUpper) {
-    int length = a->length;
+    int   length = a->length;
     char* cp;
     fix_memcpy(input_line, a->chars, length);
     input_line[length] = '\0';
@@ -348,7 +345,7 @@ ObjString* caseString(ObjString* a, bool toUpper) {
 
 ObjList* concatLists(ObjList* a, ObjList* b) {
     ObjList* result = newList();
-    int16_t i;
+    int16_t  i;
 
     push(OBJ_VAL(result));
     for (i = 0; i < a->count; i++)
@@ -368,7 +365,7 @@ Value newReal(Real val) {
 
 const char* formatReal(Real val) {
 #ifdef KIT68K
-    int expo, dp, off;
+    int   expo, dp, off;
     char* estr;
     char* dest;
 
@@ -437,7 +434,8 @@ const char* formatHex(Int val) {
 
 ObjIterator* newIterator(Table* table, ObjInstance* instance) {
     ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
-    int16_t i;
+    int16_t      i;
+
     iter->table = table;
     iter->position = -1;
     iter->instance = NULL;

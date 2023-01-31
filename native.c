@@ -175,8 +175,8 @@ static bool insertNative(int argCount, Value* args) {
 }
 
 static bool deleteNative(int argCount, Value* args) {
-    ObjList* list = AS_LIST(args[0]);
-    int index = AS_INT(args[1]);
+    ObjList* list  = AS_LIST(args[0]);
+    int      index = AS_INT(args[1]);
     if (!isValidListIndex(list, index)) {
         runtimeError("List index out of bound.");
         return false;
@@ -187,10 +187,10 @@ static bool deleteNative(int argCount, Value* args) {
 }
 
 static bool indexNative(int argCount, Value* args) {
-    ObjList* list = AS_LIST(args[1]);
-    Value item = args[0];
-    int start = (argCount == 2) ? 0 : AS_INT(args[2]);
-    int i;
+    ObjList* list  = AS_LIST(args[1]);
+    Value    item  = args[0];
+    int      start = (argCount == 2) ? 0 : AS_INT(args[2]);
+    int      i;
 
     args[-1] = NIL_VAL;
     if (list->count == 0)
@@ -214,7 +214,7 @@ static bool indexNative(int argCount, Value* args) {
 
 static bool removeNative(int argCount, Value* args) {
     ObjInstance* instance = AS_INSTANCE(args[0]);
-    bool removed = tableDelete(&instance->fields, args[1]);
+    bool         removed  = tableDelete(&instance->fields, args[1]);
     args[-1] = BOOL_VAL(removed);
     return true;
 }
@@ -255,8 +255,8 @@ static bool nextNative(int argCount, Value* args) {
 
 static bool ascNative(int argCount, Value* args) {
     ObjString* string = AS_STRING(args[0]);
-    Int code;
-    int index = (argCount == 1) ? 0 : AS_INT(args[1]);
+    Int        code;
+    int        index = (argCount == 1) ? 0 : AS_INT(args[1]);
 
     if (!isValidStringIndex(string, index)) {
         runtimeError("String index out of range.");
@@ -270,7 +270,7 @@ static bool ascNative(int argCount, Value* args) {
 }
 
 static bool chrNative(int argCount, Value* args) {
-    Int code = AS_INT(args[0]);
+    Int  code = AS_INT(args[0]);
     char codepoint;
 
     if (code < 0 || code > 255) {
@@ -300,8 +300,8 @@ static bool hexNative(int argCount, Value* args) {
 
 static bool parseIntNative(int argCount, Value* args) {
     char* start = AS_CSTRING(args[0]);
-    char* end = start;
-    Int number;
+    char* end   = start;
+    Int   number;
 
     if (*start == '$')
         number = strtol(start + 1, &end, 16);
@@ -319,8 +319,8 @@ char* terminator; // filled by scanReal()
 
 static bool parseRealNative(int argCount, Value* args) {
     char* start = AS_CSTRING(args[0]);
-    char* end = start;
-    Real real;
+    char* end   = start;
+    Real  real;
 
 #ifdef KIT68K
     real = scanReal(start);
@@ -339,14 +339,9 @@ static bool parseRealNative(int argCount, Value* args) {
 }
 
 static bool inputNative(int argCount, Value* args) {
-    if (argCount > 0) printf("%s ", AS_CSTRING(args[0]));
-
-#ifdef KIT68K
-    gets(input_line);
-#else
-    fgets(input_line, sizeof(input_line), stdin);
-#endif
-
+    if (argCount > 0)
+        printf("%s ", AS_CSTRING(args[0]));
+    GETS(input_line);
     args[-1] = OBJ_VAL(copyString(input_line, strlen(input_line)));
     return true;
 }
@@ -424,13 +419,7 @@ static bool dbgTraceNative(int argCount, Value* args) {
 }
 
 static bool dbgGcNative(int argCount, Value* args) {
-    vm.debug_log_gc = AS_BOOL(args[0]);
-    args[-1] = args[0];
-    return true;
-}
-
-static bool dbgStressNative(int argCount, Value* args) {
-    vm.debug_stress_gc = AS_BOOL(args[0]);
+    vm.debug_log_gc = AS_INT(args[0]);
     args[-1] = args[0];
     return true;
 }
@@ -470,7 +459,7 @@ static bool execNative(int argCount, Value* args) {
     typedef Value sub3(Value,Value,Value);
 
     int32_t address = AS_INT(args[0]);
-    Value result;
+    Value   result;
 
     switch (argCount) {
         case 1: result = ((sub0*) address)(); break;
@@ -718,8 +707,7 @@ void defineAllNatives(void) {
 
     defineNative("dbg_code",    "B",    dbgCodeNative);
     defineNative("dbg_trace",   "B",    dbgTraceNative);
-    defineNative("dbg_gc",      "B",    dbgGcNative);
-    defineNative("dbg_stress",  "B",    dbgStressNative);
+    defineNative("dbg_gc",      "N",    dbgGcNative);
     defineNative("dbg_stat",    "B",    dbgStatNative);
 }
 
