@@ -51,7 +51,7 @@ fun sso(a, b) {
 
   fun add(x, y)  { return x + y; }
   fun square(x)  { return x * x; }
-  fun even(n)    { return n % 2 == 0; }
+  fun even(n)    { return n \ 2 == 0; }
 
   return reduce(add, map(square,
                          filter(complement(even),
@@ -62,7 +62,7 @@ fun sso2(a, b) {
   // same, but with lambdas
   return reduce(fun (x,y) -> x+y,
                 map(fun (x) -> x*x,
-                    filter(complement(fun (n) -> n%2 == 0),
+                    filter(complement(fun (n) -> n\2 == 0),
                            range(a, b))));
 }
   

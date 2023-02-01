@@ -11,6 +11,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | append      | list, val              | -           | all          | appends *val* to end of *list*                                                    |
 | asc         | string, int?           | int         | all          | ASCII code of first character or at index *int*                                   |  
 | atan        | num                    | real        | all          | arc tangent                                                                       |  
+| bin         | int                    | string      | all          | *int* as binary string                                                            |
 | bit_and     | int, int               | int         | all          | bitwise AND of 2 integers                                                         |
 | bit_not     | int                    | int         | all          | bitwise NOT of a integer                                                          |
 | bit_or      | int, int               | int         | all          | bitwise inclusive OR of 2 integers                                                |

@@ -9,7 +9,7 @@
 #include "value.h"
 #include "vm.h"
 
-char numBuffer[32];
+char numBuffer[33];
 
 bool isObjType(Value value, ObjType type) {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
@@ -423,13 +423,35 @@ const char* formatReal(Real val) {
 }
 
 const char* formatInt(Int val) {
+#ifndef linux
+    itoa(val, numBuffer, 10);
+#else
     sprintf(numBuffer, "%ld", val);
+#endif
     return numBuffer;
 }
 
 const char* formatHex(Int val) {
+#ifndef linux
+    itoa(val, numBuffer, 16);
+#else
     sprintf(numBuffer, "%lx", val);
+#endif
     return numBuffer;
+}
+
+const char* formatBin(Int val) {
+    uint32_t mask = 0x80000000;
+    char*    outp = numBuffer;
+
+    for (; mask; mask >>= 1)
+        *outp++ = val & mask ? '1' : '0';
+    *outp = 0;
+
+    // find first non-zero
+    for (outp = numBuffer; *outp == '0'; outp++)
+        ;
+    return val == 0 ? outp - 1 : outp;
 }
 
 ObjIterator* newIterator(Table* table, ObjInstance* instance) {

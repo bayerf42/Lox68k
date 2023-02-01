@@ -298,6 +298,12 @@ static bool hexNative(int argCount, Value* args) {
     return true;
 }
 
+static bool binNative(int argCount, Value* args) {
+    const char* res = formatBin(AS_INT(args[0]));
+    args[-1] = OBJ_VAL(copyString(res, strlen(res)));
+    return true;
+}
+
 static bool parseIntNative(int argCount, Value* args) {
     char* start = AS_CSTRING(args[0]);
     char* end   = start;
@@ -657,6 +663,7 @@ void defineAllNatives(void) {
     defineNative("chr",         "N",    chrNative);
     defineNative("dec",         "R",    decNative);
     defineNative("hex",         "N",    hexNative);
+    defineNative("bin",         "N",    binNative);
     defineNative("parse_int",   "S",    parseIntNative);
     defineNative("parse_real",  "S",    parseRealNative);
     defineNative("input",       "s",    inputNative);

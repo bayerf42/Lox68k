@@ -5,8 +5,9 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * `[` ... `]` syntax for building lists
 * `[ exp ]` as string, list, or instance index to access elements
 * `[ exp? : exp? ]` as list or string slice to extract subsequence
-* operator `%` for division remainder
+* operator `\` for division remainder
 * `$` prefix for hexadecimal integer literals
+* `%` prefix for binary integer literals
 * anonymous functions as expressions `fun (params*) {block}`
 * prefix `..` before last parameter name for vararg parameter in function declaration
 * prefix `..` before argument to unpack list into arguments in function call
@@ -60,7 +61,7 @@ logic_and      → equality ( "and" equality )* ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
-factor         → unary ( ( "/" | "*" | "%") unary )* ;
+factor         → unary ( ( "/" | "*" | "\") unary )* ;
 
 unary          → ( "!" | "-" ) unary | call ;
 call           → subscript ( "(" arguments? ")" | "." IDENTIFIER )* ;
@@ -77,11 +78,14 @@ parameters     → ".."? IDENTIFIER | IDENTIFIER ( "," IDENTIFIER )* ( "," ".." 
 arguments      → ".."? expression ( "," ".."? expression )* ;
 
 NUMBER         → DIGIT+ ( "." DIGIT+ )? ( ( "e" | "E" ) ( "+" | "-" )? DIGIT+ )?
-               | "$" HEXDIGIT+ ;
+               | "$" HEXDIGIT+
+               | "%" BINDIGIT+ ;
+ 
 STRING         → "\"" <any char except "\"">* "\"" ;
 IDENTIFIER     → ALPHA ( ALPHA | DIGIT )* ;
 ALPHA          → "a" ... "z" | "A" ... "Z" | "_" ;
 DIGIT          → "0" ... "9" ;
 HEXDIGIT       → "0" ... "9" | "a" ... "f" | "A" ... "F" ;
+BINDIGIT       → "0" ... "1" ;
 
 ```

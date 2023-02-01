@@ -40,6 +40,10 @@ static bool isHexDigit(char c) {
         || c >= 'A' && c <= 'F';
 }
 
+static bool isBinDigit(char c) {
+    return c == '0' || c == '1';
+}
+
 #define isAtEnd() (*scanner.current == '\0')
 
 #define advance() (*scanner.current++)
@@ -163,7 +167,10 @@ static Token number(char start) {
     bool exponentEmpty = true;
     bool isReal = false;
 
-    if (start == '$')
+    if (start == '%')
+        while (isBinDigit(peek()))
+            advance();
+    else if (start == '$')
         while (isHexDigit(peek()))
             advance();
     else {
@@ -223,7 +230,7 @@ Token scanToken(void) {
     if (isAlpha(c))
         return identifier();
 
-    if (isDigit(c) || c=='$')
+    if (isDigit(c) || c=='$' || c=='%')
         return number(c);
 
     switch (c) {
@@ -241,7 +248,7 @@ Token scanToken(void) {
         case '+': return makeToken(TOKEN_PLUS);
         case '/': return makeToken(TOKEN_SLASH);
         case '*': return makeToken(TOKEN_STAR);
-        case '%': return makeToken(TOKEN_PERCENT);
+        case 92 : return makeToken(TOKEN_BACKSLASH); // IDE68k doesn't like '\\'
         case '@': return makeToken(TOKEN_AT);
         case '^': return makeToken(TOKEN_HAT);
         case '!': return makeToken(match('=') ? TOKEN_BANG_EQUAL    : TOKEN_BANG);

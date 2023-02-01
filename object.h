@@ -185,6 +185,7 @@ bool isObjType(Value value, ObjType type);
 const char* formatReal(Real val);
 const char* formatInt(Int val);
 const char* formatHex(Int val);
+const char* formatBin(Int val);
 
 extern char numBuffer[];
 

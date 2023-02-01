@@ -62,12 +62,13 @@ in the release. Just burn it into an EPROM or flash chip.
 * [Slicing syntax](grammar.md) to extract subsequences from strings or lists,
   including negative indices to index from the end of the list or string,
   [like in Python](https://www.w3schools.com/python/python_strings_slicing.asp).
-* 59 [native functions](natives.md) for type conversion, collections, math, 
+* 60 [native functions](natives.md) for type conversion, collections, math, 
   and low-level functions on the 68008 kit.
 * The compile-time debugging options are now selectable at runtime via the `dbg_*` native functions.
 * Runtime statistics via `dbg_stat()`.
 * Hexadecimal literals via the `$` prefix, like `$ff` == `255`.
-* Modulo operator `%`
+* Binary literals via the `%` prefix, like `%1110` == `14`.
+* Modulo operator `\`
 * Interrupting long-running computations by **IRQ** key (or `ctrl-C` in Windows/Linux versions).
 * `print` allows list of expression, all printed on one line. With trailing comma,
   no line feed is printed.

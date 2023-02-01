@@ -277,7 +277,7 @@ static void binary(bool canAssign) {
         case TOKEN_MINUS:         emitByte(OP_SUB); break;
         case TOKEN_STAR:          emitByte(OP_MUL); break;
         case TOKEN_SLASH:         emitByte(OP_DIV); break;
-        case TOKEN_PERCENT:       emitByte(OP_MOD); break;
+        case TOKEN_BACKSLASH:     emitByte(OP_MOD); break;
         default: return; // Unreachable
     }
 }
@@ -374,7 +374,9 @@ static void grouping(bool canAssign) {
 
 static void number(bool canAssign) {
     Value value;
-    if (parser.previous.start[0] == '$')
+    if (parser.previous.start[0] == '%')
+        value = INT_VAL(strtol(parser.previous.start+1, NULL, 2));
+    else if (parser.previous.start[0] == '$')
         value = INT_VAL(strtol(parser.previous.start+1, NULL, 16));
     else {
         if (parser.previous.real) {
