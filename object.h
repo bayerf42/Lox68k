@@ -71,7 +71,7 @@ typedef struct {
 } ObjFunction;
 
 typedef bool (*NativeFn)(int argCount, Value* args);
-typedef char Signature[8];
+typedef char Signature[4];
 
 typedef struct {
     OBJ_HEADER

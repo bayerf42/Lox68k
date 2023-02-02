@@ -29,12 +29,17 @@ static const char* matchesType(Value value, char type) {
 }
 
 bool checkNativeSignature(const char* signature, int argCount, Value* args) {
-    int maxParmCount = strlen(signature);
-    int minParmCount = maxParmCount;
+    int maxParmCount;
+    int minParmCount;
     int i;
     const char* expected;
 
     // Trailing lower-case letters in signature indicate optional arguments.
+    maxParmCount = 0;
+    for (i = 0; i < sizeof(Signature); i++)
+        if (signature[i])
+            maxParmCount++;
+    minParmCount = maxParmCount;
 
     while (minParmCount > 0 && islower(signature[minParmCount-1]))
         minParmCount--;
