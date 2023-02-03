@@ -240,7 +240,7 @@ static void defineMethod(ObjString* name) {
     drop();
 }
 
-#define READ_BYTE() (*frame->ip++)
+#define READ_BYTE()   (*frame->ip++)
 #define READ_USHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 
 static InterpretResult run(void) {
@@ -252,7 +252,7 @@ static InterpretResult run(void) {
     // The IDE68K ancient C compiler generates wrong code for local vars in case branches.
     // Thus, we declare all needed variables at function start..
     Int          aInt, bInt;
-    Real         aReal, bReal, cReal;
+    Real         aReal, bReal;
     Value        aVal=NIL_VAL, bVal, cVal, resVal;
     ObjString    *aStr, *bStr, *resStr;
     ObjList      *aLst, *bLst, *resLst;
@@ -265,7 +265,8 @@ static InterpretResult run(void) {
     int          argCount, itemCount;
     uint16_t     offset;
     uint8_t      isLocal, upIndex;
-    CallFrame    *frame = &vm.frames[vm.frameCount - 1];
+    CallFrame    *frame  = &vm.frames[vm.frameCount - 1];
+    Value        *consts = frame->closure->function->chunk.constants.values;
 
     vm.hadStackoverflow = false;
     vm.stepsExecuted    = 0;
@@ -299,7 +300,7 @@ static InterpretResult run(void) {
         switch (instruction) {
             case OP_CONSTANT:
                 index = READ_BYTE();
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 push(constant);
                 break;
 
@@ -326,7 +327,7 @@ static InterpretResult run(void) {
 
             case OP_GET_GLOBAL:
                 index = READ_BYTE();
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 aStr = AS_STRING(constant);
                 if (!tableGet(&vm.globals, constant, &aVal)) {
                     runtimeError("Undefined variable '%s'.", aStr->chars);
@@ -337,14 +338,14 @@ static InterpretResult run(void) {
 
             case OP_DEF_GLOBAL:
                 index = READ_BYTE();
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 tableSet(&vm.globals, constant, peek(0));
                 drop();
                 break;
 
             case OP_SET_GLOBAL:
                 index = READ_BYTE();
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 aStr = AS_STRING(constant);
                 if (tableSet(&vm.globals, constant, peek(0))) {
                     tableDelete(&vm.globals, constant);
@@ -371,7 +372,7 @@ static InterpretResult run(void) {
 
                 instance = AS_INSTANCE(peek(0));
                 index = READ_BYTE();
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
 
                 if (tableGet(&instance->fields, constant, &aVal)) {
                     dropNpush(1, aVal);
@@ -391,7 +392,7 @@ static InterpretResult run(void) {
                 
                 instance = AS_INSTANCE(peek(1));
                 index = READ_BYTE();
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 tableSet(&instance->fields, constant, peek(0));
                 aVal = pop();
                 dropNpush(1, aVal);
@@ -399,7 +400,7 @@ static InterpretResult run(void) {
 
             case OP_GET_SUPER:
                 index = READ_BYTE();
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 aStr = AS_STRING(constant);
                 superclass = AS_CLASS(pop());
 
@@ -636,6 +637,7 @@ static InterpretResult run(void) {
                 if (!callValue(peek(argCount), argCount))
                     return INTERPRET_RUNTIME_ERROR;
                 frame = &vm.frames[vm.frameCount - 1];
+                consts = frame->closure->function->chunk.constants.values;
                 break;
 
             case OP_VCALL:
@@ -646,11 +648,12 @@ static InterpretResult run(void) {
                 index = READ_BYTE();
                 argCount = READ_BYTE();
             cont_invoke:
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 aStr = AS_STRING(constant);
                 if (!invoke(aStr, argCount))
                     return INTERPRET_RUNTIME_ERROR;
                 frame = &vm.frames[vm.frameCount - 1];
+                consts = frame->closure->function->chunk.constants.values;
                 break;
 
             case OP_VINVOKE:
@@ -663,11 +666,12 @@ static InterpretResult run(void) {
                 superclass = AS_CLASS(pop());
                 argCount = READ_BYTE();
             cont_super_invoke:
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 aStr = AS_STRING(constant);
                 if (!invokeFromClass(superclass, aStr, argCount))
                     return INTERPRET_RUNTIME_ERROR;
                 frame = &vm.frames[vm.frameCount - 1];
+                consts = frame->closure->function->chunk.constants.values;
                 break;
 
             case OP_VSUPER_INVOKE:
@@ -678,7 +682,7 @@ static InterpretResult run(void) {
 
             case OP_CLOSURE:
                 index = READ_BYTE();
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 function = AS_FUNCTION(constant);
                 closure = newClosure(function);
                 push(OBJ_VAL(closure));
@@ -709,11 +713,12 @@ static InterpretResult run(void) {
                 vm.stackTop = frame->slots;
                 push(resVal);
                 frame = &vm.frames[vm.frameCount - 1];
+                consts = frame->closure->function->chunk.constants.values;
                 break;
 
             case OP_CLASS:
                 index = READ_BYTE();
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 aStr = AS_STRING(constant);
                 push(OBJ_VAL(newClass(aStr)));
                 break;
@@ -731,7 +736,7 @@ static InterpretResult run(void) {
 
             case OP_METHOD:
                 index = READ_BYTE();
-                constant = frame->closure->function->chunk.constants.values[index];
+                constant = consts[index];
                 aStr = AS_STRING(constant);
                 defineMethod(aStr);
                 break;
