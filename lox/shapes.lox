@@ -41,5 +41,5 @@ class Rectangle < Shape {
 var r = Rectangle(10,20,30,40);
 var c = Circle(-10,-20,100);
 
-print r.position(), " ", r.area();
-print c.position(), " ", c.area();
+print r.position(),, r.area();
+print c.position(),, c.area();

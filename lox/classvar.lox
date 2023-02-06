@@ -27,5 +27,5 @@ var b = Foo(42);
 
 a.setCV(97);
 
-print a.getX()," ",a.getCV();
-print b.getX()," ",b.getCV();
+print a.getX(),,a.getCV();
+print b.getX(),,b.getCV();

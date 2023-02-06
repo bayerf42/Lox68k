@@ -951,6 +951,10 @@ static void printStatement(void) {
         expression();
         while (match(TOKEN_COMMA)) {
             emitByte(OP_PRINT);
+            if (match(TOKEN_COMMA)) {
+                emitConstant(OBJ_VAL(copyString(PRINT_SEPARATOR, sizeof(PRINT_SEPARATOR) - 1)));
+                emitByte(OP_PRINT);
+            }
             if (match(TOKEN_SEMICOLON))
                 return;
             expression();

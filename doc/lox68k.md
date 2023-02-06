@@ -71,7 +71,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * Modulo operator `\`
 * Interrupting long-running computations by **IRQ** key (or `ctrl-C` in Windows/Linux versions).
 * `print` allows list of expression, all printed on one line. With trailing comma,
-  no line feed is printed.
+  no line feed is printed. When expressions are separated by two commas, 3 spaces are inserted.
 * Anonymous functions (*lambdas*) as expressions.
 * Functions can have a rest parameter packing all additional arguments into a list.
 * Lists can be unpacked as arguments into a function/method call or list constructor.

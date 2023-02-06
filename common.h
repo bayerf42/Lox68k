@@ -90,4 +90,6 @@ typedef double Real;
 #define FRAMES_MAX    128
 #define GRAY_MAX     1024
 
+#define PRINT_SEPARATOR "   "
+
 #endif
