@@ -61,16 +61,17 @@ def uploadLOX():
         if os.stat(path).st_size >= 16384:
             print("...file too large to load.")
         else:
-            for line in open(path, "r"):
-                for char in line.rstrip('\n'):
+            with open(path, "r") as loxFile:
+                for line in loxFile: 
+                    for char in line.rstrip('\n'):
+                        time.sleep(char_delay)
+                        ser.write(char.encode(encoding, errors="replace"))
+                        response()
                     time.sleep(char_delay)
-                    ser.write(char.encode(encoding, errors="replace"))
+                    ser.write(CHAR_RS)
                     response()
-                time.sleep(char_delay)
-                ser.write(CHAR_RS)
-                response()
-                time.sleep(line_delay)
-            ser.write(b'\n')
+                    time.sleep(line_delay)
+                ser.write(b'\n')
     except FileNotFoundError:
         print("...not found.");
 
@@ -79,9 +80,10 @@ def uploadHEX():
     print("Upload HEX file: ", end="")
     name = input()
     try:
-        for line in open(hexPattern.format(name), "r"):
-            for char in line:
-                ser.write(char.encode(encoding))
+        with open(hexPattern.format(name), "r") as hexFile:
+            for line in hexFile:
+                for char in line:
+                    ser.write(char.encode(encoding))
     except FileNotFoundError:
         print("...not found.");
 
