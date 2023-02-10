@@ -73,12 +73,6 @@ static Token makeToken(TokenType type) {
     return token;
 }
 
-static Token makeNumToken(bool isReal) {
-    Token token  = makeToken(TOKEN_NUMBER);
-    token.real   = isReal;
-    return token;
-}
-
 static Token errorToken(const char* message) {
     Token token;
     token.type   = TOKEN_ERROR;
@@ -89,29 +83,38 @@ static Token errorToken(const char* message) {
     return token;
 }
 
+static Token makeNumToken(bool isReal) {
+    Token token = makeToken(TOKEN_NUMBER);
+    if (token.length == 1 && !isDigit(*token.start))
+        return errorToken("No digits after radix.");
+    token.real  = isReal;
+    return token;
+}
+
 static void skipWhitespace(void) {
     char c;
     for (;;) {
         c = peek();
         switch (c) {
+            case CHAR_RS:
+            case CHAR_LF:
+                scanner.line++;
+                // fall thru
             case ' ':
             case CHAR_CR:
             case CHAR_HT:
                 advance();
                 break;
-            case CHAR_RS:
-            case CHAR_LF:
-                scanner.line++;
-                advance();
-                break;
+
             case '/':
                 if (peekNext() == '/') {
                     // A comment goes until the end of the line.
                     while (peek() != CHAR_LF && peek() != CHAR_RS && !isAtEnd())
                         advance();
                     break;
-                } else
-                    return;
+                }
+                // fall thru
+
             default:
                 return;
         }

@@ -374,23 +374,17 @@ static void grouping(bool canAssign) {
 
 static void number(bool canAssign) {
     Value value;
-    if (parser.previous.start[0] == '%')
-        value = INT_VAL(strtol(parser.previous.start+1, NULL, 2));
-    else if (parser.previous.start[0] == '$')
-        value = INT_VAL(strtol(parser.previous.start+1, NULL, 16));
-    else {
-        if (parser.previous.real) {
+
+    if (parser.previous.real) {
 #ifdef KIT68K
-            value = newReal(scanReal(parser.previous.start));
-            if (errno != 0)
-                error("Real constant overflow.");
+        value = newReal(scanReal(parser.previous.start));
+        if (errno != 0)
+            error("Real constant overflow.");
 #else
-            value = newReal(strtod(parser.previous.start, NULL));
+        value = newReal(strtod(parser.previous.start, NULL));
 #endif
-        }
-        else
-            value = INT_VAL(strtol(parser.previous.start, NULL, 10));
-    }
+    } else
+        value = parseInt(parser.previous.start, false);
     emitConstant(value);
 }
 

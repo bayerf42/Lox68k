@@ -454,6 +454,23 @@ const char* formatBin(Int val) {
     return val == 0 ? outp - 1 : outp;
 }
 
+Value parseInt(const char* start, bool checkLen) {
+    const char* end = start;
+    Int         number;
+
+    if (*start == '%')
+        number = strtol(++start, &end, 2);
+    else if (*start == '$')
+        number = strtol(++start, &end, 16);
+    else
+        number = strtol(start, &end, 10);
+
+    if (start == end || checkLen && start + strlen(start) != end)
+        return NIL_VAL;
+    else
+        return INT_VAL(number);
+}
+
 ObjIterator* newIterator(Table* table, ObjInstance* instance) {
     ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
     int16_t      i;

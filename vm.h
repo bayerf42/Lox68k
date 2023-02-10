@@ -26,7 +26,7 @@ typedef struct {
     ObjUpvalue* openUpvalues;
     int         lambdaCount;
 
-    bool        interrupted;
+  volatile bool interrupted;
     bool        hadStackoverflow;
     size_t      bytesAllocated;
     Obj*        objects;

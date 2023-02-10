@@ -39,6 +39,8 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
     for (i = 0; i < sizeof(Signature); i++)
         if (signature[i])
             maxParmCount++;
+        else
+            break; 
     minParmCount = maxParmCount;
 
     while (minParmCount > 0 && islower(signature[minParmCount-1]))
@@ -310,19 +312,7 @@ static bool binNative(int argCount, Value* args) {
 }
 
 static bool parseIntNative(int argCount, Value* args) {
-    char* start = AS_CSTRING(args[0]);
-    char* end   = start;
-    Int   number;
-
-    if (*start == '$')
-        number = strtol(start + 1, &end, 16);
-    else
-        number = strtol(start, &end, 10);
-
-    if (start + strlen(start) == end)
-        args[-1] = INT_VAL(number);
-    else
-        args[-1] = NIL_VAL;
+    args[-1] = parseInt(AS_CSTRING(args[0]), true);
     return true;
 }
 
@@ -446,14 +436,14 @@ static bool dbgStatNative(int argCount, Value* args) {
 
 static bool peekNative(int argCount, Value* args) {
     int32_t address = AS_INT(args[0]);
-    Int byte = *((uint8_t*)address);
+    Int     byte    = *((uint8_t*)address);
     args[-1] = INT_VAL(byte);
     return true;
 }
 
 static bool pokeNative(int argCount, Value* args) {
     int32_t address = AS_INT(args[0]);
-    Int  byte = AS_INT(args[1]);
+    Int     byte    = AS_INT(args[1]);
     if (byte < 0 || byte > 255) {
         runtimeError("Value not in range 0-255.");
         return false;

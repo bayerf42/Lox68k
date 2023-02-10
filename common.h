@@ -40,7 +40,7 @@ typedef int32_t Real; // sic!
 // bge   *+6
 // jsr   __stackoverflow
 //
-// please adapt the definition of STACKLIMIT_ADDR in the project file when the address
+// please adapt the definition of STACKLIMIT_ADDR here when the address
 // of variable __stack in the assembler startup file changes, _word only works wit constants.
 
 #define STACKLIMIT_ADDR 0x2004
