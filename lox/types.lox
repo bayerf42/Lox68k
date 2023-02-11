@@ -1,5 +1,4 @@
-// Datatypes in Lox68k
-
+// Show all supported datatypes in Lox68k
 
 fun map(fn, list) {
   var res = [];
@@ -13,26 +12,24 @@ class Spam {
     this.value = x;
   }
 
-  test() {
-    return this.value;
-  }
+  test() -> this.value
 }
 
 var inst = Spam(1138);
 
 var all_types = [
-  nil,        // 
-  true,       // 
-  42,         // 
-  3.145,      // 
-  "Fred",     //
-  [1,2,3],    //
-  map,        //
-  type,       //
-  Spam,       // 
-  inst,       // 
-  inst.test,  //
-  slots(inst) //
+  nil,        // nothing, undefined, counts as false in conditions  
+  true,       // false or true
+  42,         // a 31 bit integer number
+  3.145,      // a 32 bit fast floating point number on Kit, a 64 bit IEEE754 double otherwise
+  "Fred",     // a string, interned, non-modifiable sequence of characters
+  [1,2,3],    // a list, modifiable dynamic array/list of any elements
+  map,        // a closure, Lox function including its definition context
+  type,       // a native, a builtin function implemented in C or assembler
+  Spam,       // a Lox class
+  inst,       // an instance of a Lox class
+  inst.test,  // a method bound to an instance
+  slots(inst) // an iterator over all entries of a hash table (instance or global variables)
 ]; 
 
 print all_types;

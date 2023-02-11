@@ -69,7 +69,6 @@ static Token makeToken(TokenType type) {
     token.start  = scanner.start;
     token.length = (int16_t)(scanner.current - scanner.start);
     token.line   = scanner.line;
-    token.real   = false;
     return token;
 }
 
@@ -79,15 +78,13 @@ static Token errorToken(const char* message) {
     token.start  = message;
     token.length = (int)strlen(message);
     token.line   = scanner.line;
-    token.real   = false;
     return token;
 }
 
 static Token makeNumToken(bool isReal) {
-    Token token = makeToken(TOKEN_NUMBER);
+    Token token = makeToken(isReal ? TOKEN_REAL : TOKEN_INT);
     if (token.length == 1 && !isDigit(*token.start))
         return errorToken("No digits after radix.");
-    token.real  = isReal;
     return token;
 }
 

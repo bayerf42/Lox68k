@@ -18,7 +18,7 @@ typedef enum {
     TOKEN_LESS, TOKEN_LESS_EQUAL,
     TOKEN_DOT_DOT, TOKEN_ARROW,
     // Literals.
-    TOKEN_IDENTIFIER, TOKEN_STRING, TOKEN_NUMBER,
+    TOKEN_IDENTIFIER, TOKEN_STRING, TOKEN_INT, TOKEN_REAL,
     // KEYWORDS
     TOKEN_AND, TOKEN_CLASS, TOKEN_ELSE, TOKEN_FALSE,
     TOKEN_FOR, TOKEN_FUN, TOKEN_IF, TOKEN_NIL, TOKEN_OR,
@@ -38,8 +38,7 @@ typedef struct {
     const char* start;
     TokenType   type;
     int16_t     length;
-    int16_t     line; 
-    bool        real; 
+    int32_t     line; 
 } Token;
 
 

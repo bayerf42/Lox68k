@@ -372,19 +372,19 @@ static void grouping(bool canAssign) {
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
-static void number(bool canAssign) {
-    Value value;
+static void intNum(bool canAssign) {
+    Value value = parseInt(parser.previous.start, false);
+    emitConstant(value);
+}
 
-    if (parser.previous.real) {
+static void realNum(bool canAssign) {
 #ifdef KIT68K
-        value = newReal(scanReal(parser.previous.start));
-        if (errno != 0)
-            error("Real constant overflow.");
+    Value value = newReal(scanReal(parser.previous.start));
+    if (errno != 0)
+        error("Real constant overflow.");
 #else
-        value = newReal(strtod(parser.previous.start, NULL));
+    Value value = newReal(strtod(parser.previous.start, NULL));
 #endif
-    } else
-        value = parseInt(parser.previous.start, false);
     emitConstant(value);
 }
 
@@ -625,7 +625,8 @@ const ParseRule rules[] = {
     /* [TOKEN_ARROW]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_IDENTIFIER]    = */ {variable, NULL,   PREC_NONE},
     /* [TOKEN_STRING]        = */ {string,   NULL,   PREC_NONE},
-    /* [TOKEN_NUMBER]        = */ {number,   NULL,   PREC_NONE},
+    /* [TOKEN_INT]           = */ {intNum,   NULL,   PREC_NONE},
+    /* [TOKEN_REAL]          = */ {realNum,  NULL,   PREC_NONE},
     /* [TOKEN_AND]           = */ {NULL,     and_,   PREC_AND},
     /* [TOKEN_CLASS]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_ELSE]          = */ {NULL,     NULL,   PREC_NONE},
