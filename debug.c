@@ -49,11 +49,9 @@ void disassembleChunk(Chunk* chunk, const char* name) {
 }
 
 int disassembleInstruction(Chunk* chunk, int offset) {
-    uint8_t instruction, constant;
+    uint8_t      instruction, constant;
     ObjFunction* function;
-    int j;
-    int isLocal, upIndex;
-    int line;
+    int          j, isLocal, upIndex, line;
 
     printf("%04d ", offset);
     line = getLine(chunk, offset);
