@@ -9,7 +9,7 @@
 #include "value.h"
 #include "vm.h"
 
-char numBuffer[33];
+char buffer[48]; // general purpose: numbers, error messages
 
 bool isObjType(Value value, ObjType type) {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
@@ -372,9 +372,9 @@ const char* formatReal(Real val) {
     if (val==0)
         return "0.0";
 
-    printReal(numBuffer, val);
-    expo = atoi(numBuffer + 11);
-    estr = numBuffer + 10;
+    printReal(buffer, val);
+    expo = atoi(buffer + 11);
+    estr = buffer + 10;
 
     // Fixed format returned from printReal:
     // s.mmmmmmmmEsdd
@@ -384,72 +384,72 @@ const char* formatReal(Real val) {
     if (expo >= 1 && expo <= 7) {
         // shift DP to the right
         for (dp = 1; expo > 0; dp++, expo--) {
-            numBuffer[dp] = numBuffer[dp + 1];
-            numBuffer[dp + 1] = '.';
+            buffer[dp] = buffer[dp + 1];
+            buffer[dp + 1] = '.';
         }
-        numBuffer[10] = '\0'; // cut off exponent
+        buffer[10] = '\0'; // cut off exponent
         estr = NULL;
     } else if (expo <= 0 && expo >= -3) {
         // shift mantissa to the right
         for (off = 9; off > 1; off--)
-            numBuffer[off - expo + 1] = numBuffer[off];
-        numBuffer[11 - expo] = '\0'; // cut off exponent
+            buffer[off - expo + 1] = buffer[off];
+        buffer[11 - expo] = '\0'; // cut off exponent
         estr = NULL;
         for (off = 2 - expo; off > 0; off--)
-            numBuffer[off] = '0';
-        numBuffer[2] = '.';
+            buffer[off] = '0';
+        buffer[2] = '.';
     } else {
         // exponential display, but 1 digit left to DP
-        numBuffer[1] = numBuffer[2];
-        numBuffer[2] = '.';
-        sprintf(numBuffer + 11, "%d", expo - 1);
+        buffer[1] = buffer[2];
+        buffer[2] = '.';
+        sprintf(buffer + 11, "%d", expo - 1);
     }
 
     // Squeeze out trailing zeros in mantissa
-    for (dest = estr ? estr : numBuffer + strlen(numBuffer);
+    for (dest = estr ? estr : buffer + strlen(buffer);
          dest[-1] == '0' && dest[-2] != '.';)
         *--dest = '\0';
     if (estr)
         memmove(dest, estr, 6);
 
-    if (numBuffer[0] == '+')
-        return numBuffer + 1;
+    if (buffer[0] == '+')
+        return buffer + 1;
 
 #else
-    sprintf(numBuffer, "%.15g", val);
+    sprintf(buffer, "%.15g", val);
 #endif
 
-    return numBuffer;
+    return buffer;
 }
 
 const char* formatInt(Int val) {
 #ifndef linux
-    itoa(val, numBuffer, 10);
+    itoa(val, buffer, 10);
 #else
-    sprintf(numBuffer, "%ld", val);
+    sprintf(buffer, "%ld", val);
 #endif
-    return numBuffer;
+    return buffer;
 }
 
 const char* formatHex(Int val) {
 #ifndef linux
-    itoa(val, numBuffer, 16);
+    itoa(val, buffer, 16);
 #else
-    sprintf(numBuffer, "%lx", val);
+    sprintf(buffer, "%lx", val);
 #endif
-    return numBuffer;
+    return buffer;
 }
 
 const char* formatBin(Int val) {
     uint32_t mask = 0x80000000;
-    char*    outp = numBuffer;
+    char*    outp = buffer;
 
     for (; mask; mask >>= 1)
         *outp++ = val & mask ? '1' : '0';
     *outp = 0;
 
     // find first non-zero
-    for (outp = numBuffer; *outp == '0'; outp++)
+    for (outp = buffer; *outp == '0'; outp++)
         ;
     return val == 0 ? outp - 1 : outp;
 }

@@ -188,6 +188,6 @@ const char* formatHex(Int val);
 const char* formatBin(Int val);
 Value parseInt(const char* start, bool checkLen);
 
-extern char numBuffer[];
+extern char buffer[];
 
 #endif

@@ -137,7 +137,7 @@ static bool callValue(Value callee, int argCount) {
                 if (tableGet(&klass->methods, OBJ_VAL(vm.initString), &initializer))
                     return call(AS_CLOSURE(initializer), argCount);
                 else if (argCount != 0) {
-                    runtimeError("Expected 0 arguments but got %d.", argCount);
+                    runtimeError("Expected %d arguments but got %d.", 0, argCount);
                     return false;
                 }
                 return true;
@@ -776,12 +776,12 @@ static InterpretResult run(void) {
                 if (IS_LIST(bVal)) {
                     bLst = AS_LIST(bVal);
                     if (!IS_INT(aVal)) {
-                        runtimeError("List index is not an integer.");
+                        runtimeError("%s is not an integer.", "List index");
                         return INTERPRET_RUNTIME_ERROR;
                     }
                     index = AS_INT(aVal);
                     if (!isValidListIndex(bLst, index)) {
-                        runtimeError("List index out of range.");
+                        runtimeError("%s out of range.", "List index");
                         return INTERPRET_RUNTIME_ERROR;
                     }
                     resVal = indexFromList(bLst, index);
@@ -791,12 +791,12 @@ static InterpretResult run(void) {
                 } else if (IS_STRING(bVal)) {
                     bStr = AS_STRING(bVal);
                     if (!IS_INT(aVal)) {
-                        runtimeError("String index is not an integer.");
+                        runtimeError("%s is not an integer.", "String index");
                         return INTERPRET_RUNTIME_ERROR;
                     }
                     index = AS_INT(aVal);
                     if (!isValidStringIndex(bStr, index)) {
-                        runtimeError("String index out of range.");
+                        runtimeError("%s out of range.", "String index");
                         return INTERPRET_RUNTIME_ERROR;
                     }
                     resVal = OBJ_VAL(indexFromString(bStr, index));
@@ -823,12 +823,12 @@ static InterpretResult run(void) {
                 if (IS_LIST(bVal)) {
                     bLst = AS_LIST(bVal);
                     if (!IS_INT(aVal)) {
-                        runtimeError("List index is not an integer.");
+                        runtimeError("%s is not an integer.", "List index");
                         return INTERPRET_RUNTIME_ERROR;
                     }
                     index = AS_INT(aVal);
                     if (!isValidListIndex(bLst, index)) {
-                        runtimeError("List index out of range.");
+                        runtimeError("%s out of range.", "List index");
                         return INTERPRET_RUNTIME_ERROR;
                     }
                     storeToList(bLst, index, cVal);
@@ -852,12 +852,12 @@ static InterpretResult run(void) {
                 cVal = peek(0); // object
 
                 if (!IS_INT(bVal)) {
-                    runtimeError("Slice begin is not an integer.");
+                    runtimeError("%s is not an integer.", "Slice begin");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 begin = AS_INT(bVal);
                 if (!IS_INT(aVal)) {
-                    runtimeError("Slice end is not an integer.");
+                    runtimeError("%s is not an integer.", "Slice end");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 end = AS_INT(aVal);

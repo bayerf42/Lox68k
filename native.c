@@ -185,7 +185,7 @@ static bool deleteNative(int argCount, Value* args) {
     ObjList* list  = AS_LIST(args[0]);
     int      index = AS_INT(args[1]);
     if (!isValidListIndex(list, index)) {
-        runtimeError("List index out of bound.");
+        runtimeError("%s out of range.", "List index");
         return false;
     }
     deleteFromList(list, index);
@@ -204,7 +204,7 @@ static bool indexNative(int argCount, Value* args) {
         return true;
 
     if (!isValidListIndex(list, start)) {
-        runtimeError("Start index out of bound.");
+        runtimeError("%s out of range.", "Start index");
         return false;
     }
 
@@ -266,7 +266,7 @@ static bool ascNative(int argCount, Value* args) {
     int        index = (argCount == 1) ? 0 : AS_INT(args[1]);
 
     if (!isValidStringIndex(string, index)) {
-        runtimeError("String index out of range.");
+        runtimeError("%s out of range.", "String index");
         return false;
     }
     if (index < 0)
@@ -281,7 +281,7 @@ static bool chrNative(int argCount, Value* args) {
     char codepoint;
 
     if (code < 0 || code > 255) {
-        runtimeError("Char code out of range.");
+        runtimeError("%s out of range.", "Char code");
         return false;
     }
     codepoint = (char)code;
@@ -445,7 +445,7 @@ static bool pokeNative(int argCount, Value* args) {
     int32_t address = AS_INT(args[0]);
     Int     byte    = AS_INT(args[1]);
     if (byte < 0 || byte > 255) {
-        runtimeError("Value not in range 0-255.");
+        runtimeError("%s out of range.", "Byte value");
         return false;
     }
     *((uint8_t*)address) = byte & 0xff;
@@ -511,7 +511,7 @@ static bool lcdDefcharNative(int argCount, Value* args) {
     int      i;
 
     if (udc < 0 || udc > 7) {
-        runtimeError("UDC number out of range.");
+        runtimeError("%s out of range.", "UDC number");
         return false;
     }
     if (pattern->count != 8) {
@@ -522,7 +522,7 @@ static bool lcdDefcharNative(int argCount, Value* args) {
         if (IS_INT(pattern->items[i])) {
             byte = AS_INT(pattern->items[i]);
             if (byte < 0 || byte > 255) {
-                runtimeError("Byte %d out of range.", i);
+                runtimeError("%s out of range.", "Byte value");
                 return false;
             }
             bitmap[i] = (char)byte;
