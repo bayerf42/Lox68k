@@ -54,23 +54,11 @@ int main() {
 
 #else
 
-static void repl(void) {
-    for (;;) {
-        printf("> ");
-
-        if (!GETS(input_line)) {
-            printf("\n");
-            break;
-        }
-        interpret(input_line);
-    }
-}
-
 static char* readFile(const char* path) {
     FILE* file = fopen(path, "rb");
     if (file == NULL) {
         fprintf(stderr, "Could not open \"%s\".\n", path);
-        exit(74);
+        return NULL;
     }
     fseek(file, 0L, SEEK_END);
     size_t fileSize = ftell(file);
@@ -79,33 +67,44 @@ static char* readFile(const char* path) {
     char* buffer = (char*)malloc(fileSize + 1);
     if (buffer == NULL) {
         fprintf(stderr, "Not enough memory to read \"%s\".\n", path);
-        exit(74);
-
+        return NULL;
     }
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, file);
     if (bytesRead < fileSize) {
         fprintf(stderr, "Could not read \"%s\".\n", path);
-        exit(74);
+        return NULL;
     }
-
     buffer[bytesRead] = '\0';
-
     fclose(file);
     return buffer;
 }
 
-static void runFile(const char* path) {
+static bool runFile(const char* path) {
     char* source = readFile(path);
-    InterpretResult result = interpret(source);
-    free(source);
-
-    if (result == INTERPRET_COMPILE_ERROR)
-        exit(65);
-
-    if (result == INTERPRET_RUNTIME_ERROR)
-        exit(70);
+    if (source) {
+        InterpretResult result = interpret(source);
+        free(source);
+        return  result == INTERPRET_OK;
+    }
+    return false;
 }
 
+static void repl(void) {
+    for (;;) {
+        printf("> ");
+
+        if (!GETS(input_line)) {
+            printf("\n");
+            break;
+        }
+        if (input_line[0] == '&') {
+            *strchr(input_line, '\n') = '\0';
+            runFile(input_line + 1);
+        }
+        else
+            interpret(input_line);
+    }
+}
 
 // To compile Lox68k for Windows, install Tiny C compiler from
 // https://bellard.org/tcc/ and run
@@ -134,7 +133,8 @@ int main(int argc, const char* argv[]) {
                 repl();
             else {
                 printf("Loading %s\n", argv[arg]);
-                runFile(argv[arg]);
+                if (!runFile(argv[arg]))
+                    exit(10);
             }
         }
     }  

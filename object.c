@@ -455,8 +455,8 @@ const char* formatBin(Int val) {
 }
 
 Value parseInt(const char* start, bool checkLen) {
-    const char* end = start;
-    Int         number;
+    char* end = NULL;
+    Int   number;
 
     if (*start == '%')
         number = strtol(++start, &end, 2);

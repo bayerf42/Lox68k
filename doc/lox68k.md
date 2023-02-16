@@ -122,47 +122,9 @@ and doesn't support modern *C99*.
 
 All varieties are compiled from the same source files as described in the following sections.
 
-### Lox compiled to a Windows executable.
-It actually uses the same memory model and restrictions as the 68008 version and also omits
-the 68008 kit hardware features of course and  uses a slightly different I/O and interrupt model.
-
-To build it on Windows, execute
-```sh
-tcc -owlox.exe *.c -m32
-```
-
-To start Lox interactively (aka. the REPL), execute
-```sh
-wlox
-```
-
-To start Lox evaluating files and terminating, execute
-```sh
-wlox file1 file2 ...
-```
-
-To start the REPL after loading files, exceute
-```sh
-wlox file1 file2 ... -
-```
-
-
-`ctrl-C` while waiting for input terminates Lox, `ctrl-C` during computation brings
-you back to input, leaving environment intact.
-
-### Lox compiled to a Linux executable.
-The same as the Windows version, but compiled with `GCC` on Linux.
-
-To build it, execute
-```sh
-gcc -O2 -std=gnu89 -m32 -lm -o llox *.c
-```
-
-Be sure to compile it for 32 bit architecture, Lox68k assumes 32 bit `int`, `long` and pointers.
-
 
 ### Lox compiled for the 68008 kit in ROM
-It is burnt into ROM (together with the Monitor code and the FFP library)
+The executable is burnt into ROM (together with the Monitor code and the FFP library)
 and can [utilize the entire RAM for data](memorymap.md) and the kit's hardware like LCD, keyboard,
 sound, and terminal communication via the serial port.
 
@@ -187,6 +149,50 @@ prompt. Be sure to put the interrupt source switch to *IRQ*, not to *10ms TICK*.
 You can also run this version in the *IDE68K* emulator, but you have to set its start address
 `$44000` manually into the PC register. Since the FFP library is not contained in the hex file,
 you cannot use floating point numbers in the emulator.
+
+
+### Lox compiled to a Windows executable.
+It actually uses the same memory model and restrictions as the 68008 version and also omits
+the 68008 kit hardware features of course and  uses a slightly different I/O and interrupt model.
+
+To build it on Windows, execute
+```sh
+tcc -owlox.exe *.c -m32
+```
+
+To start Lox interactively (aka. the REPL), execute
+```sh
+wlox
+```
+
+To start Lox evaluating files and terminating, execute
+```sh
+wlox file1 file2 ...
+```
+
+To start the REPL after loading files, exceute
+```sh
+wlox file1 file2 ... -
+```
+
+`ctrl-C` while waiting for input terminates Lox, `ctrl-C` during computation brings
+you back to input, leaving environment intact.
+
+You can also load a file from the REPL by inputting
+```
+&filepath
+```
+at the REPL prompt.
+
+### Lox compiled to a Linux executable.
+Works exactly as the Windows version, but compiled with `GCC` on Linux.
+
+To build it, execute
+```sh
+gcc -O2 -std=gnu89 -m32 -lm -o llox *.c
+```
+
+Be sure to compile it for 32 bit architecture, Lox68k assumes 32 bit `int`, `long` and pointers.
 
 
 ## The terminal emulator
