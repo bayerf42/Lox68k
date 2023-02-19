@@ -1,0 +1,9 @@
+var pi = 3.1415926535897932384626433;
+
+fun map(fn, list) {
+  var res = [];
+  for (var i=0; i<length(list); i=i+1)
+    append(res, fn(list[i]));
+  return res;
+}
+

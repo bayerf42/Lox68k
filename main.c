@@ -16,6 +16,8 @@
 
 #include "monitor4x.h"
 
+const char* loxLibSrc;
+
 static void repl(void) {
     for (;;) {
         printf("> ");
@@ -46,6 +48,10 @@ int main() {
     init_freelist();
     initVM();
     printf("Lox68k %s by Fred Bayer\n", VERSION);
+    if (loxLibSrc) {
+        printf("Loading standard library.\n");
+        interpret(loxLibSrc);
+    }
     repl();
 
     freeVM();

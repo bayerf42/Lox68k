@@ -41,7 +41,7 @@ typedef int32_t Real; // sic!
 // jsr   __stackoverflow
 //
 // please adapt the definition of STACKLIMIT_ADDR here when the address
-// of variable __stack in the assembler startup file changes, _word only works wit constants.
+// of variable __stack in the assembler startup file changes, _word only works with constants.
 
 #define STACKLIMIT_ADDR 0x2004
 

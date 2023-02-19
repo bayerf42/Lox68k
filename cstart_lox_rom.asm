@@ -6,6 +6,7 @@ lomem      equ         $400            ; Lowest usable RAM address
 himem      equ         $20000          ; Highest usable RAM address
 progstart  equ         $44000          ; Code starts here in ROM
 datastart  equ         $02000          ; Data starts here in RAM
+loxlibsrc  equ         $5b000          ; Lox standard library source code in ROM
 
 stklen     equ         $4000           ; Default stacksize
 
@@ -47,15 +48,22 @@ heap       equ         *               ; start address of heap section (start of
 
 
            section     code
-start:                                           ; Minimal C start-up
-           lea         himem,A7                  ; initial stack pointer
+start:                                 ; Start Lox interpreter with standard library
+           movea.l     #loxlibsrc,A1
+           bra.s       initLox
+
+start_nolib:                           ; Start Lox interpreter without standard library
+           movea.w     #0,A1
+
+initLox    lea         himem,A7        ; initial stack pointer
            lea         bss.W,A0
-           clr.l       D0                        ; set bss section to zero
+           clr.l       D0              ; set bss section to zero
 .loop      move.l      D0,(A0)+        
            cmp.l       #heap,A0
            bcs.s       .loop
-           move.l      #-1,__ungetbuf.W          ; unget-buffer for keyboard input
+           move.l      #-1,__ungetbuf.W ; unget-buffer for keyboard input
            move.l      #(himem-stklen),__stack.W ; top of stack (for stack overflow detection)
+           move.l      A1,_loxLibSrc.W ; Lox standard library source in ROM
            jsr         _main
 
            xdef        __exit
