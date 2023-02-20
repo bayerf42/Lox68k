@@ -27,10 +27,12 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | dbg_trace   | bool                   | -           | all          | trace each VM instruction executed, prints stack                                  |  
 | dec         | num                    | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int              | -           | all          | deletes element at *int* from *list*                                              |
+| error       | string                 | no return   | all          | Aborts program execution with error message *string*                              |  
 | exec        | int, val?, val?, val?  | val         | all          | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
 | exp         | num                    | real        | all          | exponential                                                                       |  
 | gc          | -                      | int         | all          | forces garbage collection, returns size of allocated memory                       |  
 | globals     | -                      | iterator    | all          | iterator over all global variables                                                |  
+| heap        | int                    | any         | all          | Lox value stored at address *int* in heap                                         |
 | hex         | int                    | string      | all          | *int* as hexadecimal string                                                       |
 | index       | val, list, int?        | int or nil  | all          | search *val* in *list*, returns index where found, optional search start *int*    |  
 | input       | string?                | string      | all          | input string from terminal with optional prompt                                   |
@@ -50,7 +52,6 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | poke        | int *addr*, int *byte* | -           | all          | writes *byte* to *addr*                                                           |  
 | pow         | num, num               | real        | all          | power                                                                             |  
 | random      | -                      | int         | all          | a pseudo-random positive integer                                                  |
-| real        | num                    | real        | all          | convert any number to real                                                        |  
 | remove      | instance, val          | bool        | all          | removes a field name/dictionary key from an instance, true if it existed before   |
 | seed_rand   | int                    | int         | all          | set seed for random number generator, returns current state                       |
 | sin         | num                    | real        | all          | sine                                                                              |  

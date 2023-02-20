@@ -66,14 +66,6 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
 }
 
 
-static bool realNative(int argCount, Value* args) {
-    if (IS_INT(args[0]))
-        args[-1] = newReal(intToReal(AS_INT(args[0])));
-    else
-        args[-1] = args[0];
-    return true;
-}
-
 static bool absNative(int argCount, Value* args) {
     if (IS_INT(args[0]))
         args[-1] = INT_VAL(abs(AS_INT(args[0])));
@@ -481,6 +473,17 @@ static bool addrNative(int argCount, Value* args) {
     return true;
 }
 
+static bool heapNative(int argCount, Value* args) {
+    int32_t address = AS_INT(args[0]);
+    args[-1] = *((Value*)address);
+    return true;
+}
+
+static bool errorNative(int argCount, Value* args) {
+    runtimeError("User error: %s", AS_CSTRING(args[0]));
+    return false;
+}
+
 #ifdef KIT68K
 
 #include "monitor4x.h"
@@ -639,7 +642,6 @@ static void defineNative(const char* name, const char* signature, NativeFn funct
 }
 
 void defineAllNatives(void) {
-    defineNative("real",        "R",    realNative);
     defineNative("abs",         "R",    absNative);
     defineNative("trunc",       "R",    truncNative);
     defineNative("sqrt",        "R",    sqrtNative);
@@ -696,6 +698,8 @@ void defineAllNatives(void) {
     defineNative("poke",        "NN",   pokeNative);
     defineNative("exec",        "Naaa", execNative);
     defineNative("addr",        "A",    addrNative);
+    defineNative("heap",        "N",    heapNative);
+    defineNative("error",       "S",    errorNative);
 
 #ifdef KIT68K
     defineNative("trap",        "",     trapNative);

@@ -1,6 +1,7 @@
-class Notes {
+class Notes < Object {
     // Hash table with note periods for sound() native
     init() {
+        super.init();
         this.C    = 733;
         this.Cis  = 692;
         this.Des  = 692;

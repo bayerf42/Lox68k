@@ -1,0 +1,114 @@
+var pi = 3.1415926535897932384626433;
+
+fun asin(x)  -> 2 * atan(x / (1 + sqrt(1-x*x)))
+fun acos(x)  -> pi/2 - asin(x)
+fun asinh(x) -> log(x + sqrt(x*x + 1))
+fun acosh(x) -> log(x + sqrt(x*x - 1))
+fun atanh(x) -> 0.5 * log((1+x)/(1-x))
+
+fun radians(deg) -> pi/180*deg
+
+fun fmod(a, b) {
+  var q = a/b;
+  return b * (q-trunc(q));
+}
+
+fun max(a,b) {
+  if (a>b) return a; else return b;
+}
+
+fun min(a,b) {
+  if (a<b) return a; else return b;
+}
+
+
+fun map(fn, list) {
+    var res = [];
+    for (var i=0; i<length(list); i=i+1)
+        append(res, fn(list[i]));
+    return res;
+}
+
+// Big endian
+fun word_peek(ad) -> bit_or(bit_shift(peek(ad), 8), peek(ad + 1))
+fun long_peek(ad) -> bit_or(bit_shift(word_peek(ad), 16), word_peek(ad + 2))
+
+fun fun_name(clo)    -> heap(addr(heap(addr(clo) + 6)) + 34)
+fun class_name(cls)  -> heap(addr(cls) + 6)
+fun class_of(ins)    -> heap(addr(ins) + 6)
+fun native_addr(nat) -> long_peek(addr(nat) + 10)
+
+fun string(obj) {
+    var oty = type(obj);
+    if      (oty =="nil") return "nil";
+    else if (obj == true) return "true";
+    else if (obj == false) return "false";
+    else if (oty == "int") return dec(obj);
+    else if (oty == "real") return dec(obj);
+    else if (oty == "string") return obj;
+    else if (oty == "list") {
+        var first = true;
+        var res = "["; 
+        for (var i = 0; i < length(obj); i = i + 1) {	
+            if (!first) res = res + ", ";
+            first = false;  
+            res = res + string(obj[i]);
+        }
+        return res + "]";
+    }
+    else if (oty == "instance") return obj.string();
+    else if (oty == "closure") return "<closure " + fun_name(obj) + ">";
+    else if (oty == "native") return "<native @ " + hex(native_addr(obj)) + ">";
+    else if (oty == "class") return "<class " + class_name(obj) + ">";
+    else if (oty == "bound") return "<bound>";
+    else if (oty == "iterator") return "<iterator>";
+    else return "<unknown>";
+}
+
+class Object {
+    init() {}
+
+    string() {
+        var first = true;
+        var res = "<" + class_name(class_of(this)) + " instance: "; 
+        for (var it = slots(this); valid(it); next(it)) {
+            if (!first) res = res + ", ";
+            first = false;  
+            res = res + string(it@) + ":" + string(it^);
+        }
+        return res + ">";
+    }
+
+    clone() {
+        var res = class_of(this)();
+        for (var it = slots(this); valid(it); next(it))
+            res[it@] = it^;
+        return res;
+    }  
+}
+
+class Map < Object {
+    init(..args) {
+        super.init();
+        var n = length(args);
+        if (bit_and(1,n) == 1) error("Map init list must have even length.");
+        for (var i = 0; i < n; i = i + 2)
+            this[args[i]] = args[i + 1];
+    }
+
+    string() {
+        var first = true;
+        var res = "{"; 
+        for (var it = slots(this); valid(it); next(it)) {
+            if (!first) res = res + ", ";
+            first = false;  
+            res = res + string(it@) + ":" + string(it^);
+        }
+        return res + "}";
+    }
+}
+
+fun list_globals() {
+    for (var it=globals(); valid(it); next(it))
+        print it@, " - ", it^;
+}

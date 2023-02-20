@@ -1,21 +1,4 @@
-var pi = 4*atan(1);
 var pi2 = 2*pi;
-
-fun fmod(a, b) {
-  var q = a/b;
-  return b * (q-trunc(q));
-}
-
-fun radians(deg) -> pi/180*deg
-
-fun asin(x) -> atan(x/sqrt(1-x*x))
-
-fun acos(x) -> pi/2 - asin(x)
-
-
-fun max(a,b) {
-  if (a>b) return a; else return b;
-}
 
 // Rosenheim
 var LAT  = 47.8682208;
@@ -90,22 +73,23 @@ fun rs(y, m, d, latitude, longitude, timezone) {
     return [rise, set];
 }
 
-class Time {
+class Time < Object {
     init(hfrac) {
+        super.init();
         this.hours = trunc(hfrac);
         this.minutes = max(0, trunc(fmod(hfrac, 1) * 60 + 0.5));
         if (this.minutes >= 60) { this.minutes = 0; this.hours = this.hours + 1;}
         if (this.hours >= 24) print "Overflow!";
     }
 
-    format() -> dec(this.hours) + ":" + ("0" + dec(this.minutes))[-2:]
+    string() -> dec(this.hours) + ":" + ("0" + dec(this.minutes))[-2:]
 }
 
 
 fun sunRiseSet(y, m, d) {
     var times = rs(y, m, d, LAT, LONG, TZ);
 
-    return "Sunrise at " + Time(times[0]).format() + ", sunset at " + Time(times[1]).format();
+    return "Sunrise at " + Time(times[0]).string() + ", sunset at " + Time(times[1]).string();
 }
 
 	

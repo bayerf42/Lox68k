@@ -5,7 +5,7 @@ import bincopy, os
 rom_path = "../roms/"
 rom_base = 0x40000
 
-lib_file = "lox/stdlib.lox"
+lib_file = "lox/stdlib_68k.lox"
 lib_base = 0x5b000
 
 ## Based on Monitor ROM with FFP library.
