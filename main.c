@@ -10,7 +10,7 @@
 #include "native.h"
 
 
-#define VERSION "V1.2"
+#define VERSION "V1.3"
 
 #ifdef KIT68K
 

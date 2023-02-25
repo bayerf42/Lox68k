@@ -42,7 +42,7 @@ fun queens(N) {
     print "No solution for ", N, " queens.";
 }
 
-// Evaluating queens(8); on the Kit takes about 30 seconds.
+// Evaluating queens(8); on the Kit takes about 25 seconds.
 
 fun all() {
   for (var n=0; ; n = n + 1) {

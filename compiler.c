@@ -156,7 +156,7 @@ static void emitLoop(int loopStart) {
 
     offset = currentChunk()->count - loopStart + 2;
     if (offset > UINT16_MAX)
-        error("Loop body too large.");
+        error("Jump too large.");
     emitByte((offset >> 8) & 0xff);
     emitByte(offset & 0xff);
 }
@@ -194,20 +194,19 @@ static void patchJump(int offset) {
     int jump = currentChunk()->count - offset - 2;
 
     if (jump > UINT16_MAX)
-        error("Too much code to jump over.");
-
+        error("Jump too large.");
     currentChunk()->code[offset]     = (jump >> 8) & 0xff;
     currentChunk()->code[offset + 1] = jump & 0xff;
 }
 
 static void initCompiler(Compiler* compiler, FunctionType type) {
     Local* local;
-    compiler->enclosing = current;
-    compiler->function = NULL;
-    compiler->type = type;
+    compiler->enclosing  = current;
+    compiler->function   = NULL;
+    compiler->type       = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
-    compiler->function = newFunction();
+    compiler->function   = newFunction();
     current = compiler;
 
     if (type != TYPE_SCRIPT) {
@@ -236,11 +235,9 @@ static ObjFunction* endCompiler(bool addReturn) {
         emitReturn();
     function = current->function;
 
-    if (vm.debug_print_code) {
-        if (!parser.hadError)
-            disassembleChunk(currentChunk(), function->name != NULL ? function->name->chars
-                                                                    : "<script>");
-    }
+    if (vm.debug_print_code && !parser.hadError)
+        disassembleChunk(currentChunk(), function->name != NULL
+                                       ? function->name->chars : "<script>");
 
     current = current->enclosing;
     return function;

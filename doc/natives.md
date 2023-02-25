@@ -10,7 +10,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | addr        | val                    | int or nil  | all          | address of an object in heap, nil for immediate values                            |  
 | append      | list, val              | -           | all          | appends *val* to end of *list*                                                    |
 | asc         | string, int?           | int         | all          | ASCII code of first character or at index *int*                                   |  
-| atan        | num                    | real        | all          | arc tangent                                                                       |  
+| atan        | num                    | real        | all          | inverse tangent                                                                   |  
 | bin         | int                    | string      | all          | *int* as binary string                                                            |
 | bit_and     | int, int               | int         | all          | bitwise AND of 2 integers                                                         |
 | bit_not     | int                    | int         | all          | bitwise NOT of a integer                                                          |

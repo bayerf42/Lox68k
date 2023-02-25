@@ -249,7 +249,6 @@ static bool nextNative(int argCount, Value* args) {
     return true;
 }
 
-
 // Some datatype conversions
 
 static bool ascNative(int argCount, Value* args) {
@@ -391,7 +390,6 @@ static bool lowerNative(int argCount, Value* args) {
     return true;
 }
 
-
 static bool upperNative(int argCount, Value* args) {
     args[-1] = OBJ_VAL(caseString(AS_STRING(args[0]), true));
     return true;
@@ -422,7 +420,6 @@ static bool dbgStatNative(int argCount, Value* args) {
     args[-1] = args[0];
     return true;
 }
-
 
 // Remember your old 80s home computers?
 

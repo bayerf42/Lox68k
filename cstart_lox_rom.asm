@@ -6,7 +6,7 @@ lomem      equ         $400            ; Lowest usable RAM address
 himem      equ         $20000          ; Highest usable RAM address
 progstart  equ         $44000          ; Code starts here in ROM
 datastart  equ         $02000          ; Data starts here in RAM
-loxlibsrc  equ         $5b000          ; Lox standard library source code in ROM
+loxlibsrc  equ         $5e000          ; Lox standard library source code in ROM
 
 stklen     equ         $4000           ; Default stacksize
 

@@ -27,6 +27,7 @@ var all_types = [
 ]; 
 
 print all_types;
+print string(all_types);
 print map(type, all_types);
 print map(fun(obj) {
             var a=addr(obj);

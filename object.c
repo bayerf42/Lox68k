@@ -21,11 +21,10 @@ bool isObjType(Value value, ObjType type) {
 static Obj* allocateObject(size_t size, ObjType type) {
     Obj* object = (Obj*)reallocate(NULL, 0, size);
 
-    object->type = type;
+    object->type     = type;
     object->isMarked = false;
-
-    object->nextObj = vm.objects;
-    vm.objects = object;
+    object->nextObj  = vm.objects;
+    vm.objects       = object;
 
     if (vm.debug_log_gc & DBG_GC_ALLOC)
         printf("GC %05x aloc %d %s\n", (void*)object, size, typeName(type));
@@ -37,7 +36,7 @@ ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method) {
     ObjBoundMethod* bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
 
     bound->receiver = receiver;
-    bound->method = method;
+    bound->method   = method;
     return bound;
 }
 
@@ -57,7 +56,7 @@ ObjClosure* newClosure(ObjFunction* function) {
 
     for (i = 0; i < function->upvalueCount; i++)
         closure->upvalues[i] = NULL;
-    closure->function = function;
+    closure->function     = function;
     closure->upvalueCount = function->upvalueCount;
 
     return closure;
@@ -66,11 +65,11 @@ ObjClosure* newClosure(ObjFunction* function) {
 ObjFunction* newFunction() {
     ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
 
-    function->arity = 0;
+    function->arity        = 0;
     function->upvalueCount = 0;
-    function->isVarArg = false;
-    function->_padding = 0;
-    function->name = NULL;
+    function->isVarArg     = false;
+    function->_padding     = 0;
+    function->name         = NULL;
     initChunk(&function->chunk);
     return function;
 }
@@ -114,7 +113,7 @@ ObjString* copyString(const char* chars, int length) {
     // Create new string
     string = (ObjString*)allocateObject(sizeof(ObjString) + length + 1, OBJ_STRING);
     string->length = length;
-    string->hash = hash;
+    string->hash   = hash;
     fix_memcpy(string->chars, chars, length);
     string->chars[length] = '\0';
 
@@ -128,8 +127,8 @@ ObjString* copyString(const char* chars, int length) {
 ObjUpvalue* newUpvalue(Value* slot) {
     ObjUpvalue* upvalue = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);
 
-    upvalue->closed = NIL_VAL;
-    upvalue->location = slot;
+    upvalue->closed      = NIL_VAL;
+    upvalue->location    = slot;
     upvalue->nextUpvalue = NULL;
     return upvalue;
 }
@@ -206,8 +205,8 @@ void printObject(Value value, bool compact, bool machine) {
 ObjList* newList() {
     ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
 
-    list->items = NULL;
-    list->count = 0;
+    list->items    = NULL;
+    list->count    = 0;
     list->capacity = 0;
     return list;
 }
@@ -216,9 +215,9 @@ void appendToList(ObjList* list, Value value) {
     int oldCapacity;
 
     if (list->capacity < list->count + 1) {
-        oldCapacity = list->capacity;
+        oldCapacity    = list->capacity;
         list->capacity = GROW_CAPACITY(oldCapacity);
-        list->items = GROW_ARRAY(Value, list->items, oldCapacity, list->capacity);
+        list->items    = GROW_ARRAY(Value, list->items, oldCapacity, list->capacity);
     }
     list->items[list->count++] = value;
 }
@@ -228,9 +227,9 @@ void insertIntoList(ObjList* list, Value value, int index) {
     int count = list->count;
 
     if (list->capacity < list->count + 1) {
-        oldCapacity = list->capacity;
+        oldCapacity    = list->capacity;
         list->capacity = GROW_CAPACITY(oldCapacity);
-        list->items = GROW_ARRAY(Value, list->items, oldCapacity, list->capacity);
+        list->items    = GROW_ARRAY(Value, list->items, oldCapacity, list->capacity);
     }
     if (index < 0)
         index = (index < -count) ? 0 : index + count;
@@ -257,15 +256,15 @@ Value indexFromList(ObjList* list, int index) {
 #define LIMIT_SLICE(var) \
     if (var < 0) var += n; \
     if (var < 0) var  = 0; \
-    if (var > n) var  = n;
+    if (var > n) var  = n
 
 ObjList* sliceFromList(ObjList* list, int begin, int end) {
     ObjList* result = newList();
     int n = list->count;
     int i;
 
-    LIMIT_SLICE(begin)
-    LIMIT_SLICE(end)
+    LIMIT_SLICE(begin);
+    LIMIT_SLICE(end);
 
     push(OBJ_VAL(result));
     for (i = begin; i < end; i++)
@@ -303,8 +302,8 @@ bool isValidStringIndex(ObjString* string, int index) {
 ObjString* sliceFromString(ObjString* string, int begin, int end) {
     int n = string->length;
 
-    LIMIT_SLICE(begin)
-    LIMIT_SLICE(end)
+    LIMIT_SLICE(begin);
+    LIMIT_SLICE(end);
 
     return copyString(string->chars + begin, (end > begin) ? end - begin : 0);
 }
@@ -475,7 +474,7 @@ ObjIterator* newIterator(Table* table, ObjInstance* instance) {
     ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
     int16_t      i;
 
-    iter->table = table;
+    iter->table    = table;
     iter->position = -1;
     iter->instance = NULL;
     if (table->count > 0)

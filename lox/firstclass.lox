@@ -1,8 +1,10 @@
 // Classes are first-class in Lox, can be parameters to functions and returned by them.
 
-class Demo {
-    init(x) {
-        this.x = x;
+class Demo < Object {
+    init(..x) { // allow 0 args to be clonable
+        super.init();
+        if (length(x) > 0) 
+            this.x = x[0];
     }
 
     show() {
@@ -31,5 +33,6 @@ var CountedDemo = counted(Demo);
 var cd1 = CountedDemo(42);
 var cd2 = CountedDemo(17);
 var cd3 = CountedDemo(23);
+var cd4 = cd2.clone();
 
-print cd2.num_instances();
+print cd3.num_instances();
