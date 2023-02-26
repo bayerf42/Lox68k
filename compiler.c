@@ -764,9 +764,8 @@ static void function(FunctionType type) {
         do {
             if (current->function->isVarArg)
                 errorAtCurrent("No more parameters allowed after vararg.");
-            current->function->arity++;
-            if (current->function->arity > 63)
-                errorAtCurrent("Can't have more than 63 parameters.");
+            if (++current->function->arity >= MAX_LOCALS)
+                errorAtCurrent("Too many parameters.");
             if (match(TOKEN_DOT_DOT))
                 current->function->isVarArg = true;
             parameter = parseVariable("Expect parameter name.");
