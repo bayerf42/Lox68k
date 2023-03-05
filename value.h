@@ -49,7 +49,7 @@ void initValueArray(ValueArray* array);
 void writeValueArray(ValueArray* array, Value value);
 void freeValueArray(ValueArray* array);
 void printValue(Value value, bool compact, bool machine);
-ObjString* valueType(Value value);
+const char* valueType(Value value);
 uint32_t hashValue(Value value);
 
 #endif

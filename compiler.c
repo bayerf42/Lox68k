@@ -921,7 +921,6 @@ static void forStatement(void) {
         patchJump(exitJump);
         emitByte(OP_POP); // condition
     }
-
     endScope();
 }
 
@@ -1021,7 +1020,8 @@ static void declaration(void) {
     else if (match(TOKEN_VAR))    varDeclaration();
     else                          statement();
 
-    if (parser.panicMode) synchronize();
+    if (parser.panicMode)
+        synchronize();
 }
 
 static void statement(void) {

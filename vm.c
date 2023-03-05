@@ -15,8 +15,8 @@
 VM vm;
 
 static void resetStack(void) {
-    vm.stackTop = vm.stack;
-    vm.frameCount = 0;
+    vm.stackTop     = vm.stack;
+    vm.frameCount   = 0;
     vm.openUpvalues = NULL;
 }
 
@@ -36,21 +36,18 @@ void runtimeError(const char* format, ...) {
         frame = &vm.frames[i];
         function = frame->closure->function;
         instruction = frame->ip - function->chunk.code - 1;
-        printf("[line %d] in ", getLine(&function->chunk, instruction));
-        if (function->name == NULL)
-            printf("<script>\n");
-        else
-            printf("%s\n", function->name->chars);
+        printf("[line %d] in %s\n", getLine(&function->chunk, instruction),
+               (function->name == NULL) ? "<script>" : function->name->chars);
     }
     resetStack();
 }
 
 void initVM(void) {
     resetStack();
-    vm.objects = NULL;
+    vm.objects        = NULL;
     vm.bytesAllocated = 0;
-    vm.grayCount = 0;
-    vm.lambdaCount = 0;
+    vm.grayCount      = 0;
+    vm.lambdaCount    = 0;
 
     initTable(&vm.globals);
     initTable(&vm.strings);
@@ -113,8 +110,8 @@ static bool call(ObjClosure* closure, int argCount) {
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
-    frame->ip = closure->function->chunk.code;
-    frame->slots = vm.stackTop - argCount - 1;
+    frame->ip      = closure->function->chunk.code;
+    frame->slots   = vm.stackTop - argCount - 1;
     return true;
 }
 
@@ -155,7 +152,7 @@ static bool callValue(Value callee, int argCount) {
                 return true;
         }
     }
-    runtimeError("Can only call functions and classes.");
+    runtimeError("Can't %s type %s.", "call", valueType(callee));
     return false;
 }
 
@@ -226,10 +223,10 @@ static ObjUpvalue* captureUpvalue(Value* local) {
 static void closeUpvalues(Value* last) {
     ObjUpvalue* upvalue;
     while (vm.openUpvalues != NULL && vm.openUpvalues->location >= last) {
-        upvalue = vm.openUpvalues;
-        upvalue->closed = *upvalue->location;
+        upvalue           = vm.openUpvalues;
+        upvalue->closed   = *upvalue->location;
         upvalue->location = &upvalue->closed;
-        vm.openUpvalues = upvalue->nextUpvalue;
+        vm.openUpvalues   = upvalue->nextUpvalue;
     }
 }
 
@@ -441,7 +438,8 @@ static InterpretResult run(void) {
                     dropNpush(2, BOOL_VAL(strcmp(aStr->chars, bStr->chars) < 0));
                 } else {
                 typeErrorLess:
-                    runtimeError("Operands must be numbers or strings.");
+                    runtimeError("Can't %s types %s and %s.", "compare",
+                                 valueType(peek(1)), valueType(peek(0)));
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
@@ -483,7 +481,8 @@ static InterpretResult run(void) {
                     dropNpush(2, OBJ_VAL(resLst));
                 } else {
                 typeErrorAdd:
-                    runtimeError("Operands must be numbers, strings, or lists.");
+                    runtimeError("Can't %s types %s and %s.", "add",
+                                 valueType(peek(1)), valueType(peek(0)));
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
@@ -498,17 +497,18 @@ static InterpretResult run(void) {
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
                         bReal = intToReal(AS_INT(peek(0)));
-                    } else goto typeErrorNum;
+                    } else goto typeErrorSub;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
                     if (IS_INT(peek(1)))
                         aReal = intToReal(AS_INT(peek(1)));
                     else if (IS_REAL(peek(1)))
                         aReal = AS_REAL(peek(1));
-                    else goto typeErrorNum;
+                    else goto typeErrorSub;
                 } else {
-                typeErrorNum:
-                    runtimeError("Operands must be numbers.");
+                typeErrorSub:
+                    runtimeError("Can't %s types %s and %s.", "subtract",
+                                 valueType(peek(1)), valueType(peek(0)));
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 dropNpush(2, newReal(sub(aReal,bReal)));
@@ -528,15 +528,20 @@ static InterpretResult run(void) {
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
                         bReal = intToReal(AS_INT(peek(0)));
-                    } else goto typeErrorNum;
+                    } else goto typeErrorMul;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
                     if (IS_INT(peek(1)))
                         aReal = intToReal(AS_INT(peek(1)));
                     else if (IS_REAL(peek(1)))
                         aReal = AS_REAL(peek(1));
-                    else goto typeErrorNum;
-                } else goto typeErrorNum;
+                    else goto typeErrorMul;
+                } else {
+                typeErrorMul:
+                    runtimeError("Can't %s types %s and %s.", "multiply",
+                                 valueType(peek(1)), valueType(peek(0)));
+                    return INTERPRET_RUNTIME_ERROR;
+                }
                 dropNpush(2, newReal(mul(aReal,bReal)));
                 if (errno != 0) {
                     runtimeError("Arithmetic error.");
@@ -554,15 +559,20 @@ static InterpretResult run(void) {
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
                         bReal = intToReal(AS_INT(peek(0)));
-                    } else goto typeErrorNum;
+                    } else goto typeErrorDiv;
                 } else if (IS_REAL(peek(0))) {
                     bReal = AS_REAL(peek(0));
                     if (IS_INT(peek(1)))
                         aReal = intToReal(AS_INT(peek(1)));
                     else if (IS_REAL(peek(1)))
                         aReal = AS_REAL(peek(1));
-                    else goto typeErrorNum;
-                } else goto typeErrorNum;
+                    else goto typeErrorDiv;
+                } else {
+                typeErrorDiv:
+                    runtimeError("Can't %s types %s and %s.", "divide",
+                                 valueType(peek(1)), valueType(peek(0)));
+                    return INTERPRET_RUNTIME_ERROR;
+                }
                 dropNpush(2, newReal(div(aReal,bReal)));
                 if (errno != 0) {
                     runtimeError("Arithmetic error.");
@@ -576,7 +586,8 @@ static InterpretResult run(void) {
                     aInt = AS_INT(pop());
                     push(INT_VAL(aInt % bInt));
                 } else {
-                    runtimeError("Operands must be integers.");
+                    runtimeError("Can't %s types %s and %s.", "modulo",
+                                 valueType(peek(1)), valueType(peek(0)));
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
@@ -591,7 +602,7 @@ static InterpretResult run(void) {
                 else if (IS_REAL(peek(0)))
                     peek(0) = newReal(neg(AS_REAL(peek(0))));
                 else {
-                    runtimeError("Operand must be a number.");
+                    runtimeError("Can't %s type %s.", "negate", valueType(peek(0)));
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
@@ -759,7 +770,7 @@ static InterpretResult run(void) {
                 aVal = pop();
                 argCount = AS_INT(pop());
                 if (!IS_LIST(aVal)) {
-                    runtimeError("Item to unpack is not a list.");
+                    runtimeError("Can't %s type %s.", "unpack", valueType(aVal));
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 aLst = AS_LIST(aVal);
@@ -811,7 +822,7 @@ static InterpretResult run(void) {
                     break;
 
                 } else {
-                    runtimeError("Invalid type to index into.");
+                    runtimeError("Can't %s type %s.", "index into", valueType(bVal));
                     return INTERPRET_RUNTIME_ERROR;
                 }
 
@@ -842,7 +853,7 @@ static InterpretResult run(void) {
                     break;
 
                 } else {
-                    runtimeError("Invalid type to store into.");
+                    runtimeError("Can't %s type %s.", "store into", valueType(bVal));
                     return INTERPRET_RUNTIME_ERROR;
                 }
 
@@ -875,7 +886,7 @@ static InterpretResult run(void) {
                     break;
 
                 } else {
-                    runtimeError("Invalid type to slice into.");
+                    runtimeError("Can't %s type %s.", "slice into", valueType(cVal));
                     return INTERPRET_RUNTIME_ERROR;
                 }
 
@@ -883,7 +894,7 @@ static InterpretResult run(void) {
             case OP_GET_ITKEY:
                 aVal = peek(0); // iterator
                 if (!IS_ITERATOR(aVal)) {
-                    runtimeError("Not an iterator.");
+                    runtimeError("Can't %s type %s.", "deref", valueType(aVal));
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 aIt = AS_ITERATOR(aVal);
@@ -899,7 +910,7 @@ static InterpretResult run(void) {
                 bVal = peek(0); // item
                 aVal = peek(1); // iterator
                 if (!IS_ITERATOR(aVal)) {
-                    runtimeError("Not an iterator.");
+                    runtimeError("Can't %s type %s.", "deref", valueType(aVal));
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 aIt = AS_ITERATOR(aVal);

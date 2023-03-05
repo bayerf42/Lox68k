@@ -24,7 +24,7 @@ static const char* matchesType(Value value, char type) {
         case 'B': return IS_BOOL(value)                     ? NULL : "a bool";
         case 'I': return IS_INSTANCE(value)                 ? NULL : "an instance";
         case 'T': return IS_ITERATOR(value)                 ? NULL : "an iterator";
-        default:  return "an unknown type";
+        default:  return                                             "an unknown type";
     }
 }
 
@@ -224,7 +224,8 @@ static bool globalsNative(int argCount, Value* args) {
 }
 
 static bool typeNative(int argCount, Value* args) {
-    args[-1] = OBJ_VAL(valueType(args[0]));
+    const char* type = valueType(args[0]);
+    args[-1] = OBJ_VAL(copyString(type, strlen(type)));
     return true;
 }
 
@@ -372,16 +373,16 @@ static bool bitShiftNative(int argCount, Value* args) {
 uint32_t rand32;
 
 static bool randomNative(int argCount, Value* args) {
-    rand32 ^= rand32 << 13;
-    rand32 ^= rand32 >> 17;
-    rand32 ^= rand32 << 5;
+    rand32  ^= rand32 << 13;
+    rand32  ^= rand32 >> 17;
+    rand32  ^= rand32 << 5;
     args[-1] = INT_VAL(rand32 & 0x3fffffff);
     return true;
 }
 
 static bool seedRandNative(int argCount, Value* args) {
     args[-1] = INT_VAL(rand32);
-    rand32 = AS_INT(args[0]);
+    rand32   = AS_INT(args[0]);
     return true;
 }
 

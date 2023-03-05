@@ -31,19 +31,15 @@ void printValue(Value value, bool compact, bool machine) {
     else if (IS_NIL(value))    printf("nil");
     else if (IS_EMPTY(value))  printf("<empty>");
     else if (IS_INT(value))    printf("%ld", AS_INT(value));
-    else if (IS_OBJ(value))    printObject(value, compact, machine);
+    else                       printObject(value, compact, machine);
 }
 
-ObjString* valueType(Value value) {
-    const char* type;
-
-    if      (IS_BOOL(value))   type = "bool";
-    else if (IS_NIL(value))    type = "nil";
-    else if (IS_EMPTY(value))  type = "empty"; // internal
-    else if (IS_INT(value))    type = "int";
-    else if (IS_OBJ(value))    type = typeName(OBJ_TYPE(value));
-
-    return copyString(type, strlen(type));
+const char* valueType(Value value) {
+    if      (IS_BOOL(value))   return "bool";
+    else if (IS_NIL(value))    return "nil";
+    else if (IS_EMPTY(value))  return "empty"; // internal
+    else if (IS_INT(value))    return "int";
+    else                       return typeName(OBJ_TYPE(value));
 }
 
 bool valuesEqual(Value a, Value b) {
