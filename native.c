@@ -58,7 +58,8 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
     for (i = 0; i < argCount; i++) {
         expected = matchesType(args[i], toupper(signature[i]));
         if (expected != NULL) {
-            runtimeError("Type mismatch at argument %d, expected %s.", i + 1, expected);
+            runtimeError("Type mismatch at argument %d, expected %s but got %s.",
+                         i + 1, expected, valueType(args[i]));
             return false;
         }
     }
