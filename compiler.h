@@ -8,6 +8,6 @@
 #define MAX_LOCALS   64
 
 ObjFunction* compile(const char* source);
-void markCompilerRoots(void);
+void         markCompilerRoots(void);
 
 #endif

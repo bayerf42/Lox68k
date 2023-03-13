@@ -798,7 +798,6 @@ static InterpretResult run(void) {
                     resVal = indexFromList(bLst, index);
                     dropNpush(2, resVal);
                     break;
-
                 } else if (IS_STRING(bVal)) {
                     bStr = AS_STRING(bVal);
                     if (!IS_INT(aVal)) {
@@ -813,14 +812,12 @@ static InterpretResult run(void) {
                     resVal = OBJ_VAL(indexFromString(bStr, index));
                     dropNpush(2, resVal);
                     break;
-
                 } else if (IS_INSTANCE(bVal)) {
                     instance = AS_INSTANCE(bVal);
                     resVal = NIL_VAL;
                     tableGet(&instance->fields, aVal, &resVal); // not found -> nil
                     dropNpush(2, resVal);
                     break;
-
                 } else {
                     runtimeError("Can't %s type %s.", "index into", valueType(bVal));
                     return INTERPRET_RUNTIME_ERROR;
@@ -845,13 +842,11 @@ static InterpretResult run(void) {
                     storeToList(bLst, index, cVal);
                     dropNpush(3, cVal);
                     break;
-                    
                 } else if (IS_INSTANCE(bVal)) {
                     instance = AS_INSTANCE(bVal);
                     tableSet(&instance->fields, aVal, cVal);
                     dropNpush(3, cVal);
                     break;
-
                 } else {
                     runtimeError("Can't %s type %s.", "store into", valueType(bVal));
                     return INTERPRET_RUNTIME_ERROR;
@@ -878,13 +873,11 @@ static InterpretResult run(void) {
                     resVal = OBJ_VAL(sliceFromList(aLst, begin, end));
                     dropNpush(1, resVal);
                     break;
-
                 } else if (IS_STRING(cVal)) {
                     aStr = AS_STRING(cVal);
                     resVal = OBJ_VAL(sliceFromString(aStr, begin, end));
                     dropNpush(1, resVal);
                     break;
-
                 } else {
                     runtimeError("Can't %s type %s.", "slice into", valueType(cVal));
                     return INTERPRET_RUNTIME_ERROR;

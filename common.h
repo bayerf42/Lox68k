@@ -75,7 +75,6 @@ typedef double Real;
 #define div(x,y)     ((x)/(y))
 #define less(x,y)    ((x)<(y))
 
-
 #define CHECK_STACKOVERFLOW
 
 #endif

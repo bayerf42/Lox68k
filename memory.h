@@ -28,13 +28,13 @@
     (type*)reallocate(pointer, sizeof(type) * (oldCount), 0)
 
 void* reallocate(void* pointer, size_t oldSize, size_t newSize);
-void markObject(Obj* object);
-void markValue(Value value);
-void collectGarbage(bool checkReclaim);
-void freeObjects(void);
+void  markObject(Obj* object);
+void  markValue(Value value);
+void  collectGarbage(bool checkReclaim);
+void  freeObjects(void);
 
-void fix_memcpy(char* dest, const char* src, size_t size);
-int  fix_memcmp(const char* a, const char* b, size_t size);
+void  fix_memcpy(char* dest, const char* src, size_t size);
+int   fix_memcmp(const char* a, const char* b, size_t size);
 
 extern char input_line[INPUT_SIZE];
 

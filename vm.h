@@ -57,11 +57,11 @@ typedef enum {
 
 extern VM vm;
 
-void initVM(void);
-void freeVM(void);
+void            initVM(void);
+void            freeVM(void);
 InterpretResult interpret(const char* source);
-void push(Value value);
-void runtimeError(const char* format, ...);
+void            push(Value value);
+void            runtimeError(const char* format, ...);
 
 #define drop()         --vm.stackTop
 #define pop()          (*(--vm.stackTop))

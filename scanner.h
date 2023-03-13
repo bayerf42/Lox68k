@@ -42,7 +42,7 @@ typedef struct {
 } Token;
 
 
-void initScanner(const char* source);
+void  initScanner(const char* source);
 Token scanToken(void);
 
 #endif

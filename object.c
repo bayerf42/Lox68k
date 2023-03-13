@@ -141,16 +141,16 @@ static void printFunction(const char* subType, ObjFunction* function) {
 
 static void printList(ObjList* list) {
     int i;
+    const char* sep = "";
 
     CHECK_STACKOVERFLOW
 
     printf("[");
-    for (i = 0; i < list->count - 1; i++) {
+    for (i = 0; i < list->count; i++) {
+        printf(sep);
         printValue(list->items[i], false, false);
-        printf(", ");
+        sep = ", ";
     }
-    if (list->count != 0)
-        printValue(list->items[list->count - 1], false, false);
     printf("]");
 }
 
