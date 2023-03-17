@@ -153,12 +153,12 @@ ObjClass*       newClass(ObjString* name);
 ObjClosure*     newClosure(ObjFunction* function);
 ObjFunction*    newFunction(void);
 ObjInstance*    newInstance(ObjClass* klass);
-ObjList*        newList(void);
 Value           newReal(Real val);
 ObjNative*      newNative(const char* signature, NativeFn function);
 ObjIterator*    newIterator(Table* table, ObjInstance* instance);
 ObjUpvalue*     newUpvalue(Value* slot);
 ObjString*      copyString(const char* chars, int length);
+ObjList*        makeList(int len, Value* items, int numCopy, int delta);
 
 void        printObject(Value value, bool compact, bool machine);
 const char* typeName(ObjType type);

@@ -117,9 +117,9 @@ fun popcorn(dur) {
 }
 
 
-fun play(list, dur) {
-  for (var i = 0; i < length(list); i = i + 1) {
-    sound(freq[list[i]], dur);
+fun play(lst, dur) {
+  for (var i = 0; i < length(lst); i = i + 1) {
+    sound(freq[lst[i]], dur);
   }
 }
 

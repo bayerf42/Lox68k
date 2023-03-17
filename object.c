@@ -201,12 +201,25 @@ void printObject(Value value, bool compact, bool machine) {
     }
 }
 
-ObjList* newList() {
+ObjList* makeList(int len, Value* items, int numCopy, int delta) {
     ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
+    int16_t  i;
 
     list->items    = NULL;
     list->count    = 0;
     list->capacity = 0;
+
+    push(OBJ_VAL(list));
+    if (len > 0) {
+        list->items    = GROW_ARRAY(Value, list->items, 0, len);
+        list->count    = len;
+        list->capacity = len;
+        for (i = 0; i < len; i++) {
+            list->items[i] = (--numCopy >= 0) ? *items : NIL_VAL;
+            items += delta;
+        }
+    }
+    drop();
     return list;
 }
 
@@ -258,18 +271,10 @@ Value indexFromList(ObjList* list, int index) {
     if (var > n) var  = n
 
 ObjList* sliceFromList(ObjList* list, int begin, int end) {
-    ObjList* result = newList();
     int n = list->count;
-    int i;
-
     LIMIT_SLICE(begin);
     LIMIT_SLICE(end);
-
-    push(OBJ_VAL(result));
-    for (i = begin; i < end; i++)
-        appendToList(result, list->items[i]);
-    drop();
-    return result;
+    return makeList(end-begin, &list->items[begin], end-begin, 1);
 }
 
 void deleteFromList(ObjList* list, int index) {
@@ -340,17 +345,15 @@ ObjString* caseString(ObjString* a, bool toUpper) {
     return copyString(input_line, length);
 }
 
-
 ObjList* concatLists(ObjList* a, ObjList* b) {
-    ObjList* result = newList();
-    int16_t  i;
+    ObjList* result = makeList(a->count + b->count, a->items, a->count, 1);
+    int16_t  i, dest;
 
-    push(OBJ_VAL(result));
-    for (i = 0; i < a->count; i++)
-        appendToList(result, a->items[i]);
-    for (i = 0; i < b->count; i++)
-        appendToList(result, b->items[i]);
-    drop();
+    for (i = 0; i < b->count; i++) {
+        // expanding dest into next lines generates wrong code in IDE68k
+        dest = a->count + i;
+        result->items[dest] = b->items[i];
+    }
     return result;
 }
 

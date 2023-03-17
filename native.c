@@ -160,6 +160,14 @@ static bool lengthNative(int argCount, Value* args) {
     return true;
 }
 
+static bool listNative(int argCount, Value* args) {
+    Value    item = (argCount == 2) ? args[1] : NIL_VAL;
+    Int      len  = AS_INT(args[0]); 
+    ObjList* list = makeList(len, &item, len, 0);
+    args[-1] = OBJ_VAL(list);
+    return true;
+}
+
 static bool appendNative(int argCount, Value* args) {
     ObjList* list = AS_LIST(args[0]);
     appendToList(list, args[1]);
@@ -677,6 +685,7 @@ void defineAllNatives(void) {
     defineNative("upper",       "S",    upperNative);
 
     defineNative("length",      "Q",    lengthNative);
+    defineNative("list",        "Na",   listNative);
     defineNative("append",      "LA",   appendNative);
     defineNative("insert",      "LNA",  insertNative);
     defineNative("delete",      "LN",   deleteNative);

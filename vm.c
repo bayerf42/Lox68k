@@ -84,27 +84,24 @@ static bool call(ObjClosure* closure, int argCount) {
     ObjList*   args;
     int        itemCount, i;
 
+    if (vm.frameCount == FRAMES_MAX) {
+        runtimeError("Lox call stack overflow.");
+        return false;
+    }
+
     if (closure->function->isVarArg) {
         if (argCount < closure->function->arity - 1) {
             runtimeError("Expected at least %d arguments but got %d.",
                          closure->function->arity - 1, argCount);
             return false;
         }
-        args = newList();
         itemCount = argCount - closure->function->arity + 1;
-        push(OBJ_VAL(args)); // protect from GC
-        for (i = itemCount; i > 0; --i)
-            appendToList(args, peek(i));
-        dropNpush(itemCount + 1, OBJ_VAL(args));
+        args = makeList(itemCount, vm.stackTop - itemCount, itemCount, 1);
+        dropNpush(itemCount, OBJ_VAL(args));
         argCount = closure->function->arity; // actual parameter count
     }
     else if (argCount != closure->function->arity) {
         runtimeError("Expected %d arguments but got %d.", closure->function->arity, argCount);
-        return false;
-    }
-
-    if (vm.frameCount == FRAMES_MAX) {
-        runtimeError("Lox call stack overflow.");
         return false;
     }
 
@@ -755,11 +752,8 @@ static InterpretResult run(void) {
             case OP_LIST:
                 argCount = READ_BYTE();
             cont_list:
-                aLst = newList();
-                push(OBJ_VAL(aLst)); // protect from GC
-                for (i = argCount; i > 0; i--)
-                    appendToList(aLst, peek(i));
-                dropNpush(argCount + 1, OBJ_VAL(aLst));
+                aLst = makeList(argCount, vm.stackTop - argCount, argCount, 1);
+                dropNpush(argCount, OBJ_VAL(aLst));
                 break;
 
             case OP_VLIST:

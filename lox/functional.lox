@@ -1,8 +1,8 @@
 // Some functional programming tools and tests
 
-fun foreach(fn, list) {
-  for (var i=0; i<length(list); i=i+1)
-    fn(list[i]);
+fun foreach(fn, lst) {
+  for (var i=0; i<length(lst); i=i+1)
+    fn(lst[i]);
 }
 
 fun range(lower, upper) {

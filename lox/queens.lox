@@ -4,9 +4,7 @@ fun queens(N) {
 
   var board = [];
   for (var x = 0; x < N; x = x+1) {
-    append(board, []);
-    for (var y = 0; y < N; y = y+1)
-      append(board[x], false);
+    append(board, list(N, false));
   }
 
   fun print_board() {

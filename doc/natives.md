@@ -43,6 +43,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | lcd_goto    | int *col*, int *line*  | nil         | Kit          | set cursor position on LCD                                                        |  
 | lcd_puts    | string                 | nil         | Kit          | writes *string* to LCD                                                            |  
 | length      | list or string         | int         | all          | length of *list* or *string*                                                      |
+| list        | int, val?              | list        | all          | creates a list with *int* elements, initialized to *val* or nil                   |
 | log         | num                    | real        | all          | natural logarithm                                                                 |  
 | lower       | string                 | string      | all          | lower case of string                                                              |  
 | next        | iterator               | bool        | all          | advances *iterator* to next entry, returns true when valid                        |  

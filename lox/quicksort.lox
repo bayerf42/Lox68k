@@ -26,9 +26,9 @@ fun quicksort(array, comparator) {
 }
 
 fun test(n) {
-    var arr = [];
+    var arr = list(n);
     for (var i = 0; i < n; i = i + 1)
-        append(arr, random() \ 10000);
+        arr[i] = random() \ 10000;
 
     print arr;
 
