@@ -79,7 +79,7 @@ class Time < Object {
         this.hours = trunc(hfrac);
         this.minutes = max(0, trunc(fmod(hfrac, 1) * 60 + 0.5));
         if (this.minutes >= 60) { this.minutes = 0; this.hours = this.hours + 1;}
-        if (this.hours >= 24) print "Overflow!";
+        if (this.hours >= 24) error("Overflow to next day");
     }
 
     string() -> dec(this.hours) + ":" + ("0" + dec(this.minutes))[-2:]
@@ -89,7 +89,7 @@ class Time < Object {
 fun sunRiseSet(y, m, d) {
     var times = rs(y, m, d, LAT, LONG, TZ);
 
-    return "Sunrise at " + Time(times[0]).string() + ", sunset at " + Time(times[1]).string();
+    return "Sunrise at " + string(Time(times[0])) + ", sunset at " + string(Time(times[1]));
 }
 
 	

@@ -71,12 +71,12 @@ typedef struct ClassCompiler {
     bool                  hasSuperclass;
 } ClassCompiler;
 
-Parser parser;
-Compiler* current;
+Parser         parser;
+Compiler*      currentUnit;
 ClassCompiler* currentClass;
 
 static Chunk* currentChunk(void) {
-    return &current->function->chunk;
+    return &currentUnit->function->chunk;
 }
 
 static void errorAt(Token* token, const char* message) {
@@ -169,7 +169,7 @@ static int emitJump(uint8_t instruction) {
 }
 
 static void emitReturn(void) {
-    if (current->type == TYPE_INITIALIZER)
+    if (currentUnit->type == TYPE_INITIALIZER)
         emitBytes(OP_GET_LOCAL, 0);
     else
         emitByte(OP_NIL);
@@ -201,23 +201,23 @@ static void patchJump(int offset) {
 
 static void initCompiler(Compiler* compiler, FunctionType type) {
     Local* local;
-    compiler->enclosing  = current;
+    compiler->enclosing  = currentUnit;
     compiler->function   = NULL;
     compiler->type       = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
     compiler->function   = newFunction();
-    current = compiler;
+    currentUnit          = compiler;
 
     if (type != TYPE_SCRIPT) {
         if (parser.previous.type == TOKEN_FUN) {
             sprintf(buffer, "#%d", vm.lambdaCount++);
-            current->function->name = copyString(buffer, strlen(buffer));
+            currentUnit->function->name = copyString(buffer, strlen(buffer));
         } else
-            current->function->name = copyString(parser.previous.start, parser.previous.length);
+            currentUnit->function->name = copyString(parser.previous.start, parser.previous.length);
     }
 
-    local = &current->locals[current->localCount++];
+    local = &currentUnit->locals[currentUnit->localCount++];
     local->depth = 0;
     local->isCaptured = false;
     if (type != TYPE_FUNCTION) {
@@ -233,30 +233,30 @@ static ObjFunction* endCompiler(bool addReturn) {
     ObjFunction* function;
     if (addReturn)
         emitReturn();
-    function = current->function;
+    function = currentUnit->function;
 
     if (vm.debug_print_code && !parser.hadError)
         disassembleChunk(currentChunk(), function->name != NULL
                                        ? function->name->chars : "<script>");
 
-    current = current->enclosing;
+    currentUnit = currentUnit->enclosing;
     return function;
 }
 
 static void beginScope(void) {
-    current->scopeDepth++;
+    currentUnit->scopeDepth++;
 }
 
 static void endScope(void) {
-    current->scopeDepth--;
+    currentUnit->scopeDepth--;
 
-    while (current->localCount > 0 &&
-            current->locals[current->localCount - 1].depth > current->scopeDepth) {
-        if (current->locals[current->localCount - 1].isCaptured)
+    while (currentUnit->localCount > 0 &&
+            currentUnit->locals[currentUnit->localCount - 1].depth > currentUnit->scopeDepth) {
+        if (currentUnit->locals[currentUnit->localCount - 1].isCaptured)
             emitByte(OP_CLOSE_UPVALUE);
         else
             emitByte(OP_POP);
-        current->localCount--;
+        currentUnit->localCount--;
     }
 }
 
@@ -315,7 +315,7 @@ static void dot(bool canAssign) {
 
 static void slice(bool canAssign) {
     if (canAssign && match(TOKEN_EQUAL)) {
-        error("No assignment to slice allowed.");
+        error("Invalid assignment target.");
         return;
     } else
         emitByte(OP_GET_SLICE);
@@ -358,8 +358,7 @@ static void iter(bool canAssign) {
             expression();
             emitByte(OP_SET_ITVAL);
         } else
-            error("Iterator key is not writable.");
-        
+            error("Invalid assignment target.");
     } else
         emitByte(accessor == TOKEN_HAT ? OP_GET_ITVAL : OP_GET_ITKEY);
 }
@@ -471,11 +470,11 @@ static int resolveUpvalue(Compiler* compiler, Token* name) {
 
 static void addLocal(Token name) {
     Local* local;
-    if (current->localCount == MAX_LOCALS) {
+    if (currentUnit->localCount == MAX_LOCALS) {
         error("Too many local variables in function.");
         return;
     }
-    local = &current->locals[current->localCount++];
+    local = &currentUnit->locals[currentUnit->localCount++];
     local->name = name;
     local->depth = -1;
     local->isCaptured = false;
@@ -486,13 +485,13 @@ static void declareVariable(void) {
     int i;
     Local* local;
 
-    if (current->scopeDepth == 0)
+    if (currentUnit->scopeDepth == 0)
         return;
 
     name = &parser.previous;
-    for (i = current->localCount - 1; i >= 0; i--) {
-        local = &current->locals[i];
-        if (local->depth != -1 && local->depth < current->scopeDepth)
+    for (i = currentUnit->localCount - 1; i >= 0; i--) {
+        local = &currentUnit->locals[i];
+        if (local->depth != -1 && local->depth < currentUnit->scopeDepth)
             break;
 
         if (identifiersEqual(name, &local->name))
@@ -504,12 +503,12 @@ static void declareVariable(void) {
 
 static void namedVariable(Token name, bool canAssign) {
     uint8_t getOp, setOp;
-    int arg = resolveLocal(current, &name);
+    int arg = resolveLocal(currentUnit, &name);
 
     if (arg != -1) {
         getOp = OP_GET_LOCAL;
         setOp = OP_SET_LOCAL;
-    } else if ((arg = resolveUpvalue(current, &name)) != -1) {
+    } else if ((arg = resolveUpvalue(currentUnit, &name)) != -1) {
         getOp = OP_GET_UPVALUE;
         setOp = OP_SET_UPVALUE;
     } else {
@@ -683,20 +682,20 @@ static uint8_t parseVariable(const char* errorMessage) {
     consume(TOKEN_IDENTIFIER, errorMessage);
 
     declareVariable();
-    if (current->scopeDepth > 0)
+    if (currentUnit->scopeDepth > 0)
         return 0;
 
     return identifierConstant(&parser.previous);
 }
 
 static void markInitialized(void) {
-    if (current->scopeDepth == 0)
+    if (currentUnit->scopeDepth == 0)
         return;
-    current->locals[current->localCount - 1].depth = current->scopeDepth;
+    currentUnit->locals[currentUnit->localCount - 1].depth = currentUnit->scopeDepth;
 }
 
 static void defineVariable(uint8_t global) {
-    if (current->scopeDepth > 0) {
+    if (currentUnit->scopeDepth > 0) {
         markInitialized();
         return;
     }
@@ -762,12 +761,12 @@ static void function(FunctionType type) {
     consumeExp(TOKEN_LEFT_PAREN, "'('", "function name");
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
-            if (current->function->isVarArg)
+            if (currentUnit->function->isVarArg)
                 errorAtCurrent("No more parameters allowed after vararg.");
-            if (++current->function->arity >= MAX_LOCALS)
+            if (++currentUnit->function->arity >= MAX_LOCALS)
                 errorAtCurrent("Too many parameters.");
             if (match(TOKEN_DOT_DOT))
-                current->function->isVarArg = true;
+                currentUnit->function->isVarArg = true;
             parameter = parseVariable("Expect parameter name.");
             defineVariable(parameter);
         } while (match(TOKEN_COMMA));
@@ -825,6 +824,7 @@ static void classDeclaration(void) {
     currentClass = &classCompiler;
 
     if (match(TOKEN_LESS)) {
+        // should be allow an expression here?
         consume(TOKEN_IDENTIFIER, "Expect superclass name.");
         variable(false);
 
@@ -964,13 +964,13 @@ static void printStatement(void) {
 }
 
 static void returnStatement(void) {
-    if (current->type == TYPE_SCRIPT)
+    if (currentUnit->type == TYPE_SCRIPT)
         error("Can't return from top-level code.");
 
     if (match(TOKEN_SEMICOLON))
         emitReturn();
     else {
-        if (current->type == TYPE_INITIALIZER)
+        if (currentUnit->type == TYPE_INITIALIZER)
             error("Can't return a value from an initializer.");
         expression();
         consumeExp(TOKEN_SEMICOLON, "';'", "return value");
@@ -1063,7 +1063,7 @@ ObjFunction* compile(const char* source) {
 }
 
 void markCompilerRoots(void) {
-    Compiler* compiler = current;
+    Compiler* compiler = currentUnit;
     while (compiler != NULL) {
         markObject((Obj*)compiler->function);
         compiler = compiler->enclosing;
