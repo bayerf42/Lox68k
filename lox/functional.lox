@@ -6,9 +6,9 @@ fun foreach(fn, lst) {
 }
 
 fun range(lower, upper) {
-  var res = [];
+  var res = list(upper - lower + 1, 0);
   for (var i = lower; i<=upper; i=i+1)
-    append(res, i);
+    res[i - lower]  = i;
   return res;
 }
 
