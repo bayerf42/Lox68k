@@ -203,7 +203,7 @@ void printObject(Value value, bool compact, bool machine) {
 
 ObjList* makeList(int len, Value* items, int numCopy, int delta) {
     ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
-    int16_t  i;
+    int16_t  i, newCap;
 
     list->items    = NULL;
     list->count    = 0;
@@ -211,9 +211,10 @@ ObjList* makeList(int len, Value* items, int numCopy, int delta) {
 
     push(OBJ_VAL(list));
     if (len > 0) {
-        list->items    = GROW_ARRAY(Value, list->items, 0, len);
+        newCap         = MIN_CAPACITY(len); // avoid fragmentation with many small lists
+        list->items    = GROW_ARRAY(Value, list->items, 0, newCap);
         list->count    = len;
-        list->capacity = len;
+        list->capacity = newCap;
         for (i = 0; i < len; i++) {
             list->items[i] = (--numCopy >= 0) ? *items : NIL_VAL;
             items += delta;
