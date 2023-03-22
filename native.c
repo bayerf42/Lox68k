@@ -629,7 +629,11 @@ static bool clockNative(int argCount, Value* args) {
 #ifdef KIT68K
     args[-1] = INT_VAL(0); // not available
 #else
-    args[-1] = INT_VAL(clock() * 1000 / CLOCKS_PER_SEC); // in milliseconds
+#ifdef _WIN32
+    args[-1] = INT_VAL(clock());        // CLOCKS_PER_SEC == 1000
+#else
+    args[-1] = INT_VAL(clock() / 1000); // CLOCKS_PER_SEC == 1000000
+#endif
 #endif
     return true;
 }
