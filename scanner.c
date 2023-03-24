@@ -259,5 +259,5 @@ Token scanToken(void) {
         case '?': return makeToken(TOKEN_PRINT);
     }
 
-    return errorToken("Unexpected character.");
+    return errorToken("Invalid character.");
 }

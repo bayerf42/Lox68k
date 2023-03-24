@@ -66,6 +66,12 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
     return true;
 }
 
+#define CHECK_ARITH_ERROR \
+    if (errno != 0) {                      \
+        runtimeError("Arithmetic error."); \
+        return false;                      \
+    }
+
 
 static bool absNative(int argCount, Value* args) {
     if (IS_INT(args[0]))
@@ -80,10 +86,7 @@ static bool truncNative(int argCount, Value* args) {
         args[-1] = args[0];
     else
         args[-1] = INT_VAL(realToInt(AS_REAL(args[0])));
-    if (errno != 0) {
-        runtimeError("Arithmetic error.");
-        return false;
-    }
+    CHECK_ARITH_ERROR
     return true;
 }
 
@@ -94,10 +97,7 @@ static bool transcendentalNative(int argCount, Value* args, RealFun fn) {
         args[-1] = newReal((*fn)(intToReal(AS_INT(args[0]))));
     else
         args[-1] = newReal((*fn)(AS_REAL(args[0])));
-    if (errno != 0) {
-        runtimeError("Arithmetic error.");
-        return false;
-    }
+    CHECK_ARITH_ERROR
     return true;
 }
 
@@ -145,10 +145,7 @@ static bool powNative(int argCount, Value* args) {
     Real x = (IS_INT(args[0])) ? intToReal(AS_INT(args[0])) : AS_REAL(args[0]);
     Real y = (IS_INT(args[1])) ? intToReal(AS_INT(args[1])) : AS_REAL(args[1]);
     args[-1] = newReal(pow(x,y));
-    if (errno != 0) {
-        runtimeError("Arithmetic error.");
-        return false;
-    }
+    CHECK_ARITH_ERROR
     return true;
 }
 

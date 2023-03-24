@@ -135,7 +135,7 @@ static bool check(TokenType type) {
 }
 
 static bool match(TokenType type) {
-    if (!check(type))
+    if (parser.current.type != type)
         return false;
     advance();
     return true;
@@ -221,10 +221,10 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     local->depth = 0;
     local->isCaptured = false;
     if (type != TYPE_FUNCTION) {
-        local->name.start = "this";
+        local->name.start  = "this";
         local->name.length = 4;
     } else {
-        local->name.start = "";
+        local->name.start  = "";
         local->name.length = 0;
     }
 }
@@ -445,7 +445,7 @@ static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal) {
     }
 
     compiler->upvalues[upvalueCount].isLocal = isLocal; 
-    compiler->upvalues[upvalueCount].index = index; 
+    compiler->upvalues[upvalueCount].index   = index; 
     return compiler->function->upvalueCount++;
 }
 
@@ -475,8 +475,8 @@ static void addLocal(Token name) {
         return;
     }
     local = &currentUnit->locals[currentUnit->localCount++];
-    local->name = name;
-    local->depth = -1;
+    local->name       = name;
+    local->depth      = -1;
     local->isCaptured = false;
 }
 
@@ -1050,7 +1050,7 @@ ObjFunction* compile(const char* source) {
     initScanner(source);
     initCompiler(&compiler, TYPE_SCRIPT);
 
-    parser.hadError = false;
+    parser.hadError  = false;
     parser.panicMode = false;
 
     advance();

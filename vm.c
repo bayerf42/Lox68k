@@ -74,9 +74,15 @@ void push(Value value) {
     *vm.stackTop++ = value;
 }
 
-#define dropNpush(n,value) {\
-    vm.stackTop -= (n) - 1; \
+#define dropNpush(n,value) {   \
+    vm.stackTop -= (n) - 1;    \
     vm.stackTop[-1] = (value); \
+}
+
+#define CHECK_ARITH_ERROR              \
+if (errno != 0) {                      \
+    runtimeError("Arithmetic error."); \
+    return INTERPRET_RUNTIME_ERROR;    \
 }
 
 static bool call(ObjClosure* closure, int argCount) {
@@ -462,10 +468,7 @@ static InterpretResult run(void) {
                     else goto typeErrorAdd;
                 addReals: 
                     dropNpush(2, newReal(add(aReal,bReal)));
-                    if (errno != 0) {
-                        runtimeError("Arithmetic error.");
-                        return INTERPRET_RUNTIME_ERROR;
-                    }
+                    CHECK_ARITH_ERROR
                 } else if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
                     bStr = AS_STRING(peek(0));
                     aStr = AS_STRING(peek(1));
@@ -509,10 +512,7 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 dropNpush(2, newReal(sub(aReal,bReal)));
-                if (errno != 0) {
-                    runtimeError("Arithmetic error.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+                CHECK_ARITH_ERROR
                 break;
 
             case OP_MUL:
@@ -540,10 +540,7 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 dropNpush(2, newReal(mul(aReal,bReal)));
-                if (errno != 0) {
-                    runtimeError("Arithmetic error.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+                CHECK_ARITH_ERROR
                 break;
 
             case OP_DIV:
@@ -571,10 +568,7 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 dropNpush(2, newReal(div(aReal,bReal)));
-                if (errno != 0) {
-                    runtimeError("Arithmetic error.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+                CHECK_ARITH_ERROR
                 break;
 
             case OP_MOD:
