@@ -165,6 +165,13 @@ static bool listNative(int argCount, Value* args) {
     return true;
 }
 
+static bool reverseNative(int argCount, Value* args) {
+    ObjList* src = AS_LIST(args[0]);
+    ObjList* res = makeList(src->count, src->items + src->count - 1, src->count, -1);
+    args[-1] = OBJ_VAL(res);
+    return true;
+}
+
 static bool appendNative(int argCount, Value* args) {
     ObjList* list = AS_LIST(args[0]);
     appendToList(list, args[1]);
@@ -691,6 +698,7 @@ void defineAllNatives(void) {
     defineNative("insert",      "LNA",  insertNative);
     defineNative("delete",      "LN",   deleteNative);
     defineNative("index",       "ALn",  indexNative);
+    defineNative("reverse",     "L",    reverseNative);
 
     defineNative("remove",      "IA",   removeNative);
     defineNative("globals",     "",     globalsNative);

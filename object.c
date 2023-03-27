@@ -201,6 +201,8 @@ void printObject(Value value, bool compact, bool machine) {
     }
 }
 
+// Create a new list of length len. Initialize it with numCopy values taken from items (rest NIL)
+// stepping items by delta (1 = array copy, 0 = init from unique value, -1 = list reverse)
 ObjList* makeList(int len, Value* items, int numCopy, int delta) {
     ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
     int16_t  i, newCap;

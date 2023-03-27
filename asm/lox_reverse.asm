@@ -2,7 +2,7 @@
 * Title      : lox_reverse.asm
 * Written by : Fred Bayer
 * Date       : 2022-09-20
-* Description: Assembly subroutine to reverse a Lox list.
+* Description: Assembly subroutine to reverse a Lox list in place.
 *              call it by invoking exec($500, list) from Lox.
 *-----------------------------------------------------------
 
