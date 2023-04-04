@@ -1,10 +1,10 @@
 // little endian, 4 byte aligned struct, suitable for Windows (tcc -m32) and Linux (gcc -m32)
-fun word_peek(ad)    -> bit_or(bit_shift(peek(ad + 1), 8), peek(ad))
-fun long_peek(ad)    -> bit_or(bit_shift(word_peek(ad + 2), 16), word_peek(ad))
+fun peekw(ad)        -> bit_or(bit_shift(peek(ad + 1), 8), peek(ad))
+fun peekl(ad)        -> bit_or(bit_shift(peekw(ad + 2), 16), peekw(ad))
 fun fun_name(clo)    -> heap(addr(heap(addr(clo) + 8)) + 36)
 fun class_name(cls)  -> heap(addr(cls) + 8)
 fun class_of(ins)    -> heap(addr(ins) + 8)
-fun native_addr(nat) -> long_peek(addr(nat) + 12)
+fun native_addr(nat) -> peekl(addr(nat) + 12)
 
 var pi = 3.1415926535897932384626433;
 
@@ -17,7 +17,7 @@ fun atanh(x) -> 0.5 * log((1+x)/(1-x))
 fun radians(deg) -> pi/180*deg
 
 fun fmod(a, b) {
-  var q = a/b;
+  var q = (a+0.0)/b;
   return b * (q-trunc(q));
 }
 

@@ -824,7 +824,7 @@ static void classDeclaration(void) {
     currentClass = &classCompiler;
 
     if (match(TOKEN_LESS)) {
-        // should be allow an expression here?
+        // should we allow an expression here?
         consume(TOKEN_IDENTIFIER, "Expect superclass name.");
         variable(false);
 

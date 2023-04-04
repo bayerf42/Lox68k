@@ -37,6 +37,8 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | index       | val, list, int?        | int or nil  | all          | search *val* in *list*, returns index where found, optional search start *int*    |  
 | input       | string?                | string      | all          | input string from terminal with optional prompt                                   |
 | insert      | list, int, val         | nil         | all          | inserts *val* into *list* at position *int*                                       |
+| it_clone    | iterator               | iterator    | all          | clones *iterator*. Both iterators move independently                              |
+| it_same     | iterator, iterator     | bool        | all          | Tests if both *iterator*s point to the same entry.                                |
 | keycode     | -                      | int or nil  | Kit          | code of key currently pressed or nil                                              |  
 | lcd_clear   | -                      | nil         | Kit          | clears LCD                                                                        |  
 | lcd_defchar | int, list *of 8 bytes* | nil         | Kit          | creates a user-defined char with code *int* for LCD with bit pattern from *list*  |  

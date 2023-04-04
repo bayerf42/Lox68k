@@ -213,7 +213,8 @@ static bool indexNative(int argCount, Value* args) {
         return false;
     }
 
-    if (start < 0) start += list->count;
+    if (start < 0)
+        start += list->count;
 
     for (i = start; i < list->count; i++) {
         if (valuesEqual(item, list->items[i])) {
@@ -231,11 +232,6 @@ static bool removeNative(int argCount, Value* args) {
     return true;
 }
 
-static bool globalsNative(int argCount, Value* args) {
-    args[-1] = OBJ_VAL(newIterator(&vm.globals, NULL));
-    return true;
-}
-
 static bool typeNative(int argCount, Value* args) {
     const char* type = valueType(args[0]);
     args[-1] = OBJ_VAL(copyString(type, strlen(type)));
@@ -243,6 +239,11 @@ static bool typeNative(int argCount, Value* args) {
 }
 
 // Iterators
+
+static bool globalsNative(int argCount, Value* args) {
+    args[-1] = OBJ_VAL(newIterator(&vm.globals, NULL));
+    return true;
+}
 
 static bool slotsNative(int argCount, Value* args) {
     ObjInstance* instance = AS_INSTANCE(args[0]);
@@ -262,6 +263,22 @@ static bool nextNative(int argCount, Value* args) {
     args[-1] = BOOL_VAL(isValidIterator(iter));
     return true;
 }
+
+static bool itCloneNative(int argCount, Value* args) {
+    ObjIterator* src  = AS_ITERATOR(args[0]);
+    ObjIterator* dest = newIterator(src->table, src->instance);
+    dest->position = src->position;
+    args[-1] = OBJ_VAL(dest);
+    return true;
+}
+
+static bool itSameNative(int argCount, Value* args) {
+    ObjIterator* iter1 = AS_ITERATOR(args[0]);
+    ObjIterator* iter2 = AS_ITERATOR(args[1]);
+    args[-1] = BOOL_VAL(iter1->table == iter2->table && iter1->position == iter2->position);
+    return true;
+}
+
 
 // Some datatype conversions
 
@@ -649,7 +666,7 @@ static bool gcNative(int argCount, Value* args) {
 }
 
 static void defineNative(const char* name, const char* signature, NativeFn function) {
-    push(OBJ_VAL(copyString(name, (int)strlen(name))));
+    push(OBJ_VAL(copyString(name, strlen(name))));
     push(OBJ_VAL(newNative(signature, function)));
     tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
     drop();
@@ -701,15 +718,17 @@ void defineAllNatives(void) {
     defineNative("reverse",     "L",    reverseNative);
 
     defineNative("remove",      "IA",   removeNative);
-    defineNative("globals",     "",     globalsNative);
     defineNative("type",        "A",    typeNative);
     defineNative("clock",       "",     clockNative);
     defineNative("sleep",       "N",    sleepNative);
     defineNative("gc",          "",     gcNative);
 
+    defineNative("globals",     "",     globalsNative);
     defineNative("slots",       "I",    slotsNative);
     defineNative("valid",       "T",    validNative);
     defineNative("next",        "T",    nextNative);
+    defineNative("it_clone",    "T",    itCloneNative);
+    defineNative("it_same",     "TT",   itSameNative);
 
     defineNative("peek",        "N",    peekNative);
     defineNative("poke",        "NN",   pokeNative);

@@ -76,7 +76,7 @@ static Token errorToken(const char* message) {
     Token token;
     token.type   = TOKEN_ERROR;
     token.start  = message;
-    token.length = (int)strlen(message);
+    token.length = (int16_t)strlen(message);
     token.line   = scanner.line;
     return token;
 }
@@ -165,7 +165,7 @@ static Token identifier(void) {
 
 static Token number(char start) {
     bool exponentEmpty = true;
-    bool isReal = false;
+    bool isReal        = false;
 
     if (start == '%')
         while (isBinDigit(peek()))

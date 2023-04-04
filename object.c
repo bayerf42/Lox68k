@@ -277,7 +277,7 @@ ObjList* sliceFromList(ObjList* list, int begin, int end) {
     int n = list->count;
     LIMIT_SLICE(begin);
     LIMIT_SLICE(end);
-    return makeList(end-begin, &list->items[begin], end-begin, 1);
+    return makeList(end - begin, &list->items[begin], end - begin, 1);
 }
 
 void deleteFromList(ObjList* list, int index) {
@@ -481,12 +481,11 @@ ObjIterator* newIterator(Table* table, ObjInstance* instance) {
 
     iter->table    = table;
     iter->position = -1;
-    iter->instance = NULL;
+    iter->instance = instance;
     if (table->count > 0)
         for (i = 0; i < table->capacity; i++)
             if (!IS_EMPTY(table->entries[i].key)) {
                 iter->position = i;
-                iter->instance = instance;
                 return iter;
             }
     return iter;
