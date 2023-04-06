@@ -1,34 +1,35 @@
-// big endian, 2 byte aligned struct, suitable for 68000, IDE68k
 fun peekw(ad)        -> bit_or(bit_shift(peek(ad), 8), peek(ad + 1))
 fun peekl(ad)        -> bit_or(bit_shift(peekw(ad), 16), peekw(ad + 2))
 fun fun_name(clo)    -> heap(addr(heap(addr(clo) + 6)) + 34)
 fun class_name(cls)  -> heap(addr(cls) + 6)
 fun class_of(ins)    -> heap(addr(ins) + 6)
 fun native_addr(nat) -> peekl(addr(nat) + 10)
-
+fun pokew(ad,v) {
+  poke(ad+1, bit_and(v,$ff));
+  poke(ad, bit_and(bit_shift(v, -8), $ff));
+}
+fun pokel(ad,v) {
+  pokew(ad+2, bit_and(v,$ffff));
+  pokew(ad, bit_and(bit_shift(v, -16), $ffff));
+}
 var pi = 3.1415926535897932384626433;
-
 fun asin(x)  -> 2 * atan(x / (1 + sqrt(1-x*x)))
 fun acos(x)  -> pi/2 - asin(x)
 fun asinh(x) -> log(x + sqrt(x*x + 1))
 fun acosh(x) -> log(x + sqrt(x*x - 1))
 fun atanh(x) -> 0.5 * log((1+x)/(1-x))
-
-fun radians(deg) -> pi/180*deg
-
+fun rad(x)   -> pi/180*x
+fun deg(x)   -> 180/pi*x
 fun fmod(a, b) {
   var q = (a+0.0)/b;
   return b * (q-trunc(q));
 }
-
 fun max(a,b) {
   if (a>b) return a; else return b;
 }
-
 fun min(a,b) {
   if (a<b) return a; else return b;
 }
-
 fun map(fn, lst) {
   var len = length(lst);
   var res = list(len);
@@ -36,7 +37,6 @@ fun map(fn, lst) {
     res[i] = fn(lst[i]);
   return res;
 }
-
 fun filter(fn, lst) {
   var len = length(lst);
   var res = [];
@@ -45,9 +45,7 @@ fun filter(fn, lst) {
       append(res, lst[i]);
   return res;
 }
-
 fun complement(fn) -> fun (x) -> !fn(x)
-
 fun reduce(fn, lst) {
   var len = length(lst);
   if (len == 0) return nil;
@@ -57,7 +55,6 @@ fun reduce(fn, lst) {
     res = fn(res, lst[i]);
   return res;
 }
-
 fun string(obj) {
   var oty = type(obj);
   if      (obj == nil) return "nil";
@@ -84,8 +81,7 @@ fun string(obj) {
   else if (oty == "iterator") return "<iterator>";
   else return "<unknown>";
 }
-
-fun _build_hash(hash, formatter) {
+fun _bh(hash, formatter) {
   var sep = "";
   var res = "";
   for (var it = slots(hash); valid(it); next(it)) {
@@ -94,13 +90,9 @@ fun _build_hash(hash, formatter) {
   }
   return res;
 }
-
 class Object {
   init() {}
-
-  string() -> "<" + class_name(class_of(this)) + " instance: " 
-            + _build_hash(this, fun (it) -> string(it@) + ":" + string(it^)) + ">" 
-
+  string() -> "<" + class_name(class_of(this)) + " instance: " + _bh(this, fun (it) -> string(it@) + ":" + string(it^)) + ">" 
   clone() {
     var res = class_of(this)();
     for (var it = slots(this); valid(it); next(it))
@@ -108,7 +100,6 @@ class Object {
     return res;
   }  
 }
-
 class Map < Object {
   init(..args) {
     super.init();
@@ -117,39 +108,32 @@ class Map < Object {
     for (var i = 0; i < len; i = i + 2)
       this[args[i]] = args[i + 1];
   }
-
-  string() -> "{" + _build_hash(this, fun (it) -> string(it@) + ":" + string(it^)) + "}"
+  string() -> "{" + _bh(this, fun (it) -> string(it@) + ":" + string(it^)) + "}"
 }
-
 class Set < Object {
   init(..args) {
     super.init();
     for (var i = 0; i < length(args); i = i + 1)
       this[args[i]] = true;
   }
-
-  string() -> "{" + _build_hash(this, fun (it) -> string(it@)) + "}"
-
+  string() -> "{" + _bh(this, fun (it) -> string(it@)) + "}"
   union(that) {
     for (var it = slots(that); valid(it); next(it))
       this[it@] = true;
     return this;
   }
-
   intersect(that) {
     for (var it = slots(this); valid(it); next(it))
       if (!that[it@])
         remove(this, it@);
     return this;
   }
-
   subtract(that) {
     for (var it = slots(that); valid(it); next(it))
       remove(this, it@);
     return this;
   }
 }
-
 fun list_globals() {
   for (var it = globals(); valid(it); next(it))
     print it@, " - ", it^;

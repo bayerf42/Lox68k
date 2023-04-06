@@ -15,6 +15,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | class_name   | class                 | string      | name of *class*                                                                   |  
 | class_of     | instance              | class       | class of *instance*                                                               |  
 | complement   | fun                   | fun         | boolean complement of *fun*                                                       |  
+| deg          | num                   | real        | convert from radians to degrees                                                   |  
 | filter       | fun, list             | list        | filter all items of *list* which satisfy predicate *fun*                          |  
 | fmod         | num, num              | real        | floating point modulo                                                             |  
 | fun_name     | fun                   | string      | name of closure *fun*                                                             |  
@@ -28,7 +29,9 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | peekl        | int                   | int         | reads 31 bit long from address *int*                                              |  
 | peekw        | int                   | int         | reads 16 bit word from address *int*                                              |  
 | pi           |                       | real        | variable containing pi = 3.1415926535897932384626433                              |  
-| radians      | num                   | real        | convert from degrees to radians                                                   |  
+| pokel        | int *addr*, int *long*| nil         | writes 31 bit *long* to *addr*                                                    |  
+| pokew        | int *addr*, int *word*| nil         | writes 16 bit *word* to *addr*                                                    |  
+| rad          | num                   | real        | convert from degrees to radians                                                   |  
 | reduce       | fun, list             | any         | combine all items of *list* with operator *fun* from the left                     |  
 | string       | any                   | string      | convert *any* to a string, using *string* method for objects.                     |  
 

@@ -6,6 +6,16 @@ fun class_name(cls)  -> heap(addr(cls) + 8)
 fun class_of(ins)    -> heap(addr(ins) + 8)
 fun native_addr(nat) -> peekl(addr(nat) + 12)
 
+fun pokew(ad,v) {
+  poke(ad, bit_and(v,$ff));
+  poke(ad+1, bit_and(bit_shift(v, -8), $ff));
+}
+
+fun pokel(ad,v) {
+  pokew(ad, bit_and(v,$ffff));
+  pokew(ad+2, bit_and(bit_shift(v, -16), $ffff));
+}
+
 var pi = 3.1415926535897932384626433;
 
 fun asin(x)  -> 2 * atan(x / (1 + sqrt(1-x*x)))
@@ -13,8 +23,8 @@ fun acos(x)  -> pi/2 - asin(x)
 fun asinh(x) -> log(x + sqrt(x*x + 1))
 fun acosh(x) -> log(x + sqrt(x*x - 1))
 fun atanh(x) -> 0.5 * log((1+x)/(1-x))
-
-fun radians(deg) -> pi/180*deg
+fun rad(x)   -> pi/180*x
+fun deg(x)   -> 180/pi*x
 
 fun fmod(a, b) {
   var q = (a+0.0)/b;
@@ -85,7 +95,7 @@ fun string(obj) {
   else return "<unknown>";
 }
 
-fun _build_hash(hash, formatter) {
+fun _bh(hash, formatter) {
   var sep = "";
   var res = "";
   for (var it = slots(hash); valid(it); next(it)) {
@@ -99,7 +109,7 @@ class Object {
   init() {}
 
   string() -> "<" + class_name(class_of(this)) + " instance: " 
-            + _build_hash(this, fun (it) -> string(it@) + ":" + string(it^)) + ">" 
+            + _bh(this, fun (it) -> string(it@) + ":" + string(it^)) + ">" 
 
   clone() {
     var res = class_of(this)();
@@ -118,7 +128,7 @@ class Map < Object {
       this[args[i]] = args[i + 1];
   }
 
-  string() -> "{" + _build_hash(this, fun (it) -> string(it@) + ":" + string(it^)) + "}"
+  string() -> "{" + _bh(this, fun (it) -> string(it@) + ":" + string(it^)) + "}"
 }
 
 class Set < Object {
@@ -128,7 +138,7 @@ class Set < Object {
       this[args[i]] = true;
   }
 
-  string() -> "{" + _build_hash(this, fun (it) -> string(it@)) + "}"
+  string() -> "{" + _bh(this, fun (it) -> string(it@)) + "}"
 
   union(that) {
     for (var it = slots(that); valid(it); next(it))
