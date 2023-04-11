@@ -18,7 +18,7 @@ fun jDate(y, mo, d) {
 
 fun eps(t) {
     // Inflection of earth axis.
-    return radians(23.43929111 + (-46.815*t - 0.00059*t*t + 0.001813*t*t*t)/3600);
+    return rad(23.43929111 + (-46.815*t - 0.00059*t*t + 0.001813*t*t*t)/3600);
 }
 
 fun eqTime(t) {
@@ -59,8 +59,8 @@ fun rs(y, m, d, latitude, longitude, timezone) {
     var jd2000 = jDate(2000,1,0);
     var jd = jDate(y, m, d);
     var t = (jd-jd2000)/36525;
-    var h = radians(-50.0/60.0);
-    var b = radians(latitude);
+    var h = rad(-50.0/60.0);
+    var b = rad(latitude);
 
     var eq = eqTime(t);
     var eqt = eq[0];
