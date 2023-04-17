@@ -32,6 +32,10 @@ static Obj* allocateObject(size_t size, ObjType type) {
     return object;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Object creation 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method) {
     ObjBoundMethod* bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
 
@@ -132,6 +136,26 @@ ObjUpvalue* newUpvalue(Value* slot) {
     return upvalue;
 }
 
+ObjIterator* newIterator(Table* table, ObjInstance* instance) {
+    ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
+    int16_t      i;
+
+    iter->table    = table;
+    iter->position = -1;
+    iter->instance = instance;
+    if (table->count > 0)
+        for (i = 0; i < table->capacity; i++)
+            if (!IS_EMPTY(table->entries[i].key)) {
+                iter->position = i;
+                return iter;
+            }
+    return iter;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Object printing 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static void printFunction(const char* subType, ObjFunction* function) {
     if (function->name == NULL)
         printf("<script>");
@@ -200,6 +224,11 @@ void printObject(Value value, bool compact, bool machine) {
         case OBJ_UPVALUE:      printf("<upvalue>"); break;
     }
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Lists 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Create a new list of length len. Initialize it with numCopy values taken from items (rest NIL)
 // stepping items by delta (1 = array copy, 0 = init from unique value, -1 = list reverse)
@@ -295,6 +324,22 @@ bool isValidListIndex(ObjList* list, int index) {
            (index < 0)  && (index >= -list->count);
 }
 
+ObjList* concatLists(ObjList* a, ObjList* b) {
+    ObjList* result = makeList(a->count + b->count, a->items, a->count, 1);
+    int16_t  i, dest;
+
+    for (i = 0; i < b->count; i++) {
+        // expanding dest into next lines generates wrong code in IDE68k
+        dest = a->count + i;
+        result->items[dest] = b->items[i];
+    }
+    return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Strings 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 ObjString* indexFromString(ObjString* string, int index) {
     if (index < 0)
         index += string->length;
@@ -308,10 +353,8 @@ bool isValidStringIndex(ObjString* string, int index) {
 
 ObjString* sliceFromString(ObjString* string, int begin, int end) {
     int n = string->length;
-
     LIMIT_SLICE(begin);
     LIMIT_SLICE(end);
-
     return copyString(string->chars + begin, (end > begin) ? end - begin : 0);
 }
 
@@ -348,17 +391,9 @@ ObjString* caseString(ObjString* a, bool toUpper) {
     return copyString(input_line, length);
 }
 
-ObjList* concatLists(ObjList* a, ObjList* b) {
-    ObjList* result = makeList(a->count + b->count, a->items, a->count, 1);
-    int16_t  i, dest;
-
-    for (i = 0; i < b->count; i++) {
-        // expanding dest into next lines generates wrong code in IDE68k
-        dest = a->count + i;
-        result->items[dest] = b->items[i];
-    }
-    return result;
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Reals 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Value newReal(Real val) {
     ObjReal* real = ALLOCATE_OBJ(ObjReal, OBJ_REAL);
@@ -426,6 +461,10 @@ const char* formatReal(Real val) {
     return buffer;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Other conversions 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const char* formatInt(Int val) {
 #ifndef linux
     itoa(val, buffer, 10);
@@ -473,21 +512,5 @@ Value parseInt(const char* start, bool checkLen) {
         return NIL_VAL;
     else
         return INT_VAL(number);
-}
-
-ObjIterator* newIterator(Table* table, ObjInstance* instance) {
-    ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
-    int16_t      i;
-
-    iter->table    = table;
-    iter->position = -1;
-    iter->instance = instance;
-    if (table->count > 0)
-        for (i = 0; i < table->capacity; i++)
-            if (!IS_EMPTY(table->entries[i].key)) {
-                iter->position = i;
-                return iter;
-            }
-    return iter;
 }
 

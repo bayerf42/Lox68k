@@ -13,6 +13,10 @@
 #include "vm.h"
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Typechecking natives 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static const char* matchesType(Value value, char type) {
     switch (type) {
         case 'A': return                                      NULL;  // any value
@@ -65,6 +69,10 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
     }
     return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Arithmetics
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define CHECK_ARITH_ERROR \
     if (errno != 0) {                      \
@@ -149,6 +157,10 @@ static bool powNative(int argCount, Value* args) {
     return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Lists and strings
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static bool lengthNative(int argCount, Value* args) {
     if (IS_STRING(args[0]))
         args[-1] = INT_VAL(AS_STRING(args[0])->length);
@@ -232,13 +244,19 @@ static bool removeNative(int argCount, Value* args) {
     return true;
 }
 
-static bool typeNative(int argCount, Value* args) {
-    const char* type = valueType(args[0]);
-    args[-1] = OBJ_VAL(copyString(type, strlen(type)));
+static bool lowerNative(int argCount, Value* args) {
+    args[-1] = OBJ_VAL(caseString(AS_STRING(args[0]), false));
     return true;
 }
 
+static bool upperNative(int argCount, Value* args) {
+    args[-1] = OBJ_VAL(caseString(AS_STRING(args[0]), true));
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Iterators
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static bool globalsNative(int argCount, Value* args) {
     args[-1] = OBJ_VAL(newIterator(&vm.globals, NULL));
@@ -279,8 +297,9 @@ static bool itSameNative(int argCount, Value* args) {
     return true;
 }
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Some datatype conversions
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static bool ascNative(int argCount, Value* args) {
     ObjString* string = AS_STRING(args[0]);
@@ -369,6 +388,10 @@ static bool inputNative(int argCount, Value* args) {
     return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Integers
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static bool bitAndNative(int argCount, Value* args) {
     // No shifting and masking needed :-)
     args[-1] = args[0] & args[1];
@@ -416,17 +439,9 @@ static bool seedRandNative(int argCount, Value* args) {
     return true;
 }
 
-static bool lowerNative(int argCount, Value* args) {
-    args[-1] = OBJ_VAL(caseString(AS_STRING(args[0]), false));
-    return true;
-}
-
-static bool upperNative(int argCount, Value* args) {
-    args[-1] = OBJ_VAL(caseString(AS_STRING(args[0]), true));
-    return true;
-}
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Modifying debugging options
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static bool dbgCodeNative(int argCount, Value* args) {
     vm.debug_print_code = AS_BOOL(args[0]);
@@ -452,7 +467,9 @@ static bool dbgStatNative(int argCount, Value* args) {
     return true;
 }
 
-// Remember your old 80s home computers?
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Machine code support
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static bool peekNative(int argCount, Value* args) {
     int32_t address = AS_INT(args[0]);
@@ -513,6 +530,10 @@ static bool errorNative(int argCount, Value* args) {
 }
 
 #ifdef KIT68K
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// 68008 Kit specific routines
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "monitor4x.h"
 
@@ -577,8 +598,7 @@ static bool keycodeNative(int argCount, Value* args) {
     return true;
 }
 
-//#define LOOPS_NOTE 34483  // for non-register variables
-#define LOOPS_NOTE 91900 // for register variables
+#define LOOPS_NOTE 91900
 
 static bool soundNative(int argCount, Value* args) {
     int delay = AS_INT(args[0]);
@@ -602,8 +622,13 @@ static bool soundNative(int argCount, Value* args) {
     return true;
 }
 
-//#define LOOPS_PER_MILLI 72  // for non-register variables
-#define LOOPS_PER_MILLI 142 // for register variables
+static bool trapNative(int argCount, Value* args) {
+    _trap(0);
+    args[-1] = NIL_VAL;
+    return true;
+}
+
+#define LOOPS_PER_MILLI 142
 
 static bool sleepNative(int argCount, Value* args) {
     int32_t millis = AS_INT(args[0]);
@@ -613,12 +638,6 @@ static bool sleepNative(int argCount, Value* args) {
         for (j = 0; j < LOOPS_PER_MILLI; j++)
             ;
 
-    args[-1] = NIL_VAL;
-    return true;
-}
-
-static bool trapNative(int argCount, Value* args) {
-    _trap(0);
     args[-1] = NIL_VAL;
     return true;
 }
@@ -646,6 +665,22 @@ static bool sleepNative(int argCount, Value* args) {
 
 #endif
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// System 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static bool gcNative(int argCount, Value* args) {
+    collectGarbage(false);
+    args[-1] = INT_VAL(vm.bytesAllocated);
+    return true;
+}
+
+static bool typeNative(int argCount, Value* args) {
+    const char* type = valueType(args[0]);
+    args[-1] = OBJ_VAL(copyString(type, strlen(type)));
+    return true;
+}
+
 static bool clockNative(int argCount, Value* args) {
 #ifdef KIT68K
     args[-1] = INT_VAL(0); // not available
@@ -659,11 +694,9 @@ static bool clockNative(int argCount, Value* args) {
     return true;
 }
 
-static bool gcNative(int argCount, Value* args) {
-    collectGarbage(false);
-    args[-1] = INT_VAL(vm.bytesAllocated);
-    return true;
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Setup everyting 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void defineNative(const char* name, const char* signature, NativeFn function) {
     push(OBJ_VAL(copyString(name, strlen(name))));
@@ -752,6 +785,10 @@ void defineAllNatives(void) {
     defineNative("dbg_gc",      "N",    dbgGcNative);
     defineNative("dbg_stat",    "B",    dbgStatNative);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Interrupting computations 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef KIT68K
 

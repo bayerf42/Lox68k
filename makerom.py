@@ -7,6 +7,7 @@ rom_base = 0x40000
 
 lib_file = "lox/stdlib_68k.lox"
 lib_base = 0x5e000 # must be same as loxlibsrc in cstart_lox_rom.asm  
+lib_max  = 0x5f000 # maximum address of library, math FFP starts here  
 
 ## Based on Monitor ROM with FFP library.
 rom = bincopy.BinFile()
@@ -19,7 +20,7 @@ rom.add_file("clox_rom.hex", overwrite = True)
 lib_size = 0
 try:
     lib_size = os.stat(lib_file).st_size
-    if lib_base + lib_size >= 0x5f000:
+    if lib_base + lib_size >= lib_max:
         print(lib_file + " too large, change lib_base")
         sys.exit(10)      
     rom.add_binary_file(lib_file, lib_base, overwrite = True)

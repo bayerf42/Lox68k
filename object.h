@@ -6,6 +6,11 @@
 #include "table.h"
 #include "value.h"
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Object accessors 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define OBJ_TYPE(value)        (AS_OBJ(value)->type)
 
 #define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
@@ -31,6 +36,10 @@
 #define AS_CSTRING(value)      (((ObjString*)AS_OBJ(value))->chars)
 #define AS_REAL(value)         (((ObjReal*)AS_OBJ(value))->content)
 #define AS_ITERATOR(value)     ((ObjIterator*)AS_OBJ(value))
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Object types 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 typedef enum {
     OBJ_BOUND_METHOD,
@@ -147,6 +156,9 @@ struct ObjIterator {
     int16_t      position;  // -1 means invalid
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Object functions 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
 ObjClass*       newClass(ObjString* name);
@@ -160,34 +172,32 @@ ObjUpvalue*     newUpvalue(Value* slot);
 ObjString*      copyString(const char* chars, int length);
 ObjList*        makeList(int len, Value* items, int numCopy, int delta);
 
-void        printObject(Value value, bool compact, bool machine);
-const char* typeName(ObjType type);
+void            printObject(Value value, bool compact, bool machine);
+const char*     typeName(ObjType type);
+bool            isObjType(Value value, ObjType type);
 
-void       appendToList(ObjList* list, Value value);
-void       insertIntoList(ObjList* list, Value value, int index);
-void       storeToList(ObjList* list, int index, Value value);
-Value      indexFromList(ObjList* list, int index);
-ObjList*   sliceFromList(ObjList* list, int begin, int end);
-void       deleteFromList(ObjList* list, int index);
-bool       isValidListIndex(ObjList* list, int index);
+void            appendToList(ObjList* list, Value value);
+void            insertIntoList(ObjList* list, Value value, int index);
+void            storeToList(ObjList* list, int index, Value value);
+Value           indexFromList(ObjList* list, int index);
+ObjList*        sliceFromList(ObjList* list, int begin, int end);
+void            deleteFromList(ObjList* list, int index);
+bool            isValidListIndex(ObjList* list, int index);
+ObjList*        concatLists(ObjList* a, ObjList* b);
 
-ObjString* indexFromString(ObjString* string, int index);
-ObjString* sliceFromString(ObjString* string, int begin, int end);
-bool       isValidStringIndex(ObjString* string, int index);
+ObjString*      indexFromString(ObjString* string, int index);
+ObjString*      sliceFromString(ObjString* string, int begin, int end);
+bool            isValidStringIndex(ObjString* string, int index);
+ObjString*      concatStrings(ObjString* a, ObjString* b);
+ObjString*      caseString(ObjString* a, bool toUpper);
 
-ObjString* concatStrings(ObjString* a, ObjString* b);
-ObjList*   concatLists(ObjList* a, ObjList* b);
 
-ObjString* caseString(ObjString* a, bool toUpper);
+const char*     formatReal(Real val);
+const char*     formatInt(Int val);
+const char*     formatHex(Int val);
+const char*     formatBin(Int val);
+Value           parseInt(const char* start, bool checkLen);
 
-bool       isObjType(Value value, ObjType type);
-
-const char* formatReal(Real val);
-const char* formatInt(Int val);
-const char* formatHex(Int val);
-const char* formatBin(Int val);
-Value       parseInt(const char* start, bool checkLen);
-
-extern char buffer[];
+extern char     buffer[];
 
 #endif

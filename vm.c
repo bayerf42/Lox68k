@@ -289,8 +289,8 @@ static InterpretResult run(void) {
                 printf(" | ");
             }
             printf("\n");
-            disassembleInstruction(&frame->closure->function->chunk,
-                                   (int)(frame->ip - frame->closure->function->chunk.code));
+            disassembleInst(&frame->closure->function->chunk,
+                            (int)(frame->ip - frame->closure->function->chunk.code));
             printf("\n");
         }
 
@@ -915,9 +915,6 @@ static InterpretResult run(void) {
     }
     return INTERPRET_RUNTIME_ERROR; // not reached
 }
-
-#undef READ_BYTE
-#undef READ_USHORT
 
 InterpretResult interpret(const char* source) {
     ObjFunction*    function = compile(source);
