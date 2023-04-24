@@ -66,6 +66,8 @@ int disassembleInst(Chunk* chunk, int offset) {
         case OP_NIL:           return simpleInst("NIL", offset);
         case OP_TRUE:          return simpleInst("TRUE", offset);
         case OP_FALSE:         return simpleInst("FALSE", offset);
+        case OP_ZERO:          return simpleInst("ZERO", offset);
+        case OP_ONE:           return simpleInst("ONE", offset);
         case OP_POP:           return simpleInst("POP", offset);
         case OP_GET_LOCAL:     return byteInst("GET_LOC", chunk, offset);
         case OP_SET_LOCAL:     return byteInst("SET_LOC", chunk, offset);

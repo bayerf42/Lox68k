@@ -221,7 +221,9 @@ static uint8_t makeConstant(Value value) {
 }
 
 static void emitConstant(Value value) {
-    emit2Bytes(OP_CONSTANT, makeConstant(value));
+    if      (value == INT_VAL(0)) emitByte(OP_ZERO);
+    else if (value == INT_VAL(1)) emitByte(OP_ONE);
+    else                          emit2Bytes(OP_CONSTANT, makeConstant(value));
 }
 
 static void patchJump(int offset) {

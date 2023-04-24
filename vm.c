@@ -307,6 +307,8 @@ static InterpretResult run(void) {
             case OP_NIL:   push(NIL_VAL);         break;
             case OP_TRUE:  push(BOOL_VAL(true));  break;
             case OP_FALSE: push(BOOL_VAL(false)); break;
+            case OP_ZERO:  push(INT_VAL(0));      break;
+            case OP_ONE:   push(INT_VAL(1));      break;
             case OP_POP:   drop();                break;
 
             case OP_SWAP:

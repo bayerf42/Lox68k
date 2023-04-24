@@ -9,6 +9,8 @@ typedef enum {
     OP_NIL,           // push value nil
     OP_TRUE,          // push value true
     OP_FALSE,         // push value false
+    OP_ZERO,          // push int 0
+    OP_ONE,           // push int 1
     OP_POP,           // pop TOS
     OP_GET_LOCAL,     // push local variable at index byte0 
     OP_SET_LOCAL,     // update local variable at index byte0 with TOS  
