@@ -89,5 +89,41 @@ ALPHA          → "a" ... "z" | "A" ... "Z" | "_" ;
 DIGIT          → "0" ... "9" ;
 HEXDIGIT       → "0" ... "9" | "a" ... "f" | "A" ... "F" ;
 BINDIGIT       → "0" ... "1" ;
-
 ```
+## Characters
+
+* `!` logical not, `!=` not equal
+* `"` begin string literal, end string literal
+* `#` illegal
+* `$` begin hexadecimal number literal
+* `%` begin binary number literal
+* `&` illegal on Kit, load a file on Windows/Linux
+* `'` illegal
+* `(` begin grouping, begin call
+* `)` end grouping, end call
+* `*` multiplication
+* `+` addition
+* `,` list separator
+* `-` subtraction, negation, `->` return shorthand
+* `.` decimal point, property access, `..` unpack list, rest argument
+* `/` division, `//` comment until end of line
+* `0-9` digit
+* `:` splice separator
+* `;` statement terminator
+* `<` less than, subclass, `<=` less or equal
+* `=` assignment, `==` equals
+* `>` greater than, `>=` greater or equal
+* `?` shorthand for `print`
+* `@` key of iterator
+* `A-Z` letter
+* `[` begin list, begin subscript
+* `\` modulo operator
+* `]` end list, end subscript
+* `^` value of iterator
+* `_` letter
+* `` ` `` illegal
+* `a-z` letter
+* `{` begin code block
+* `|` illegal
+* `}` end code block
+* `~` illegal
