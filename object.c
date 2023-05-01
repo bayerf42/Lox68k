@@ -469,7 +469,7 @@ const char* formatInt(Int val) {
 #ifndef linux
     itoa(val, buffer, 10);
 #else
-    sprintf(buffer, "%ld", val);
+    sprintf(buffer, "%d", val);
 #endif
     return buffer;
 }
@@ -478,7 +478,7 @@ const char* formatHex(Int val) {
 #ifndef linux
     itoa(val, buffer, 16);
 #else
-    sprintf(buffer, "%lx", val);
+    sprintf(buffer, "%x", val);
 #endif
     return buffer;
 }

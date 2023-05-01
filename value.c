@@ -30,7 +30,7 @@ void printValue(Value value, bool compact, bool machine) {
     if      (IS_BOOL(value))   printf(AS_BOOL(value) ? "true" : "false");
     else if (IS_NIL(value))    printf("nil");
     else if (IS_EMPTY(value))  printf("<empty>");
-    else if (IS_INT(value))    printf("%ld", AS_INT(value));
+    else if (IS_INT(value))    printf("%d", AS_INT(value));
     else                       printObject(value, compact, machine);
 }
 

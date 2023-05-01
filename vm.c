@@ -23,7 +23,7 @@ static void resetStack(void) {
 void runtimeError(const char* format, ...) {
     va_list      args;
     size_t       instruction;
-    int          line, i;
+    int          i;
     CallFrame*   frame;
     ObjFunction* function;
 
@@ -88,7 +88,7 @@ if (errno != 0) {                      \
 static bool call(ObjClosure* closure, int argCount) {
     CallFrame* frame;
     ObjList*   args;
-    int        itemCount, i;
+    int        itemCount;
 
     if (vm.frameCount == FRAMES_MAX) {
         runtimeError("Lox call stack overflow.");
@@ -97,8 +97,8 @@ static bool call(ObjClosure* closure, int argCount) {
 
     if (closure->function->isVarArg) {
         if (argCount < closure->function->arity - 1) {
-            runtimeError("Expected at least %d arguments but got %d.",
-                         closure->function->arity - 1, argCount);
+            runtimeError("Expected %s%d arguments but got %d.",
+                         "", closure->function->arity - 1, argCount);
             return false;
         }
         itemCount = argCount - closure->function->arity + 1;
@@ -107,7 +107,8 @@ static bool call(ObjClosure* closure, int argCount) {
         argCount = closure->function->arity; // actual parameter count
     }
     else if (argCount != closure->function->arity) {
-        runtimeError("Expected %d arguments but got %d.", closure->function->arity, argCount);
+        runtimeError("Expected %s%d arguments but got %d.",
+                     "at least ", closure->function->arity, argCount);
         return false;
     }
 
@@ -137,7 +138,7 @@ static bool callValue(Value callee, int argCount) {
                 if (tableGet(&klass->methods, OBJ_VAL(vm.initString), &initializer))
                     return call(AS_CLOSURE(initializer), argCount);
                 else if (argCount != 0) {
-                    runtimeError("Expected %d arguments but got %d.", 0, argCount);
+                    runtimeError("Expected %s%d arguments but got %d.", "", 0, argCount);
                     return false;
                 }
                 return true;

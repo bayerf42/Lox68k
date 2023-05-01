@@ -4,86 +4,94 @@
 
 var freq = Notes();
 
-fun stacc(n, d) {
-  sound(freq[n], d / 4); // index instance freq with a (variable) string
-  sleep(d / 4 * 3);
-}
 
 
 fun popcorn(dur) {
 //  var dur = 200;
 
+  fun stacc(note) {
+    sound(freq[note], dur / 4); // index instance freq with a (variable) string
+    sleep(dur / 4 * 3);
+  }
+
+
+  fun final(note) {
+    sound(freq[note], dur / 2);
+    sleep(dur / 2 * 3);
+  }
+
+
   fun phrase1() {
-    stacc("h1", dur);
-    stacc("a1", dur);
-    stacc("h1", dur);
-    stacc("fis1", dur);
-    stacc("d1", dur);
-    stacc("fis1", dur);
-    stacc("h", dur*2);
+    stacc("h1");
+    stacc("a1");
+    stacc("h1");
+    stacc("fis1");
+    stacc("d1");
+    stacc("fis1");
+    final("h");
   }
 
   fun phrase2() {
-    stacc("h1", dur);
-    stacc("cis2", dur);
-    stacc("d2", dur);
-    stacc("cis2", dur);
-    stacc("d2", dur);
-    stacc("h1", dur);
-    stacc("cis2", dur);
-    stacc("h1", dur);
-    stacc("cis2", dur);
-    stacc("a1", dur);
-    stacc("h1", dur);
-    stacc("a1", dur);
-    stacc("h1", dur);
+    stacc("h1");
+    stacc("cis2");
+    stacc("d2");
+    stacc("cis2");
+    stacc("d2");
+    stacc("h1");
+    stacc("cis2");
+    stacc("h1");
+    stacc("cis2");
+    stacc("a1");
+    stacc("h1");
+    stacc("a1");
+    stacc("h1");
   }
 
   fun phrase2a() {
-    stacc("g1", dur);
-    stacc("h1", dur*2);
+    stacc("g1");
+    final("h1");
   }
 
   fun phrase2b() {
-    stacc("cis2", dur);
-    stacc("d2", dur*2);
+    stacc("cis2");
+    final("d2");
   }
 
   fun phrase3() {
-    stacc("fis2", dur);
-    stacc("e2", dur);
-    stacc("fis2", dur);
-    stacc("d2", dur);
-    stacc("a1", dur);
-    stacc("d2", dur);
-    stacc("fis1", dur*2);
+    stacc("fis2");
+    stacc("e2");
+    stacc("fis2");
+    stacc("d2");
+    stacc("a1");
+    stacc("d2");
+    final("fis1");
   }
 
   fun phrase4() {
-    stacc("fis2", dur);
-    stacc("gis2", dur);
-    stacc("a2", dur);
-    stacc("gis2", dur);
-    stacc("a2", dur);
-    stacc("fis2", dur);
-    stacc("gis2", dur);
-    stacc("fis2", dur);
-    stacc("gis2", dur);
-    stacc("e2", dur);
-    stacc("fis2", dur);
-    stacc("e2", dur);
+    stacc("fis2");
+    stacc("gis2");
+    stacc("a2");
+    stacc("gis2");
+    stacc("a2");
+    stacc("fis2");
+    stacc("gis2");
+    stacc("fis2");
+    stacc("gis2");
+    stacc("e2");
+    stacc("fis2");
+    stacc("e2");
   }
 
   fun phrase4a() {
-    stacc("fis2", dur);
-    stacc("d2", dur);
-    stacc("fis2", dur*2);
+    stacc("fis2");
+    stacc("d2");
+    final("fis2");
   }
 
   fun phrase4b() {
-    stacc("cis2", dur);
-    stacc("e2", dur);
-    stacc("fis2", dur*2);
+    stacc("cis2");
+    stacc("e2");
+    final("fis2");
   }
 
   fun partA(repeat) {

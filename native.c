@@ -55,7 +55,7 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
             runtimeError("Expected %d arguments but got %d.", maxParmCount, argCount);
         else
             runtimeError("Expected %d to %d arguments but got %d.",
-                          minParmCount, maxParmCount, argCount);
+                         minParmCount, maxParmCount, argCount);
         return false;
     }
 
