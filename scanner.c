@@ -46,7 +46,7 @@ static bool isBinDigit(char c) {
 
 #define isAtEnd() (*scanner.current == '\0')
 
-#define advance() (*scanner.current++)
+#define advance() scanner.current++
 
 #define peek() (*scanner.current)
 
@@ -225,7 +225,7 @@ Token scanToken(void) {
     if (isAtEnd())
         return makeToken(TOKEN_EOF);
 
-    c = advance();
+    c = *scanner.current++;
 
     if (isAlpha(c))
         return identifier();
