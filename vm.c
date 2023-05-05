@@ -98,7 +98,7 @@ static bool call(ObjClosure* closure, int argCount) {
     if (closure->function->isVarArg) {
         if (argCount < closure->function->arity - 1) {
             runtimeError("Expected %s%d arguments but got %d.",
-                         "", closure->function->arity - 1, argCount);
+                         "at least ", closure->function->arity - 1, argCount);
             return false;
         }
         itemCount = argCount - closure->function->arity + 1;
@@ -108,7 +108,7 @@ static bool call(ObjClosure* closure, int argCount) {
     }
     else if (argCount != closure->function->arity) {
         runtimeError("Expected %s%d arguments but got %d.",
-                     "at least ", closure->function->arity, argCount);
+                     "", closure->function->arity, argCount);
         return false;
     }
 
@@ -271,6 +271,8 @@ static InterpretResult run(void) {
 
     vm.hadStackoverflow = false;
     vm.stepsExecuted    = 0;
+
+    _trap(1);
 
     for (;;) {
         if (vm.hadStackoverflow) {

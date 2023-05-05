@@ -1084,6 +1084,8 @@ ObjFunction* compile(const char* source) {
     Compiler     compiler;
     ObjFunction* function;
 
+    _trap(1);
+
     vm.totallyAllocated = 0;
     vm.numGCs = 0;
     errno = 0;

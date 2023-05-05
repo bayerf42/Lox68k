@@ -75,7 +75,9 @@ typedef double Real;
 #define div(x,y)     ((x)/(y))
 #define less(x,y)    ((x)<(y))
 
+// hide Kit's assembly helpers 
 #define CHECK_STACKOVERFLOW
+#define _trap(n)
 
 #endif
 

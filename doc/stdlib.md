@@ -1,12 +1,30 @@
 # Lox68k standard library
 
-Trailing `?` indicates optional parameter. `num` means any number type, `int` or `real`.
-`val` means a value of any type.
+The Lox standard library contains several useful functions and classes which are written
+in Lox itself. There are 2 slightly different versions (due to memory alignment and byte order)
+for 68k and Intel/ARM architectures, files `lox/stdlib_68k.lox` and `lox/stdlib.lox`.
+
+You can start Lox68k with or without the standard library:
+
+* On the Kit start at `$44000` for Lox *with* the standard library, or at `$44008` for Lox
+  *without* the standard library. The standard library is bundled automatically when
+  building the ROM image.
+
+* On the 68k Simulator the standard library is not available, you have to use start address
+  `$44008` always.
+
+* With the Windows or Linux versions, you have to add the standard library explicitly to the
+  command line, e.g.
+  ```sh
+  wlox lox/stdlib.lox lox/mycode.lox -
+  ```
+
+
 
 ## Functions
 
 | Name         | Parameters            | Returns     | Description                                                                       |
-|--------------|-----------------------|-------------|--------------|--------------------------------------------------------------------|
+|--------------|-----------------------|-------------|-----------------------------------------------------------------------------------|
 | acos         | num                   | real        | inverse cosine                                                                    |  
 | acosh        | num                   | real        | inverse hyperbolic cosine                                                         |  
 | asin         | num                   | real        | inverse sine                                                                      |  
@@ -48,3 +66,8 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 |             | intersect | Set           | Set         | intersect *Set* with receiver, modifying it                                       |  
 |             | subtract  | Set           | Set         | subtract *Set* from receiver, modifying it                                        |  
 |             | union     | Set           | Set         | unite *Set* with receiver, modifying it                                           |  
+
+
+Trailing `?` indicates optional parameter. `num` means any number type, `int` or `real`.
+`val` means a value of any type.
+

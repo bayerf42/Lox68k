@@ -79,6 +79,8 @@ in the release. Just burn it into an EPROM or flash chip.
 * Hashtable iterators, created with `slots()`, iterate with `valid()` and `next()`, access key
   with `it@` and value with `it^`.
 * Function body `{ return expr;}` can be abbreviated by `-> expr`. 
+* A [standard library](stdlib.md) written in Lox68k.
+
 
 ### Omissions
 
@@ -117,6 +119,9 @@ and doesn't support modern *C99*.
   * bound methods, combining an instance with a method
   * iterators for traversing hashtables
 
+### Datatypes and operations
+  [Listed here](operations.md)
+
 
 ## The 3 varieties of Lox buildable
 
@@ -140,16 +145,19 @@ To start it, start a terminal emulation, either from *IDE68K*, or preferrably by
 ```sh
 python terminal.py
 ```
-press **ADDR**, input address `$44000` and press **GO**. Now you can
-send commands to the REPL running at the Kit via the terminal.
+press **ADDR**, input address `$44000` or `$44008` [(what's the difference)](stdlib.md)
+and press **GO**. Now you can send commands to the REPL running at the Kit via the terminal.
 
 To interrupt long-running computations, press the **IRQ** key bringing you back to the input
 prompt. Be sure to put the interrupt source switch to *IRQ*, not to *10ms TICK*.
 
-You can also run this version in the *IDE68K* emulator, but you have to set its start address
-`$44000` manually into the PC register. Since the FFP library is not contained in the hex file,
-you cannot use floating point numbers in the emulator.
-
+You can also run this version in the *IDE68K* emulator, but there are some differences to the Kit:
+  * You have to set the start address`$44008` manually into the PC register. You can't use start
+    address `$44000` which loads the [standard library](stdlib.md), which is not available here.
+  * Since the FFP library is not contained in the hex file, you cannot use floating point
+    numbers in the emulator. 
+  * The Kit's I/O (LCD, sound, keyboard) are not available
+  * Ignore the `TRAP #1` exceptions at the start of `compile()` and `run()`, just press RUN. 
 
 ### Lox compiled to a Windows executable.
 It actually uses the same memory model and restrictions as the 68008 version and also omits
