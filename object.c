@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "debug.h"
 #include "memory.h"
@@ -374,19 +375,12 @@ ObjString* caseString(ObjString* a, bool toUpper) {
     fix_memcpy(input_line, a->chars, length);
     input_line[length] = '\0';
 
-#ifdef __linux__
     if (toUpper)
         for (cp=input_line; *cp; ++cp)
             *cp = toupper(*cp);
     else
         for (cp=input_line; *cp; ++cp)
             *cp = tolower(*cp);
-#else
-    if (toUpper)
-        strupr(input_line);
-    else
-        strlwr(input_line);
-#endif
 
     return copyString(input_line, length);
 }

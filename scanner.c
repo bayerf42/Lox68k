@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "common.h"
 #include "memory.h"
@@ -22,26 +23,6 @@ void initScanner(const char* source) {
     scanner.start   = source;
     scanner.current = source;
     scanner.line    = 1;
-}
-
-static bool isAlpha(char c) {
-    return c >= 'a' && c <= 'z'
-        || c >= 'A' && c <= 'Z'
-        || c == '_';
-}
-
-static bool isDigit(char c) {
-    return c >= '0' && c <= '9';
-}
-
-static bool isHexDigit(char c) {
-    return c >= '0' && c <= '9'
-        || c >= 'a' && c <= 'f'
-        || c >= 'A' && c <= 'F';
-}
-
-static bool isBinDigit(char c) {
-    return c == '0' || c == '1';
 }
 
 #define isAtEnd() (*scanner.current == '\0')
@@ -83,7 +64,7 @@ static Token errorToken(const char* message) {
 
 static Token makeNumToken(bool isReal) {
     Token token = makeToken(isReal ? TOKEN_REAL : TOKEN_INT);
-    if (token.length == 1 && !isDigit(*token.start))
+    if (token.length == 1 && !isdigit(*token.start))
         return errorToken("No digits after radix.");
     return token;
 }
@@ -158,7 +139,7 @@ static TokenType identifierType(void) {
 }
 
 static Token identifier(void) {
-    while (isAlpha(peek()) || isDigit(peek()))
+    while (isalnum(peek()) || peek() == '_')
         advance();
     return makeToken(identifierType());
 }
@@ -168,21 +149,21 @@ static Token number(char start) {
     bool isReal        = false;
 
     if (start == '%')
-        while (isBinDigit(peek()))
+        while (peek() == '0' || peek() == '1')
             advance();
     else if (start == '$')
-        while (isHexDigit(peek()))
+        while (isxdigit(peek()))
             advance();
     else {
-        while (isDigit(peek()))
+        while (isdigit(peek()))
             advance();
 
         // Look for fractional part
-        if (peek() == '.' && isDigit(peekNext())) {
+        if (peek() == '.' && isdigit(peekNext())) {
             // Consume the ".".
             advance();
             isReal = true;
-            while (isDigit(peek()))
+            while (isdigit(peek()))
                 advance();
         }
         // Look for exponential part
@@ -191,7 +172,7 @@ static Token number(char start) {
             isReal = true;
             if (peek() == '+' || peek() == '-')
                 advance();
-            while (isDigit(peek())) {
+            while (isdigit(peek())) {
                 advance();
                 exponentEmpty = false;
             }
@@ -227,10 +208,10 @@ Token scanToken(void) {
 
     c = *scanner.current++;
 
-    if (isAlpha(c))
+    if (isalpha(c) || c == '_')
         return identifier();
 
-    if (isDigit(c) || c=='$' || c=='%')
+    if (isdigit(c) || c == '$' || c == '%')
         return number(c);
 
     switch (c) {

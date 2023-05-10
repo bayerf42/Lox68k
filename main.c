@@ -20,7 +20,6 @@ const char* loxLibSrc;
 
 static void repl(void) {
     for (;;) {
-        _trap(1); // Stop here to allow I/O at full speed
         printf("> ");
         if (!GETS(input_line)) {
             printf("\n");

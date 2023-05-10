@@ -944,6 +944,8 @@ InterpretResult interpret(const char* source) {
     result = run();
     handleInterrupts(false);
 
+    _trap(1);
+
     if (vm.debug_statistics) {
 #ifdef KIT68K
         printf("[%u steps; %d bytes; %d GCs]\n",

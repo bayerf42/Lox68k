@@ -157,7 +157,7 @@ You can also run this version in the *IDE68K* emulator, but there are some diffe
   * Since the FFP library is not contained in the hex file, you cannot use floating point
     numbers in the emulator. 
   * The Kit's I/O (LCD, sound, keyboard) are not available
-  * Ignore the `TRAP #1` exceptions at the start of `compile()` and `run()`, just press RUN. 
+  * Ignore the `TRAP #1` exceptions (3 per evaluation), just press RUN. 
 
 ### Lox compiled to a Windows executable.
 It actually uses the same memory model and restrictions as the 68008 version and also omits
@@ -197,7 +197,7 @@ Works exactly as the Windows version, but compiled with `GCC` on Linux.
 
 To build it, execute
 ```sh
-gcc -O2 -std=gnu89 -m32 -lm -o llox *.c
+gcc -O3 -std=gnu89 -m32 -lm -flto -o llox *.c
 ```
 
 Be sure to compile it for 32 bit architecture, Lox68k assumes 32 bit `int`, `long` and pointers.
