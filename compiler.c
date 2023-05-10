@@ -205,10 +205,9 @@ static int emitJump(uint8_t instruction) {
 
 static void emitReturn(void) {
     if (currentUnit->type == TYPE_INITIALIZER)
-        emit2Bytes(OP_GET_LOCAL, 0);
+        emit3Bytes(OP_GET_LOCAL, 0, OP_RETURN);
     else
-        emitByte(OP_NIL);
-    emitByte(OP_RETURN);
+        emitByte(OP_RETURN_NIL);
 }
 
 static uint8_t makeConstant(Value value) {
@@ -336,7 +335,15 @@ static void binary(bool canAssign) {
 static void call(bool canAssign) {
     bool isVarArg = false;
     uint8_t argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
-    emit2Bytes(isVarArg ? OP_VCALL : OP_CALL, argCount);
+    if (isVarArg)
+        emit2Bytes(OP_VCALL, argCount);
+    else 
+        switch (argCount) {
+            case 0:  emitByte(OP_CALL0); break;
+            case 1:  emitByte(OP_CALL1); break;
+            case 2:  emitByte(OP_CALL2); break;
+            default: emit2Bytes(OP_CALL, argCount); break;
+        }
 }
 
 static void dot(bool canAssign) {
@@ -358,6 +365,12 @@ static void dot(bool canAssign) {
 }
 
 static void slice(bool canAssign) {
+    if (match(TOKEN_RIGHT_BRACKET))
+        emitConstant(INT_VAL(INT32_MAX>>1));
+    else {
+        expression();
+        consumeExp(TOKEN_RIGHT_BRACKET, "']'", "slice");
+    }
     if (canAssign && match(TOKEN_EQUAL)) {
         error("Invalid assignment target.");
         return;
@@ -365,24 +378,14 @@ static void slice(bool canAssign) {
         emitByte(OP_GET_SLICE);
 }
 
-static void slice_right(bool canAssign) {
-    if (match(TOKEN_RIGHT_BRACKET))
-        emitConstant(INT_VAL(INT32_MAX>>1));
-    else {
-        expression();
-        consumeExp(TOKEN_RIGHT_BRACKET, "']'", "slice");
-    }
-    slice(canAssign);
-}
-
 static void index_(bool canAssign) {
     if (match(TOKEN_COLON)) {
         emitConstant(INT_VAL(0));
-        slice_right(canAssign);
+        slice(canAssign);
     } else {
         expression();
         if (match(TOKEN_COLON))
-            slice_right(canAssign);
+            slice(canAssign);
         else {
             consumeExp(TOKEN_RIGHT_BRACKET, "']'", "index");
 

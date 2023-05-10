@@ -638,6 +638,18 @@ static InterpretResult run(void) {
                 frame->ip -= offset;
                 break;
 
+            case OP_CALL0:
+                argCount = 0;
+                goto cont_call;
+
+            case OP_CALL1:
+                argCount = 1;
+                goto cont_call;
+
+            case OP_CALL2:
+                argCount = 2;
+                goto cont_call;
+
             case OP_CALL:
                 argCount = READ_BYTE();
             cont_call:
@@ -708,8 +720,13 @@ static InterpretResult run(void) {
                 drop();
                 break;
 
+            case OP_RETURN_NIL:
+                resVal = NIL_VAL;
+                goto cont_ret;
+
             case OP_RETURN:
                 resVal = pop();
+            cont_ret:
                 closeUpvalues(frame->slots);
                 vm.frameCount--;
                 if (vm.frameCount == 0) {

@@ -95,6 +95,9 @@ int disassembleInst(Chunk* chunk, int offset) {
         case OP_JUMP_FALSE:    return jumpInst("JUMP_F", 1, chunk, offset);
         case OP_LOOP:          return jumpInst("LOOP", -1, chunk, offset);
         case OP_CALL:          return byteInst("CALL", chunk, offset);
+        case OP_CALL0:         return simpleInst("CALL0", offset);
+        case OP_CALL1:         return simpleInst("CALL1", offset);
+        case OP_CALL2:         return simpleInst("CALL2", offset);
         case OP_INVOKE:        return invokeInst("INVOKE", chunk, offset);
         case OP_SUPER_INVOKE:  return invokeInst("SUP_INV", chunk, offset);
         case OP_CLOSURE: {
@@ -114,6 +117,7 @@ int disassembleInst(Chunk* chunk, int offset) {
         }
         case OP_CLOSE_UPVALUE: return simpleInst("CLOSE_UPV", offset);
         case OP_RETURN:        return simpleInst("RET", offset);
+        case OP_RETURN_NIL:    return simpleInst("RET_NIL", offset);
         case OP_CLASS:         return constInst("CLASS", chunk, offset);
         case OP_INHERIT:       return simpleInst("INHERIT", offset);
         case OP_METHOD:        return constInst("METHOD", chunk, offset);

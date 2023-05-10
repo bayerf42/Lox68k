@@ -38,11 +38,15 @@ typedef enum {
     OP_JUMP_FALSE,    // jump forwards  by word0 bytes if TOS is false, pop TOS otherwise
     OP_LOOP,          // jump backwards by word0 bytes
     OP_CALL,          // call a value with byte0 arguments on stack
+    OP_CALL0,         // call a value with 0 arguments on stack
+    OP_CALL1,         // call a value with 1 arguments on stack
+    OP_CALL2,         // call a value with 2 arguments on stack
     OP_INVOKE,        // invoke method str0 with byte1 arguments on stack
     OP_SUPER_INVOKE,  // invoke super method str0 with byte1 arguments on stack 
     OP_CLOSURE,       // build a closure from template fun0 with variable number of upvalues
     OP_CLOSE_UPVALUE, // close one upvalue
-    OP_RETURN,        // return from current closure, close all upvalues
+    OP_RETURN,        // return TOS from current closure, close all upvalues
+    OP_RETURN_NIL,    // return nil from current closure, close all upvalues
     OP_CLASS,         // define a new class named str0 and push it
     OP_INHERIT,       // copy all methods from superclass TOS-1 to class TOS
     OP_METHOD,        // use closure TOS as method named str0 in class TOS-1
