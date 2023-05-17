@@ -33,22 +33,19 @@ static const char* matchesType(Value value, char type) {
 }
 
 bool checkNativeSignature(const char* signature, int argCount, Value* args) {
-    int maxParmCount;
-    int minParmCount;
-    int i;
+    int maxParmCount = 0;
+    int minParmCount = 0;
+    int i = sizeof(Signature);
+    const char* currParm = signature + sizeof(Signature);
     const char* expected;
 
     // Trailing lower-case letters in signature indicate optional arguments.
-    maxParmCount = 0;
-    for (i = 0; i < sizeof(Signature); i++)
-        if (signature[i])
-            maxParmCount++;
-        else
-            break; 
-    minParmCount = maxParmCount;
-
-    while (minParmCount > 0 && islower(signature[minParmCount-1]))
-        minParmCount--;
+    while (i--)
+        if (*--currParm) {
+            ++maxParmCount;  
+            if (!(*currParm & 0x20))
+                ++minParmCount;
+        }
 
     if (minParmCount > argCount || argCount > maxParmCount) {
         if (minParmCount == maxParmCount)
@@ -60,7 +57,7 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
     }
 
     for (i = 0; i < argCount; i++) {
-        expected = matchesType(args[i], toupper(signature[i]));
+        expected = matchesType(args[i], signature[i] & ~0x20);
         if (expected != NULL) {
             runtimeError("Type mismatch at argument %d, expected %s but got %s.",
                          i + 1, expected, valueType(args[i]));

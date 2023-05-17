@@ -90,6 +90,7 @@ ObjInstance* newInstance(ObjClass* klass) {
 ObjNative* newNative(const char* signature, NativeFn function) {
     ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
 
+    *((uint32_t*)native->signature) = 0;
     strncpy(native->signature, signature, sizeof(Signature));
     native->function = function;
     return native;

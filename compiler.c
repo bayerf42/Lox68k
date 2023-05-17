@@ -869,7 +869,7 @@ static void classDeclaration(void) {
 
     consume(TOKEN_IDENTIFIER, "Expect class name.");
     className = parser.previous;
-    nameConstant = identifierConstant(&parser.previous);
+    nameConstant = identifierConstant(&className);
     declareVariable();
 
     emit2Bytes(OP_CLASS, nameConstant);
