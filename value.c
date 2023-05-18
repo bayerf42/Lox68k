@@ -51,6 +51,17 @@ bool valuesEqual(Value a, Value b) {
 
 uint32_t hashValue(Value value) {
     if      (IS_STRING(value)) return AS_STRING(value)->hash;
-    else if (IS_REAL(value))   return *((uint32_t*)&AS_REAL(value));
+    else if (IS_REAL(value))   return hashBytes((uint8_t*)&AS_REAL(value), sizeof(Real));
     else                       return value;
 }
+
+uint32_t hashBytes(const uint8_t* bytes, int length) {
+    // Bernstein hash (djb2)
+    uint32_t hash = 5381;
+
+    while (length--)
+        hash = ((hash << 5) + hash) ^ *bytes++;
+    return hash;
+}
+
+

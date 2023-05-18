@@ -96,21 +96,9 @@ ObjNative* newNative(const char* signature, NativeFn function) {
     return native;
 }
 
-static uint32_t hashString(const char* chars, int length) {
-    // FNV-1 hash with 32 bits
-    uint32_t hash = 2166136261u;
-    int i;
-
-    for (i = 0; i < length; i++) {
-        hash ^= (uint8_t)chars[i];
-        hash *= 16777619;
-    }
-    return hash;
-}
-
 ObjString* copyString(const char* chars, int length) {
     // Check if we already have an equal string
-    uint32_t hash = hashString(chars, length);
+    uint32_t hash = hashBytes(chars, length);
     ObjString* string;
     ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
     if (interned != NULL)
