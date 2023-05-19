@@ -10,16 +10,16 @@
 #include "value.h"
 
 typedef struct {
+    uint8_t*    ip;                  // keep first to allow fast addressing without offset  
     ObjClosure* closure;
-    uint8_t*    ip;
     Value*      slots;
 } CallFrame;
 
 typedef struct {
+    Value*      stackTop;            // keep first to allow fast addressing without offset
+    Value       stack[STACK_MAX];
     CallFrame   frames[FRAMES_MAX];
     int         frameCount;
-    Value       stack[STACK_MAX];
-    Value*      stackTop;
     Table       globals;
     Table       strings;
     ObjString*  initString;
