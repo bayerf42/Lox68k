@@ -21,7 +21,7 @@ void freeChunk(Chunk* chunk) {
     initChunk(chunk);
 }
 
-void writeChunk(Chunk* chunk, uint8_t byte, int line) {
+void writeChunk(Chunk* chunk, int byte, int line) {
     int16_t oldCapacity;
     LineStart* lineStart;
 

@@ -26,9 +26,7 @@ typedef enum {
     PREC_TERM,       // + -
     PREC_FACTOR,     // * / %
     PREC_UNARY,      // ! -
-    PREC_CALL,       // . ()
-    PREC_SUBSCRIPT,  // [] @ ^
-    PREC_PRIMARY
+    PREC_POSTFIX     // . () [] @ ^
 } Precedence;
 
 typedef void (*ParseFn)(bool canAssign);
@@ -40,13 +38,14 @@ typedef struct {
 
 typedef struct {
     Token   name;
-    int16_t depth;
-    bool    isCaptured;
+    int8_t  depth;
+    uint8_t isCaptured;
+    int16_t _dummy; // force size 16 to avoid multiplication in offset calculation 
 } Local;
 
 typedef struct {
     uint8_t index;
-    bool    isLocal;
+    uint8_t isLocal;
 } Upvalue;
 
 typedef enum {
@@ -61,9 +60,9 @@ typedef struct Compiler {
     ObjFunction*     function;
     FunctionType     type;
     Local            locals[MAX_LOCALS];
-    int16_t          localCount;
     Upvalue          upvalues[MAX_UPVALUES];
-    int16_t          scopeDepth;
+    int8_t           scopeDepth;
+    uint8_t          localCount;
 } Compiler;
 
 typedef struct ClassCompiler {
@@ -173,16 +172,16 @@ static void synchronize(void) {
 // Code emitting
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void emitByte(uint8_t byte) {
+static void emitByte(int byte) {
     writeChunk(currentChunk(), byte, parser.previous.line);
 }
 
-static void emit2Bytes(uint8_t byte1, uint8_t byte2) {
+static void emit2Bytes(int byte1, int byte2) {
     emitByte(byte1);
     emitByte(byte2);
 }
 
-static void emit3Bytes(uint8_t byte1, uint8_t byte2, uint8_t byte3) {
+static void emit3Bytes(int byte1, int byte2, int byte3) {
     emitByte(byte1);
     emitByte(byte2);
     emitByte(byte3);
@@ -195,10 +194,10 @@ static void emitLoop(int loopStart) {
     offset = currentChunk()->count - loopStart + 2;
     if (offset > UINT16_MAX)
         error("Jump too large.");
-    emit2Bytes((offset >> 8) & 0xff, offset & 0xff);
+    emit2Bytes(offset >> 8, offset);
 }
 
-static int emitJump(uint8_t instruction) {
+static int emitJump(int instruction) {
     emit3Bytes(instruction, 0xff, 0xff);
     return currentChunk()->count - 2;
 }
@@ -210,13 +209,13 @@ static void emitReturn(void) {
         emitByte(OP_RETURN_NIL);
 }
 
-static uint8_t makeConstant(Value value) {
+static int makeConstant(Value value) {
     int constant = addConstant(currentChunk(), value);
     if (constant > UINT8_MAX) {
         error("Too many constants in one chunk.");
         return 0;
     }
-    return (uint8_t)constant;
+    return constant;
 }
 
 static void emitConstant(Value value) {
@@ -231,8 +230,8 @@ static void patchJump(int offset) {
 
     if (jump > UINT16_MAX)
         error("Jump too large.");
-    currentChunk()->code[offset]     = (jump >> 8) & 0xff;
-    currentChunk()->code[offset + 1] = jump & 0xff;
+    currentChunk()->code[offset]     = jump >> 8;
+    currentChunk()->code[offset + 1] = jump;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -300,13 +299,13 @@ static void endScope(void) {
     }
 }
 
-static void    expression(void);
-static void    statement(void);
-static void    declaration(void);
-static const   ParseRule* getRule(TokenType type);
-static void    parsePrecedence(Precedence precedence);
-static uint8_t argumentList(bool* isVarArg, TokenType terminator);
-static uint8_t identifierConstant(Token* name);
+static void  expression(void);
+static void  statement(void);
+static void  declaration(void);
+static void  parsePrecedence(Precedence precedence);
+static int   argumentList(bool* isVarArg, TokenType terminator);
+static int   identifierConstant(Token* name);
+static const ParseRule* getRule(TokenType type);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Expressions
@@ -334,7 +333,7 @@ static void binary(bool canAssign) {
 
 static void call(bool canAssign) {
     bool isVarArg = false;
-    uint8_t argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
+    int  argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
     if (isVarArg)
         emit2Bytes(OP_VCALL, argCount);
     else 
@@ -347,9 +346,9 @@ static void call(bool canAssign) {
 }
 
 static void dot(bool canAssign) {
-    uint8_t name;
-    uint8_t argCount;
-    bool    isVarArg = false;
+    int  name;
+    int  argCount;
+    bool isVarArg = false;
 
     consumeExp(TOKEN_IDENTIFIER, "property name", "'.'");
     name = identifierConstant(&parser.previous);
@@ -444,7 +443,7 @@ static void string(bool canAssign) {
     emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
-static uint8_t identifierConstant(Token* name) {
+static int identifierConstant(Token* name) {
     return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
 }
 
@@ -455,8 +454,8 @@ static bool identifiersEqual(Token* a, Token* b) {
 }
 
 static void list(bool canAssign) {
-    bool    isVarArg = false;
-    uint8_t argCount = argumentList(&isVarArg, TOKEN_RIGHT_BRACKET);
+    bool isVarArg = false;
+    int  argCount = argumentList(&isVarArg, TOKEN_RIGHT_BRACKET);
     emit2Bytes(isVarArg ? OP_VLIST : OP_LIST, argCount);
 }
 
@@ -479,7 +478,7 @@ static int resolveLocal(Compiler* compiler, Token* name) {
     return -1;
 }
 
-static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal) {
+static int addUpvalue(Compiler* compiler, int index, bool isLocal) {
     int      upvalueCount = compiler->function->upvalueCount;
     int      i;
     Upvalue* upvalue;
@@ -509,12 +508,12 @@ static int resolveUpvalue(Compiler* compiler, Token* name) {
     local = resolveLocal(compiler->enclosing, name);
     if (local != -1) {
         compiler->enclosing->locals[local].isCaptured = true;
-        return addUpvalue(compiler, (uint8_t)local, true);
+        return addUpvalue(compiler, local, true);
     }
 
     upvalue = resolveUpvalue(compiler->enclosing, name);
     if (upvalue != -1)
-        return addUpvalue(compiler, (uint8_t)upvalue, false);
+        return addUpvalue(compiler, upvalue, false);
 
     return -1;
 }
@@ -553,7 +552,7 @@ static void declareVariable(void) {
 }
 
 static void namedVariable(Token name, bool canAssign) {
-    uint8_t getOp, setOp;
+    int getOp, setOp;
     int arg = resolveLocal(currentUnit, &name);
 
     if (arg != -1) {
@@ -569,9 +568,9 @@ static void namedVariable(Token name, bool canAssign) {
     }
     if (canAssign && match(TOKEN_EQUAL)) {
         expression();
-        emit2Bytes(setOp, (uint8_t)arg);
+        emit2Bytes(setOp, arg);
     } else
-        emit2Bytes(getOp, (uint8_t)arg);
+        emit2Bytes(getOp, arg);
 }
 
 static void variable(bool canAssign) {
@@ -590,9 +589,9 @@ static Token syntheticToken(const char* text) {
 }
 
 static void super_(bool canAssign) {
-    uint8_t name;
-    uint8_t argCount;
-    bool    isVarArg = false;
+    int  name;
+    int  argCount;
+    bool isVarArg = false;
 
     if (currentClass == NULL)
         error("Can't use 'super' outside of a class.");
@@ -655,14 +654,14 @@ static void lambda(bool canAssign) {
 }
 
 const ParseRule rules[] = {
-    /* [TOKEN_LEFT_PAREN]    = */ {grouping, call,   PREC_CALL},
+    /* [TOKEN_LEFT_PAREN]    = */ {grouping, call,   PREC_POSTFIX},
     /* [TOKEN_RIGHT_PAREN]   = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_LEFT_BRACE]    = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_RIGHT_BRACE]   = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_LEFT_BRACKET]  = */ {list,     index_, PREC_SUBSCRIPT},
+    /* [TOKEN_LEFT_BRACKET]  = */ {list,     index_, PREC_POSTFIX},
     /* [TOKEN_RIGHT_BRACKET] = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_COMMA]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_DOT]           = */ {NULL,     dot,    PREC_CALL},
+    /* [TOKEN_DOT]           = */ {NULL,     dot,    PREC_POSTFIX},
     /* [TOKEN_MINUS]         = */ {unary,    binary, PREC_TERM},
     /* [TOKEN_PLUS]          = */ {NULL,     binary, PREC_TERM},
     /* [TOKEN_SEMICOLON]     = */ {NULL,     NULL,   PREC_NONE},
@@ -670,8 +669,8 @@ const ParseRule rules[] = {
     /* [TOKEN_SLASH]         = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_STAR]          = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_PERCENT]       = */ {NULL,     binary, PREC_FACTOR},
-    /* [TOKEN_AT]            = */ {NULL,     iter,   PREC_SUBSCRIPT},
-    /* [TOKEN_HAT]           = */ {NULL,     iter,   PREC_SUBSCRIPT},
+    /* [TOKEN_AT]            = */ {NULL,     iter,   PREC_POSTFIX},
+    /* [TOKEN_HAT]           = */ {NULL,     iter,   PREC_POSTFIX},
     /* [TOKEN_BANG]          = */ {unary,    NULL,   PREC_NONE},
     /* [TOKEN_BANG_EQUAL]    = */ {NULL,     binary, PREC_EQUALITY},
     /* [TOKEN_EQUAL]         = */ {NULL,     NULL,   PREC_NONE},
@@ -732,7 +731,7 @@ static void parsePrecedence(Precedence precedence) {
         error("Invalid assignment target.");
 }
 
-static uint8_t parseVariable(const char* errorMessage) {
+static int parseVariable(const char* errorMessage) {
     consume(TOKEN_IDENTIFIER, errorMessage);
 
     declareVariable();
@@ -748,7 +747,7 @@ static void markInitialized(void) {
     currentUnit->locals[currentUnit->localCount - 1].depth = currentUnit->scopeDepth;
 }
 
-static void defineVariable(uint8_t global) {
+static void defineVariable(int global) {
     if (currentUnit->scopeDepth > 0) {
         markInitialized();
         return;
@@ -756,8 +755,8 @@ static void defineVariable(uint8_t global) {
     emit2Bytes(OP_DEF_GLOBAL, global);
 }
 
-static uint8_t argumentList(bool* isVarArg, TokenType terminator) {
-    uint8_t argCount = 0;
+static int argumentList(bool* isVarArg, TokenType terminator) {
+    int argCount = 0;
 
     if (!check(terminator)) {
         do {
@@ -805,7 +804,7 @@ static void function(FunctionType type) {
     Compiler     compiler;
     ObjFunction* function;
     int          i;
-    uint8_t      parameter;
+    int          parameter;
 
     CHECK_STACKOVERFLOW
 
@@ -846,7 +845,7 @@ static void function(FunctionType type) {
 }
 
 static void method(void) {
-    uint8_t      constant;
+    int          constant;
     FunctionType type;
 
     consume(TOKEN_IDENTIFIER, "Expect method name.");
@@ -863,7 +862,7 @@ static void method(void) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void classDeclaration(void) {
-    uint8_t       nameConstant;
+    int           nameConstant;
     Token         className;
     ClassCompiler classCompiler;
 
@@ -910,7 +909,7 @@ static void classDeclaration(void) {
 }
 
 static void funDeclaration(void) {
-    uint8_t fname = parseVariable("Expect function name.");
+    int fname = parseVariable("Expect function name.");
 
     markInitialized();
     function(TYPE_FUNCTION);
@@ -918,7 +917,7 @@ static void funDeclaration(void) {
 }
 
 static void varDeclaration(void) {
-    uint8_t vname = parseVariable("Expect variable name.");
+    int vname = parseVariable("Expect variable name.");
 
     if (match(TOKEN_EQUAL))
         expression();

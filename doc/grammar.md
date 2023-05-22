@@ -11,7 +11,7 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * `$` prefix for hexadecimal integer literals
 * `%` prefix for binary integer literals
 * anonymous functions as expressions `fun (params*) {block}`
-* prefix `..` before last parameter name for vararg parameter in function declaration
+* prefix `..` before last parameter name for rest parameter in function declaration
 * prefix `..` before argument to unpack list into arguments in function call
 * Real numbers with exponential part
 * postfix `@` to read key part of a hashtable iterator entry
@@ -22,41 +22,38 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 ``` ebnf
 program        → declaration* EOF ;
 
-declaration    → classDecl
-               | funDecl
-               | varDecl
+declaration    → class_decl
+               | fun_decl
+               | var_decl
                | statement ;
 
-classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
+class_decl     → "class" IDENTIFIER ( "<" IDENTIFIER )?
                  "{" ( IDENTIFIER function )* "}" ;
-funDecl        → "fun" IDENTIFIER function ;
-varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+fun_decl       → "fun" IDENTIFIER function ;
+var_decl       → "var" IDENTIFIER ( "=" expression )? ";" ;
 
-statement      → exprStmt
-               | forStmt
-               | ifStmt
-               | printStmt
-               | returnStmt
-               | whileStmt
+statement      → expr_stmt
+               | for_stmt
+               | if_stmt
+               | print_stmt
+               | return_stmt
+               | while_stmt
                | block ;
 
-exprStmt       → expression ";" ;
-forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+expr_stmt      → expression ";" ;
+for_stmt       → "for" "(" ( var_decl | expr_stmt | ";" )
                            expression? ";"
                            expression? ")" statement ;
-ifStmt         → "if" "(" expression ")" statement
+if_stmt        → "if" "(" expression ")" statement
                  ( "else" statement )? ;
-printStmt      → ("print" | "?") ( (expression ( "," ","? expression )* )? ","? ","? )?  ";" ;
-returnStmt     → "return" expression? ";" ;
-whileStmt      → "while" "(" expression ")" statement ;
+print_stmt     → ("print" | "?") print_list ";" ;
+return_stmt    → "return" expression? ";" ;
+while_stmt     → "while" "(" expression ")" statement ;
 block          → "{" declaration* "}" ;
 
 expression     → assignment ;
 
-assignment     → ( call "." )? IDENTIFIER "=" assignment
-               | call "[" index "]" "=" assignment
-               | call "^" "=" assignment
-               | logic_or ;
+assignment     → postfix "=" assignment | logic_or ;
 
 logic_or       → logic_and ( "or" logic_and )* ;
 logic_and      → equality ( "and" equality )* ;
@@ -65,19 +62,23 @@ comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
 factor         → unary ( ( "/" | "*" | "\") unary )* ;
 
-unary          → ( "!" | "-" ) unary | call ;
-call           → subscript ( "(" arguments? ")" | "." IDENTIFIER )* ;
-subscript      → primary ( ( "[" index | slice "]") | "^" | "@" )* ;
+unary          → ( "!" | "-" ) unary | postfix ;
+postfix        → primary ( "(" arguments ")" | "." IDENTIFIER |
+                           "[" ( index | slice ) "]" | "@" | "^" )* ;
 index          → expression ;
 slice          → expression ":" expression | expression ":" | ":" expression | ":" ;
 primary        → "true" | "false" | "nil" | "this"
                | NUMBER | STRING | IDENTIFIER | "(" expression ")"
-               | "[" arguments? "]" | "super" "." IDENTIFIER
+               | "[" arguments "]" | "super" "." IDENTIFIER
                | "fun" function ;
 
-function       → "(" parameters? ")" (block | "->" expression) ;
-parameters     → ".."? IDENTIFIER | IDENTIFIER ( "," IDENTIFIER )* ( "," ".." IDENTIFIER )? ;
-arguments      → ".."? expression ( "," ".."? expression )* ;
+function       → "(" parameters ")" (block | "->" expression) ;
+parameters     → ( rest_parameter | IDENTIFIER ( "," IDENTIFIER )* ( "," rest_parameter )? )? ;
+rest_parameter → ".." IDENTIFIER ;
+arguments      → ( argument ( "," argument )* )? ;
+argument       → ".."? expression ;
+print_list     → ( expression ( print_sep expression )* print_sep? )? ;
+print_sep      → "," ","? ;
 
 NUMBER         → DIGIT+ ( "." DIGIT+ )? ( ( "e" | "E" ) ( "+" | "-" )? DIGIT+ )?
                | "$" HEXDIGIT+

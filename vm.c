@@ -242,11 +242,11 @@ static void defineMethod(ObjString* name) {
 }
 
 #define READ_BYTE()   (*frame->ip++)
-#define READ_USHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
+#define READ_USHORT() (frame->ip += 2, (frame->ip[-2] << 8) | frame->ip[-1])
 
 static InterpretResult run(void) {
     Value*  slot;
-    uint8_t instruction;
+    int     instruction;
     int     index, begin, end, i;
     Value   constant;
 
@@ -260,12 +260,12 @@ static InterpretResult run(void) {
     ObjIterator  *aIt;
     ObjClass     *superclass, *subclass;
     ObjInstance  *instance;
-    uint8_t      slotNr;
+    int          slotNr;
     ObjFunction  *function;
     ObjClosure   *closure;
     int          argCount, itemCount;
-    uint16_t     offset;
-    uint8_t      isLocal, upIndex;
+    int          offset;
+    int          isLocal, upIndex;
     CallFrame    *frame  = &vm.frames[vm.frameCount - 1];
     Value        *consts = frame->closure->function->chunk.constants.values;
 

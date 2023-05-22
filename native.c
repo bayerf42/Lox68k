@@ -482,7 +482,7 @@ static bool pokeNative(int argCount, Value* args) {
         runtimeError("%s out of range.", "Byte value");
         return false;
     }
-    *((uint8_t*)address) = byte & 0xff;
+    *((uint8_t*)address) = byte;
     args[-1] = NIL_VAL;
     return true;
 }

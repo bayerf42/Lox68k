@@ -11,28 +11,28 @@ static int simpleInst(const char* name, int offset) {
 }
 
 static int byteInst(const char* name, Chunk* chunk, int offset) {
-    uint8_t arg = chunk->code[offset + 1];
+    int arg = chunk->code[offset + 1];
     printf("%-9s %4d", name, arg);
     return offset + 2;
 }
 
 static int jumpInst(const char* name, int sign, Chunk* chunk, int offset) {
-    uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
+    int jump = chunk->code[offset + 1] << 8;
     jump |= chunk->code[offset + 2];
-    printf("%-9s %4d ; -> %d", name, jump, offset + 3 + ((sign>0) ? jump : -(int)jump));
-    return offset + 3;
+    printf("%-9s %4d ; -> %d", name, jump, offset + 3 + ((sign>0) ? jump : -jump));
+    return offset + 3;     
 }
 
 static int constInst(const char* name, Chunk* chunk, int offset) {
-    uint8_t constant = chunk->code[offset + 1];
+    int constant = chunk->code[offset + 1];
     printf("%-9s %4d ; ", name, constant);
     printValue(chunk->constants.values[constant], true, true);
     return offset + 2;
 }
 
 static int invokeInst(const char* name, Chunk* chunk, int offset) {
-    uint8_t constant = chunk->code[offset + 1];
-    uint8_t argCount = chunk->code[offset + 2];
+    int constant = chunk->code[offset + 1];
+    int argCount = chunk->code[offset + 2];
     printf("%-9s %4d ; ", name, constant);
     printValue(chunk->constants.values[constant], true, true);
     printf(" (%d args)", argCount);
@@ -49,7 +49,7 @@ void disassembleChunk(Chunk* chunk, const char* name) {
 }
 
 int disassembleInst(Chunk* chunk, int offset) {
-    uint8_t      instruction, constant;
+    int          instruction, constant;
     ObjFunction* function;
     int          j, isLocal, upIndex, line;
 
