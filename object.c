@@ -27,7 +27,7 @@ static Obj* allocateObject(size_t size, ObjType type) {
     vm.objects       = object;
 
     if (vm.debug_log_gc & DBG_GC_ALLOC)
-        printf("GC %05x aloc %d %s\n", (void*)object, size, typeName(type));
+        printf("GC %05x aloc %d %s\n", (int32_t)object, size, typeName(type));
 
     return object;
 }
@@ -89,15 +89,23 @@ ObjInstance* newInstance(ObjClass* klass) {
 ObjNative* newNative(const char* signature, NativeFn function) {
     ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
     *((uint32_t*)native->signature) = 0;
     strncpy(native->signature, signature, sizeof(Signature));
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
     native->function = function;
     return native;
 }
 
 ObjString* copyString(const char* chars, int length) {
     // Check if we already have an equal string
-    uint32_t hash = hashBytes(chars, length);
+    uint32_t hash = hashBytes((const uint8_t*)chars, length);
     ObjString* string;
     ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
     if (interned != NULL)
@@ -203,11 +211,11 @@ void printObject(Value value, bool compact, bool machine) {
             if (compact)       printf("<list %d>", AS_LIST(value)->count);
             else               printList(AS_LIST(value));
             break;
-        case OBJ_NATIVE:       printf("<native %05x>", (void*) AS_NATIVE(value)); break;
+        case OBJ_NATIVE:       printf("<native %05x>", (int32_t) AS_NATIVE(value)); break;
         case OBJ_REAL:         printf("%s", formatReal(AS_REAL(value))); break;
         case OBJ_STRING:
             if (machine)       fix_printf("\"");
-                               fix_printf(AS_CSTRING(value));
+            fix_printf(AS_CSTRING(value));
             if (machine)       fix_printf("\"");
             break;
         case OBJ_UPVALUE:      printf("<upvalue>"); break;
@@ -309,8 +317,8 @@ void deleteFromList(ObjList* list, int index) {
 }
 
 bool isValidListIndex(ObjList* list, int index) {
-    return (index >= 0) && (index < list->count) ||
-           (index < 0)  && (index >= -list->count);
+    return (index >= 0 && index <   list->count) ||
+           (index <  0 && index >= -list->count);
 }
 
 ObjList* concatLists(ObjList* a, ObjList* b) {
@@ -336,8 +344,8 @@ ObjString* indexFromString(ObjString* string, int index) {
 }
 
 bool isValidStringIndex(ObjString* string, int index) {
-    return (index >= 0) && (index <   string->length) ||
-           (index <  0) && (index >= -string->length);
+    return (index >= 0 && index <   string->length) ||
+           (index <  0 && index >= -string->length);
 }
 
 ObjString* sliceFromString(ObjString* string, int begin, int end) {
@@ -490,7 +498,7 @@ Value parseInt(const char* start, bool checkLen) {
     else
         number = strtol(start, &end, 10);
 
-    if (start == end || checkLen && start + strlen(start) != end)
+    if (start == end || (checkLen && start + strlen(start) != end))
         return NIL_VAL;
     else
         return INT_VAL(number);

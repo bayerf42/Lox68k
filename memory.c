@@ -54,7 +54,7 @@ void markObject(Obj* object) {
         return;
 
     if (vm.debug_log_gc & DBG_GC_MARK) {
-        printf("GC %05x mark ", (void*) object);
+        printf("GC %05x mark ", (int32_t)object);
         printValue(OBJ_VAL(object), true, true);
         printf("\n");
     }
@@ -92,7 +92,7 @@ static void blackenObject(Obj* object) {
     int16_t i;
 
     if (vm.debug_log_gc & DBG_GC_BLACK) {
-        printf("GC %05x blak ", (void*)object);
+        printf("GC %05x blak ", (int32_t)object);
         printValue(OBJ_VAL(object), true, true);
         printf("\n");
     }
@@ -142,7 +142,7 @@ static void blackenObject(Obj* object) {
 static void freeObject(Obj* object) {
 
     if (vm.debug_log_gc & DBG_GC_FREE)
-        printf("GC %05x free %s\n", (void*)object, typeName(object->type));
+        printf("GC %05x free %s\n", (int32_t)object, typeName(object->type));
 
     switch (object->type) {
         case OBJ_BOUND_METHOD:

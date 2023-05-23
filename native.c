@@ -491,7 +491,7 @@ static bool execNative(int argCount, Value* args) {
     typedef Value sub3(Value,Value,Value);
 
     int32_t address = AS_INT(args[0]);
-    Value   result;
+    Value   result  = NIL_VAL;
 
     switch (argCount) {
         case 1: result = ((sub0*) address)(); break;
