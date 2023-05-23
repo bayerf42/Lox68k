@@ -2,13 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
-#include "chunk.h"
-#include "vm.h"
 #include "nano_malloc.h"
-#include "memory.h"
 #include "native.h"
-
+#include "memory.h"
+#include "vm.h"
 
 #define VERSION "V1.3"
 

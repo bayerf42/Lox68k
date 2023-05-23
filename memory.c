@@ -4,9 +4,7 @@
 #include "compiler.h"
 #include "memory.h"
 #include "vm.h"
-#include "debug.h"
 #include "nano_malloc.h"
-
 
 #define GC_HEAP_GROW_FACTOR 2
 

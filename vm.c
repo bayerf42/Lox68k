@@ -3,14 +3,11 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "common.h"
 #include "compiler.h"
-#include "debug.h"
-#include "object.h"
+#include "disasm.h"
 #include "memory.h"
 #include "native.h"
 #include "vm.h"
-#include "value.h"
 
 VM vm;
 

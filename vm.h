@@ -1,11 +1,6 @@
 #ifndef clox_vm_h
 #define clox_vm_h
 
-#ifndef KIT68K
-#include <time.h>
-#endif
-
-#include "object.h"
 #include "table.h"
 #include "value.h"
 

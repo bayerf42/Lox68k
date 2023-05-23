@@ -30,7 +30,7 @@
 #include <string.h>
 
 #include "nano_malloc.h"
-#include "common.h"
+#include "machine.h"
 
 #ifndef MAX
 #define MAX(a,b) ((a) >= (b) ? (a) : (b))

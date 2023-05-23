@@ -1,7 +1,6 @@
 #ifndef clox_memory_h
 #define clox_memory_h
 
-#include "common.h"
 #include "object.h"
 
 #define DBG_GC_GENERAL  1  // log begin/end of GC and trigger from alloc

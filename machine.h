@@ -1,5 +1,5 @@
-#ifndef clox_common_h
-#define clox_common_h
+#ifndef clox_machine_h
+#define clox_machine_h
 
 #include <stddef.h>
 
@@ -60,6 +60,7 @@ extern void _stackoverflow(void);
 #include <stdbool.h>
 #include <stdint.h>
 #include <errno.h>
+#include <time.h>
 
 #define GETS(var) fgets(var, sizeof(var), stdin)
 

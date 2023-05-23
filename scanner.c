@@ -2,7 +2,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "common.h"
 #include "memory.h"
 #include "scanner.h"
 

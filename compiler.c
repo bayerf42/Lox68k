@@ -2,12 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
 #include "compiler.h"
+#include "disasm.h"
 #include "memory.h"
 #include "scanner.h"
-#include "debug.h"
-#include "vm.h"
 
 typedef struct {
     Token current;

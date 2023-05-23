@@ -1,7 +1,7 @@
 #ifndef clox_value_h
 #define clox_value_h
 
-#include "common.h"
+#include "machine.h"
 
 // 68008 Value tagging scheme
 // Integers         sxxx xxxx ... xxxx xxx1 (shift 1 bit for arithmetic)

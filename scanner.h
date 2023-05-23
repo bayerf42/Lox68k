@@ -1,7 +1,7 @@
 #ifndef clox_scanner_h
 #define clox_scanner_h
 
-#include "common.h"
+#include "machine.h"
 
 typedef enum {
     // single character tokens.

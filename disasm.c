@@ -1,8 +1,7 @@
 #include <stdio.h>
 
-#include "debug.h"
+#include "disasm.h"
 #include "object.h"
-#include "value.h"
 
 
 static int simpleInst(const char* name, int offset) {

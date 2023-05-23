@@ -5,19 +5,16 @@
 #include <time.h>
 #include <ctype.h>
 
-#include "common.h"
-#include "debug.h"
 #include "object.h"
 #include "native.h"
 #include "memory.h"
 #include "vm.h"
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Typechecking natives 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static const char* matchesType(Value value, char type) {
+static const char* matchesType(Value value, int type) {
     switch (type) {
         case 'A': return                                      NULL;  // any value
         case 'N': return IS_INT(value)                      ? NULL : "an int";
