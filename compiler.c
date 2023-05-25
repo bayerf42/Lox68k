@@ -55,7 +55,7 @@ typedef enum {
 
 typedef struct Compiler {
     struct Compiler* enclosing;
-    ObjFunction*     function;
+    ObjFunction*     target;
     FunctionType     type;
     Local            locals[MAX_LOCALS];
     Upvalue          upvalues[MAX_UPVALUES];
@@ -69,11 +69,11 @@ typedef struct ClassCompiler {
 } ClassCompiler;
 
 Parser         parser;
-Compiler*      currentUnit;
+Compiler*      currentComp;
 ClassCompiler* currentClass;
 
 static Chunk* currentChunk(void) {
-    return &currentUnit->function->chunk;
+    return &currentComp->target->chunk;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,7 +201,7 @@ static int emitJump(int instruction) {
 }
 
 static void emitReturn(void) {
-    if (currentUnit->type == TYPE_INITIALIZER)
+    if (currentComp->type == TYPE_INITIALIZER)
         emit3Bytes(OP_GET_LOCAL, 0, OP_RETURN);
     else
         emitByte(OP_RETURN_NIL);
@@ -238,23 +238,23 @@ static void patchJump(int offset) {
 
 static void initCompiler(Compiler* compiler, FunctionType type) {
     Local* local;
-    compiler->enclosing  = currentUnit;
-    compiler->function   = NULL;
+    compiler->enclosing  = currentComp;
+    compiler->target     = NULL;
     compiler->type       = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
-    compiler->function   = newFunction();
-    currentUnit          = compiler;
+    compiler->target     = newFunction();
+    currentComp          = compiler;
 
     if (type != TYPE_SCRIPT) {
         if (parser.previous.type == TOKEN_FUN) {
             sprintf(buffer, "#%d", vm.lambdaCount++);
-            currentUnit->function->name = copyString(buffer, strlen(buffer));
+            currentComp->target->name = copyString(buffer, strlen(buffer));
         } else
-            currentUnit->function->name = copyString(parser.previous.start, parser.previous.length);
+            currentComp->target->name = copyString(parser.previous.start, parser.previous.length);
     }
 
-    local = &currentUnit->locals[currentUnit->localCount++];
+    local = &currentComp->locals[currentComp->localCount++];
     local->depth = 0;
     local->isCaptured = false;
     if (type != TYPE_FUNCTION) {
@@ -270,30 +270,30 @@ static ObjFunction* endCompiler(bool addReturn) {
     ObjFunction* function;
     if (addReturn)
         emitReturn();
-    function = currentUnit->function;
+    function = currentComp->target;
 
     if (vm.debug_print_code && !parser.hadError)
         disassembleChunk(currentChunk(), function->name != NULL
                                        ? function->name->chars : "<script>");
 
-    currentUnit = currentUnit->enclosing;
+    currentComp = currentComp->enclosing;
     return function;
 }
 
 static void beginScope(void) {
-    currentUnit->scopeDepth++;
+    currentComp->scopeDepth++;
 }
 
 static void endScope(void) {
-    currentUnit->scopeDepth--;
+    currentComp->scopeDepth--;
 
-    while (currentUnit->localCount > 0 &&
-            currentUnit->locals[currentUnit->localCount - 1].depth > currentUnit->scopeDepth) {
-        if (currentUnit->locals[currentUnit->localCount - 1].isCaptured)
+    while (currentComp->localCount > 0 &&
+            currentComp->locals[currentComp->localCount - 1].depth > currentComp->scopeDepth) {
+        if (currentComp->locals[currentComp->localCount - 1].isCaptured)
             emitByte(OP_CLOSE_UPVALUE);
         else
             emitByte(OP_POP);
-        currentUnit->localCount--;
+        currentComp->localCount--;
     }
 }
 
@@ -477,7 +477,7 @@ static int resolveLocal(Compiler* compiler, Token* name) {
 }
 
 static int addUpvalue(Compiler* compiler, int index, bool isLocal) {
-    int      upvalueCount = compiler->function->upvalueCount;
+    int      upvalueCount = compiler->target->upvalueCount;
     int      i;
     Upvalue* upvalue;
 
@@ -494,7 +494,7 @@ static int addUpvalue(Compiler* compiler, int index, bool isLocal) {
 
     compiler->upvalues[upvalueCount].isLocal = isLocal; 
     compiler->upvalues[upvalueCount].index   = index; 
-    return compiler->function->upvalueCount++;
+    return compiler->target->upvalueCount++;
 }
 
 static int resolveUpvalue(Compiler* compiler, Token* name) {
@@ -518,11 +518,11 @@ static int resolveUpvalue(Compiler* compiler, Token* name) {
 
 static void addLocal(Token name) {
     Local* local;
-    if (currentUnit->localCount == MAX_LOCALS) {
+    if (currentComp->localCount == MAX_LOCALS) {
         error("Too many local variables in function.");
         return;
     }
-    local = &currentUnit->locals[currentUnit->localCount++];
+    local = &currentComp->locals[currentComp->localCount++];
     local->name       = name;
     local->depth      = -1;
     local->isCaptured = false;
@@ -533,13 +533,13 @@ static void declareVariable(void) {
     int    i;
     Local* local;
 
-    if (currentUnit->scopeDepth == 0)
+    if (currentComp->scopeDepth == 0)
         return;
 
     name = &parser.previous;
-    for (i = currentUnit->localCount - 1; i >= 0; i--) {
-        local = &currentUnit->locals[i];
-        if (local->depth != -1 && local->depth < currentUnit->scopeDepth)
+    for (i = currentComp->localCount - 1; i >= 0; i--) {
+        local = &currentComp->locals[i];
+        if (local->depth != -1 && local->depth < currentComp->scopeDepth)
             break;
 
         if (identifiersEqual(name, &local->name))
@@ -551,12 +551,12 @@ static void declareVariable(void) {
 
 static void namedVariable(Token name, bool canAssign) {
     int getOp, setOp;
-    int arg = resolveLocal(currentUnit, &name);
+    int arg = resolveLocal(currentComp, &name);
 
     if (arg != -1) {
         getOp = OP_GET_LOCAL;
         setOp = OP_SET_LOCAL;
-    } else if ((arg = resolveUpvalue(currentUnit, &name)) != -1) {
+    } else if ((arg = resolveUpvalue(currentComp, &name)) != -1) {
         getOp = OP_GET_UPVALUE;
         setOp = OP_SET_UPVALUE;
     } else {
@@ -733,20 +733,20 @@ static int parseVariable(const char* errorMessage) {
     consume(TOKEN_IDENTIFIER, errorMessage);
 
     declareVariable();
-    if (currentUnit->scopeDepth > 0)
+    if (currentComp->scopeDepth > 0)
         return 0;
 
     return identifierConstant(&parser.previous);
 }
 
 static void markInitialized(void) {
-    if (currentUnit->scopeDepth == 0)
+    if (currentComp->scopeDepth == 0)
         return;
-    currentUnit->locals[currentUnit->localCount - 1].depth = currentUnit->scopeDepth;
+    currentComp->locals[currentComp->localCount - 1].depth = currentComp->scopeDepth;
 }
 
 static void defineVariable(int global) {
-    if (currentUnit->scopeDepth > 0) {
+    if (currentComp->scopeDepth > 0) {
         markInitialized();
         return;
     }
@@ -812,12 +812,12 @@ static void function(FunctionType type) {
     consumeExp(TOKEN_LEFT_PAREN, "'('", "function name");
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
-            if (currentUnit->function->isVarArg)
+            if (currentComp->target->isVarArg)
                 errorAtCurrent("No more parameters allowed after vararg.");
-            if (++currentUnit->function->arity >= MAX_LOCALS)
+            if (++currentComp->target->arity >= MAX_LOCALS)
                 errorAtCurrent("Too many parameters.");
             if (match(TOKEN_DOT_DOT))
-                currentUnit->function->isVarArg = true;
+                currentComp->target->isVarArg = true;
             parameter = parseVariable("Expect parameter name.");
             defineVariable(parameter);
         } while (match(TOKEN_COMMA));
@@ -1021,13 +1021,13 @@ static void printStatement(void) {
 }
 
 static void returnStatement(void) {
-    if (currentUnit->type == TYPE_SCRIPT)
+    if (currentComp->type == TYPE_SCRIPT)
         error("Can't return from top-level code.");
 
     if (match(TOKEN_SEMICOLON))
         emitReturn();
     else {
-        if (currentUnit->type == TYPE_INITIALIZER)
+        if (currentComp->type == TYPE_INITIALIZER)
             error("Can't return a value from an initializer.");
         expression();
         consumeExp(TOKEN_SEMICOLON, "';'", "return value");
@@ -1106,9 +1106,9 @@ ObjFunction* compile(const char* source) {
 }
 
 void markCompilerRoots(void) {
-    Compiler* compiler = currentUnit;
+    Compiler* compiler = currentComp;
     while (compiler != NULL) {
-        markObject((Obj*)compiler->function);
+        markObject((Obj*)compiler->target);
         compiler = compiler->enclosing;
     }
 }
