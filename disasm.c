@@ -50,7 +50,7 @@ void disassembleChunk(Chunk* chunk, const char* name) {
 int disassembleInst(Chunk* chunk, int offset) {
     int          instruction, constant;
     ObjFunction* function;
-    int          j, isLocal, upIndex, line;
+    int          j, upvalue, line;
 
     printf("%04d ", offset);
     line = getLine(chunk, offset);
@@ -107,9 +107,9 @@ int disassembleInst(Chunk* chunk, int offset) {
 
             function = AS_FUNCTION(chunk->constants.values[constant]);
             for (j = 0; j < function->upvalueCount; j++) {
-                isLocal = chunk->code[offset++];
-                upIndex = chunk->code[offset++];
-                printf("\n%04d    |   %5s   %4d", offset - 2, isLocal ? "LOCAL" : "UPVAL", upIndex);
+                upvalue = chunk->code[offset];
+                printf("\n%04d    |   %5s   %4d", offset++,
+                       UV_ISLOC(upvalue) ? "LOCAL" : "UPVAL", UV_INDEX(upvalue));
             }
 
             return offset;

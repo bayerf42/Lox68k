@@ -35,6 +35,15 @@
 #define AS_REAL(value)         (((ObjReal*)AS_OBJ(value))->content)
 #define AS_ITERATOR(value)     ((ObjIterator*)AS_OBJ(value))
 
+#define ARITY_MASK     0x7f
+#define REST_PARM_MASK 0x80
+
+typedef uint8_t Upvalue;       // lower 7 bits index, highest bit set if local
+#define UV_INDEX(u) (u&0x7f)
+#define UV_ISLOC(u) (u&0x80)
+#define LOCAL_MASK  0x80
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object types 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,6 +63,9 @@ typedef enum {
 } ObjType;
 
 
+// The IDE68K C compiler doesn't seem to like including struct Obj in the following structures
+// and generates wrong code when casting, so we expand struct Obj manually.
+
 #define OBJ_HEADER        \
     struct Obj* nextObj;  \
     uint8_t     type;     \
@@ -63,17 +75,10 @@ struct Obj {
     OBJ_HEADER
 };
 
-
-// The IDE68K C compiler doesn't seem to like including struct Obj in the following structures
-// and generates wrong code when casting, so we expand struct Obj manually.
-
-#define ARITY_MASK     0x7f
-#define REST_PARM_MASK 0x80
-
 typedef struct {
     OBJ_HEADER
 
-    uint8_t     arity; // lower 7 bits arity, highest bit rest parameter flag        
+    uint8_t     arity;         // lower 7 bits arity, highest bit rest parameter flag        
     uint8_t     upvalueCount;
     Chunk       chunk;
     ObjString*  name;

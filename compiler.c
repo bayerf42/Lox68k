@@ -41,11 +41,6 @@ typedef struct {
     int16_t _dummy; // force size 16 to avoid multiplication in offset calculation 
 } Local;
 
-typedef struct {
-    uint8_t index;
-    uint8_t isLocal;
-} Upvalue;
-
 typedef enum {
     TYPE_FUNCTION,
     TYPE_INITIALIZER,
@@ -478,12 +473,11 @@ static int resolveLocal(Compiler* compiler, Token* name) {
 
 static int addUpvalue(Compiler* compiler, int index, bool isLocal) {
     int      upvalueCount = compiler->target->upvalueCount;
+    Upvalue  newUpvalue   = index | (isLocal ? LOCAL_MASK : 0);
     int      i;
-    Upvalue* upvalue;
 
     for (i = 0; i < upvalueCount; i++) {
-        upvalue = &compiler->upvalues[i];
-        if (upvalue->index == index && upvalue->isLocal == isLocal)
+        if (compiler->upvalues[i] == newUpvalue)
             return i;
     }
 
@@ -492,8 +486,7 @@ static int addUpvalue(Compiler* compiler, int index, bool isLocal) {
         return 0;
     }
 
-    compiler->upvalues[upvalueCount].isLocal = isLocal; 
-    compiler->upvalues[upvalueCount].index   = index; 
+    compiler->upvalues[upvalueCount] = newUpvalue; 
     return compiler->target->upvalueCount++;
 }
 
@@ -843,7 +836,7 @@ static void function(FunctionType type) {
     emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
 
     for (i = 0; i < function->upvalueCount; i++) 
-        emit2Bytes(compiler.upvalues[i].isLocal, compiler.upvalues[i].index);
+        emitByte(compiler.upvalues[i]);
 }
 
 static void method(void) {

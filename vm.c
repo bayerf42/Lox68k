@@ -261,7 +261,7 @@ static InterpretResult run(void) {
     ObjClosure   *closure;
     int          argCount, itemCount;
     int          offset;
-    int          isLocal, upIndex;
+    int          upvalue;
     CallFrame    *frame  = &vm.frames[vm.frameCount - 1];
     Value        *consts = frame->closure->function->chunk.constants.values;
 
@@ -702,12 +702,11 @@ static InterpretResult run(void) {
                 closure = newClosure(function);
                 push(OBJ_VAL(closure));
                 for (i = 0; i < closure->upvalueCount; i++) {
-                    isLocal = READ_BYTE();
-                    upIndex = READ_BYTE();
-                    if (isLocal)
-                        closure->upvalues[i] = captureUpvalue(frame->slots + upIndex);
+                    upvalue = READ_BYTE();
+                    if (UV_ISLOC(upvalue))
+                        closure->upvalues[i] = captureUpvalue(frame->slots + UV_INDEX(upvalue));
                     else
-                        closure->upvalues[i] = frame->closure->upvalues[upIndex];
+                        closure->upvalues[i] = frame->closure->upvalues[UV_INDEX(upvalue)];
                 }
                 break;
 
