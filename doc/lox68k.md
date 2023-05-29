@@ -43,7 +43,8 @@ it as Windows/Linux executables, too.
   *Tiny C compiler* from https://bellard.org/tcc
 * To build the Linux version of Lox, you need nothing but standard *gcc*.
 * For building the ROM image and running the special Lox terminal emulation,
-  you need Python 3, available at https://www.python.org/
+  you need Python 3, available at https://www.python.org/ and the `pyserial` and `bincopy`
+  packages, installable with `pip`.
 
 If you just want to checkout Lox with the IDE68K emulator, you need nothing else,
 just compile it as described below. But if you want to execute it on the Kit itself,
@@ -63,7 +64,7 @@ in the release. Just burn it into an EPROM or flash chip.
   including negative indices to index from the end of the list or string,
   [like in Python](https://www.w3schools.com/python/python_strings_slicing.asp).
 * 65 [native functions](natives.md) for type conversion, collections, math, 
-  and low-level functions on the 68008 kit.
+  and [low-level functions](assembly.md) on the 68008 kit.
 * The compile-time debugging options are now selectable at runtime via the `dbg_*` native functions.
 * Runtime statistics via `dbg_stat()`.
 * Hexadecimal literals via the `$` prefix, like `$ff` == `255`.

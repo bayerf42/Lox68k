@@ -86,33 +86,32 @@ static bool call(ObjClosure* closure, int argCount) {
     CallFrame* frame;
     ObjList*   args;
     int        itemCount;
+    int        arity;
 
     if (vm.frameCount == FRAMES_MAX) {
         runtimeError("Lox call stack overflow.");
         return false;
     }
 
-    if (closure->function->isVarArg) {
-        if (argCount < closure->function->arity - 1) {
-            runtimeError("Expected %s%d arguments but got %d.",
-                         "at least ", closure->function->arity - 1, argCount);
+    arity = closure->function->arity & ARITY_MASK;
+    if (closure->function->arity & REST_PARM_MASK) {
+        if (argCount < arity - 1) {
+            runtimeError("Expected %s%d arguments but got %d.", "at least ", arity - 1, argCount);
             return false;
         }
-        itemCount = argCount - closure->function->arity + 1;
+        itemCount = argCount - arity + 1;
         args = makeList(itemCount, vm.stackTop - itemCount, itemCount, 1);
         dropNpush(itemCount, OBJ_VAL(args));
-        argCount = closure->function->arity; // actual parameter count
     }
-    else if (argCount != closure->function->arity) {
-        runtimeError("Expected %s%d arguments but got %d.",
-                     "", closure->function->arity, argCount);
+    else if (argCount != arity) {
+        runtimeError("Expected %s%d arguments but got %d.", "", arity, argCount);
         return false;
     }
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
     frame->ip      = closure->function->chunk.code;
-    frame->slots   = vm.stackTop - argCount - 1;
+    frame->slots   = vm.stackTop - arity - 1;
     return true;
 }
 

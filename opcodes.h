@@ -39,7 +39,7 @@ typedef enum {
     OP_CALL1,         // call a value with 1 arguments on stack
     OP_CALL2,         // call a value with 2 arguments on stack
     OP_INVOKE,        // invoke method str0 with byte1 arguments on stack
-    OP_SUPER_INVOKE,  // invoke super method str0 with byte1 arguments on stack 
+    OP_SUPER_INVOKE,  // invoke method str0 in class TOS with byte1 arguments on stack 
     OP_CLOSURE,       // build a closure from template fun0 with variable number of upvalues
     OP_CLOSE_UPVALUE, // close one upvalue
     OP_RETURN,        // return TOS from current closure, close all upvalues
@@ -55,7 +55,7 @@ typedef enum {
     OP_UNPACK,        // unpack TOS list onto stack, push its length plus TOS-1
     OP_VCALL,         // call a value with (byte0 + TOS) arguments on stack
     OP_VINVOKE,       // invoke method str0 with (byte1 + TOS) arguments on stack
-    OP_VSUPER_INVOKE, // invoke super method str0 with (byte1 + TOS) arguments on stack
+    OP_VSUPER_INVOKE, // invoke method str0 in class TOS with (byte1 + TOS-1) arguments on stack
     OP_VLIST,         // push new list of (byte0 + TOS) values from stack  
     OP_GET_ITVAL,     // push value of TOS iterator
     OP_SET_ITVAL,     // set value of TOS-1 iterator to TOS 
