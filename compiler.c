@@ -473,13 +473,12 @@ static int resolveLocal(Compiler* compiler, Token* name) {
 
 static int addUpvalue(Compiler* compiler, int index, bool isLocal) {
     int      upvalueCount = compiler->target->upvalueCount;
-    Upvalue  newUpvalue   = index | (isLocal ? LOCAL_MASK : 0);
+    Upvalue  newUpvalue   = isLocal ? (index | LOCAL_MASK) : index;
     int      i;
 
-    for (i = 0; i < upvalueCount; i++) {
+    for (i = 0; i < upvalueCount; i++)
         if (compiler->upvalues[i] == newUpvalue)
             return i;
-    }
 
     if (upvalueCount == MAX_UPVALUES) {
         error("Too many upvalues in function.");
@@ -796,7 +795,7 @@ static void function(FunctionType type) {
     ObjFunction* function;
     int          i;
     int          parameter;
-    bool         hasRestParm = false;
+    uint8_t      restParm = 0;
 
     CHECK_STACKOVERFLOW
 
@@ -806,20 +805,18 @@ static void function(FunctionType type) {
     consumeExp(TOKEN_LEFT_PAREN, "'('", "function name");
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
-            if (hasRestParm)
+            if (restParm)
                 errorAtCurrent("No more parameters allowed after rest parameter.");
             if (++currentComp->target->arity >= MAX_LOCALS)
                 errorAtCurrent("Too many parameters.");
             if (match(TOKEN_DOT_DOT))
-                hasRestParm = true;
+                restParm = REST_PARM_MASK;
             parameter = parseVariable("Expect parameter name.");
             defineVariable(parameter);
         } while (match(TOKEN_COMMA));
     }
     consumeExp(TOKEN_RIGHT_PAREN, "')'", "parameter");
-
-    if (hasRestParm)
-        currentComp->target->arity |= REST_PARM_MASK;        
+    currentComp->target->arity |= restParm;        
 
     if (match(TOKEN_ARROW)) {
         if (type == TYPE_INITIALIZER)

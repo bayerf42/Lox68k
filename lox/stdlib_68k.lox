@@ -1,6 +1,6 @@
 fun peekw(ad)->bit_or(bit_shift(peek(ad),8),peek(ad+1))
 fun peekl(ad)->bit_or(bit_shift(peekw(ad),16),peekw(ad+2))
-fun fun_name(clo)->heap(addr(heap(addr(clo)+6))+34)
+fun fun_name(clo)->heap(addr(heap(addr(clo)+8))+32)
 fun class_name(cls)->heap(addr(cls)+6)
 fun class_of(ins)->heap(addr(ins)+6)
 fun native_addr(nat)->peekl(addr(nat)+10)

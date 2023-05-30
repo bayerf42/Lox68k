@@ -1,7 +1,7 @@
 // little endian, 4 byte aligned struct, suitable for Windows (tcc -m32) and Linux (gcc -m32)
 fun peekw(ad)        -> bit_or(bit_shift(peek(ad + 1), 8), peek(ad))
 fun peekl(ad)        -> bit_or(bit_shift(peekw(ad + 2), 16), peekw(ad))
-fun fun_name(clo)    -> heap(addr(heap(addr(clo) + 8)) + 36)
+fun fun_name(clo)    -> heap(addr(heap(addr(clo) + 8)) + 32)
 fun class_name(cls)  -> heap(addr(cls) + 8)
 fun class_of(ins)    -> heap(addr(ins) + 8)
 fun native_addr(nat) -> peekl(addr(nat) + 12)

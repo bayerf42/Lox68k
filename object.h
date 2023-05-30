@@ -39,9 +39,9 @@
 #define REST_PARM_MASK 0x80
 
 typedef uint8_t Upvalue;       // lower 7 bits index, highest bit set if local
-#define UV_INDEX(u) (u&0x7f)
-#define UV_ISLOC(u) (u&0x80)
-#define LOCAL_MASK  0x80
+#define UV_INDEX(u)    ((u)&0x7f)
+#define UV_ISLOC(u)    ((u)&0x80)
+#define LOCAL_MASK     0x80
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,8 +113,8 @@ struct ObjUpvalue {
 typedef struct {
     OBJ_HEADER
 
-    ObjFunction* function;
     int16_t      upvalueCount; // too big, but keep alignment
+    ObjFunction* function;
     ObjUpvalue*  upvalues[];   // like ObjString, array embedded in structure
 } ObjClosure;
 
@@ -156,9 +156,9 @@ typedef struct {
 struct ObjIterator {
     OBJ_HEADER
 
+    int16_t      position;  // -1 means invalid
     ObjInstance* instance;  // for GC
     Table*       table;
-    int16_t      position;  // -1 means invalid
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
