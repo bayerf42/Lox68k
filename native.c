@@ -693,14 +693,15 @@ static bool clockNative(int argCount, Value* args) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void defineNative(const char* name, const char* signature, NativeFn function) {
-    push(OBJ_VAL(copyString(name, strlen(name))));
-    push(OBJ_VAL(newNative(signature, function)));
+    vm.stack[0] = OBJ_VAL(copyString(name, strlen(name)));
+    vm.stack[1] = OBJ_VAL(newNative(signature, function));
     tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
-    drop();
-    drop();
 }
 
 void defineAllNatives(void) {
+    push(NIL_VAL);
+    push(NIL_VAL);
+
     defineNative("abs",         "R",    absNative);
     defineNative("trunc",       "R",    truncNative);
     defineNative("sqrt",        "R",    sqrtNative);
@@ -778,6 +779,9 @@ void defineAllNatives(void) {
     defineNative("dbg_trace",   "B",    dbgTraceNative);
     defineNative("dbg_gc",      "N",    dbgGcNative);
     defineNative("dbg_stat",    "B",    dbgStatNative);
+
+    drop();
+    drop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

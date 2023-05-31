@@ -762,7 +762,7 @@ static int argumentList(bool* isVarArg, TokenType terminator) {
                 if (*isVarArg)
                     emitByte(OP_SWAP); // bubble list arguments count to TOS
                 if (argCount == UINT8_MAX)
-                    error("Can't have more than 255 items in an argument list.");
+                    error("Too many arguments.");
                 argCount++;
             }
         } while (match(TOKEN_COMMA));
