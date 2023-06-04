@@ -19,8 +19,6 @@ You can start Lox68k with or without the standard library:
   wlox lox/stdlib.lox lox/mycode.lox -
   ```
 
-
-
 ## Functions
 
 | Name         | Parameters            | Returns     | Description                                                                       |

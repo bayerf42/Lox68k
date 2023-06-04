@@ -1,5 +1,8 @@
 # Native functions in Lox68k
 
+Native functions are implemented in C and are always available, even when you start Lox without
+the [standard library](stdlib.md).
+
 Trailing `?` indicates optional parameter. `num` means any number type, `int` or `real`.
 `val` means a value of any type.
 
