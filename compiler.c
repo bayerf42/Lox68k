@@ -156,6 +156,7 @@ static void synchronize(void) {
         if (parser.current.type == TOKEN_WHILE)  return;
         if (parser.current.type == TOKEN_PRINT)  return;
         if (parser.current.type == TOKEN_RETURN) return;
+        if (parser.current.type == TOKEN_CASE)   return;
 
         advance();
     }
@@ -339,21 +340,21 @@ static void call(bool canAssign) {
 }
 
 static void dot(bool canAssign) {
-    int  name;
+    int  pname;
     int  argCount;
     bool isVarArg = false;
 
     consumeExp(TOKEN_IDENTIFIER, "property name", "'.'");
-    name = identifierConstant(&parser.previous);
+    pname = identifierConstant(&parser.previous);
 
     if (canAssign && match(TOKEN_EQUAL)) {
         expression();
-        emit2Bytes(OP_SET_PROPERTY, name);
+        emit2Bytes(OP_SET_PROPERTY, pname);
     } else if (match(TOKEN_LEFT_PAREN)) {
         argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
-        emit3Bytes(isVarArg ? OP_VINVOKE : OP_INVOKE, name, argCount);
+        emit3Bytes(isVarArg ? OP_VINVOKE : OP_INVOKE, pname, argCount);
     } else
-        emit2Bytes(OP_GET_PROPERTY, name);
+        emit2Bytes(OP_GET_PROPERTY, pname);
 }
 
 static void slice(bool canAssign) {
@@ -579,7 +580,7 @@ static Token syntheticToken(const char* text) {
 }
 
 static void super_(bool canAssign) {
-    int  name;
+    int  mname;
     int  argCount;
     bool isVarArg = false;
 
@@ -590,16 +591,16 @@ static void super_(bool canAssign) {
 
     consumeExp(TOKEN_DOT, "'.'", "'super'");
     consume(TOKEN_IDENTIFIER, "Expect superclass method name.");
-    name = identifierConstant(&parser.previous);
+    mname = identifierConstant(&parser.previous);
 
     namedVariable(syntheticToken("this"), false);
     if (match(TOKEN_LEFT_PAREN)) {
         argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
         namedVariable(syntheticToken("super"), false);
-        emit3Bytes(isVarArg ? OP_VSUPER_INVOKE : OP_SUPER_INVOKE, name, argCount);
+        emit3Bytes(isVarArg ? OP_VSUPER_INVOKE : OP_SUPER_INVOKE, mname, argCount);
     } else {
         namedVariable(syntheticToken("super"), false);
-        emit2Bytes(OP_GET_SUPER, name);
+        emit2Bytes(OP_GET_SUPER, mname);
     }
 }
 
@@ -612,14 +613,14 @@ static void this_(bool canAssign) {
 }
 
 static void and_(bool canAssign) {
-    int endJump = emitJump(OP_JUMP_FALSE);
+    int endJump = emitJump(OP_JUMP_AND);
 
     parsePrecedence(PREC_AND);
     patchJump(endJump);
 }
 
 static void or_(bool canAssign) {
-    int endJump = emitJump(OP_JUMP_TRUE);
+    int endJump = emitJump(OP_JUMP_OR);
 
     parsePrecedence(PREC_OR);
     patchJump(endJump);
@@ -658,7 +659,7 @@ const ParseRule rules[] = {
     /* [TOKEN_COLON]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_SLASH]         = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_STAR]          = */ {NULL,     binary, PREC_FACTOR},
-    /* [TOKEN_PERCENT]       = */ {NULL,     binary, PREC_FACTOR},
+    /* [TOKEN_BACKSLASH]     = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_AT]            = */ {NULL,     iter,   PREC_POSTFIX},
     /* [TOKEN_HAT]           = */ {NULL,     iter,   PREC_POSTFIX},
     /* [TOKEN_BANG]          = */ {unary,    NULL,   PREC_NONE},
@@ -676,6 +677,7 @@ const ParseRule rules[] = {
     /* [TOKEN_INT]           = */ {intNum,   NULL,   PREC_NONE},
     /* [TOKEN_REAL]          = */ {realNum,  NULL,   PREC_NONE},
     /* [TOKEN_AND]           = */ {NULL,     and_,   PREC_AND},
+    /* [TOKEN_CASE]          = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_CLASS]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_ELSE]          = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_FALSE]         = */ {literal,  NULL,   PREC_NONE},
@@ -690,6 +692,7 @@ const ParseRule rules[] = {
     /* [TOKEN_THIS]          = */ {this_,    NULL,   PREC_NONE},
     /* [TOKEN_TRUE]          = */ {literal,  NULL,   PREC_NONE},
     /* [TOKEN_VAR]           = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_WHEN]          = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_WHILE]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_ERROR]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_EOF]           = */ {NULL,     NULL,   PREC_NONE},
@@ -802,7 +805,8 @@ static void function(FunctionType type) {
     initCompiler(&compiler, type);
     beginScope();
 
-    consumeExp(TOKEN_LEFT_PAREN, "'('", "function name");
+    consumeExp(TOKEN_LEFT_PAREN, "'('",
+               parser.previous.type == TOKEN_FUN ? "'fun'" : "function name");
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
             if (restParm)
@@ -837,16 +841,15 @@ static void function(FunctionType type) {
 }
 
 static void method(void) {
-    int          constant;
-    FunctionType type;
+    int          mname;
+    FunctionType type = TYPE_METHOD;
 
     consume(TOKEN_IDENTIFIER, "Expect method name.");
-    constant = identifierConstant(&parser.previous);
-    type = TYPE_METHOD;
+    mname = identifierConstant(&parser.previous);
     if (parser.previous.length == 4 && fix_memcmp(parser.previous.start, "init", 4) == 0)
         type = TYPE_INITIALIZER;
     function(type);
-    emit2Bytes(OP_METHOD, constant);
+    emit2Bytes(OP_METHOD, mname);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -968,10 +971,9 @@ static void forStatement(void) {
     statement();
     emitLoop(loopStart);
 
-    if (exitJump != -1) {
+    if (exitJump != -1)
         patchJump(exitJump);
-        emitByte(OP_POP); // condition
-    }
+
     endScope();
 }
 
@@ -984,13 +986,74 @@ static void ifStatement(void) {
 
     thenJump = emitJump(OP_JUMP_FALSE);
     statement();
-    elseJump = emitJump(OP_JUMP);
-    patchJump(thenJump);
-    emitByte(OP_POP);
 
-    if (match(TOKEN_ELSE))
+    if (match(TOKEN_ELSE)) {
+        elseJump = emitJump(OP_JUMP);
+        patchJump(thenJump);
         statement();
-    patchJump(elseJump);
+        patchJump(elseJump);
+    } else
+        patchJump(thenJump);
+}
+
+static void caseStatement(void) {
+    int       state        = 0; // 0: before 'when', 1: before 'else', 2: after 'else'
+    int       caseCount    = 0;
+    int       prevCaseSkip = -1;
+    int16_t   caseEnds[MAX_BRANCHES];
+    TokenType caseType;
+
+    CHECK_STACKOVERFLOW
+
+    consumeExp(TOKEN_LEFT_PAREN, "'('", "'case'");
+    expression();
+    consumeExp(TOKEN_RIGHT_PAREN, "')'", "expression");
+    consume(TOKEN_LEFT_BRACE, "Expect '{' before branches.");
+
+    beginScope();
+    // reserve one stack slot for case test value
+    addLocal(syntheticToken("case"));
+    defineVariable(0);
+
+    while (!match(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+        if (match(TOKEN_WHEN) || match(TOKEN_ELSE)) {
+            caseType = parser.previous.type;
+            if (state == 2)
+                error("Can't have another branch after 'else'.");
+            if (state == 1) {
+                // at end of previous case, jump over the others.
+                caseEnds[caseCount] = emitJump(OP_JUMP);
+                if (++caseCount >= MAX_BRANCHES)
+                    error("Too many case branches.");
+                // patch its condition to jump to the next (= this case).
+                patchJump(prevCaseSkip);
+            }
+            if (caseType == TOKEN_WHEN) {
+                state = 1;
+                emitByte(OP_DUP);
+                expression();
+                consumeExp(TOKEN_COLON, "':'", "expression");
+                emitByte(OP_EQUAL);
+                prevCaseSkip = emitJump(OP_JUMP_FALSE);
+            } else {
+                state = 2;
+                prevCaseSkip = -1;
+            }
+        } else {
+            // Statement inside current branch
+            if (state == 0)
+                errorAtCurrent("Can't have statement before any branch.");
+            statement();
+        }
+    }      
+    // if we ended without 'else' branch, patch its condition jump.
+    if (state == 1)
+        patchJump(prevCaseSkip);
+
+    while (caseCount)
+        patchJump(caseEnds[--caseCount]);
+
+    endScope();
 }
 
 static void printStatement(void) {
@@ -1042,7 +1105,6 @@ static void whileStatement(void) {
     emitLoop(loopStart);
 
     patchJump(exitJump);
-    emitByte(OP_POP);
 }
 
 static void declaration(void) {
@@ -1061,6 +1123,7 @@ static void statement(void) {
     else if (match(TOKEN_IF))     ifStatement();
     else if (match(TOKEN_RETURN)) returnStatement();
     else if (match(TOKEN_WHILE))  whileStatement();
+    else if (match(TOKEN_CASE))   caseStatement();
     else if (match(TOKEN_LEFT_BRACE)) {
         beginScope();
         block();

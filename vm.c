@@ -309,13 +309,14 @@ static InterpretResult run(void) {
             case OP_ZERO:  push(INT_VAL(0));      break;
             case OP_ONE:   push(INT_VAL(1));      break;
             case OP_POP:   drop();                break;
+            case OP_DUP:   push(peek(0));         break;
 
             case OP_SWAP:
                 aVal    = peek(0);
                 peek(0) = peek(1);
                 peek(1) = aVal;
                 break;
-
+  
             case OP_GET_LOCAL:
                 slotNr = READ_BYTE();
                 push(frame->slots[slotNr]);
@@ -613,7 +614,7 @@ static InterpretResult run(void) {
                 frame->ip += offset;
                 break;
 
-            case OP_JUMP_TRUE:
+            case OP_JUMP_OR:
                 offset = READ_USHORT();
                 if (IS_FALSEY(peek(0)))
                     drop();
@@ -621,12 +622,18 @@ static InterpretResult run(void) {
                     frame->ip += offset;
                 break;
 
-            case OP_JUMP_FALSE:
+            case OP_JUMP_AND:
                 offset = READ_USHORT();
                 if (IS_FALSEY(peek(0)))
                     frame->ip += offset;
                 else
                     drop();
+                break;
+
+            case OP_JUMP_FALSE:
+                offset = READ_USHORT();
+                if (IS_FALSEY(pop()))
+                    frame->ip += offset;
                 break;
 
             case OP_LOOP:

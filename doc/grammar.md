@@ -16,7 +16,8 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * Real numbers with exponential part
 * postfix `@` to read key part of a hashtable iterator entry
 * postfix `^` to read/write value part of a hashtable iterator entry
-* function body `{ return expr;}` can be abbreviated by `-> expr`. 
+* function body `{ return expr;}` can be abbreviated by `-> expr`.
+* `case` statement for multiway branch
 
 
 ``` ebnf
@@ -38,17 +39,20 @@ statement      → expr_stmt
                | print_stmt
                | return_stmt
                | while_stmt
+               | case_stmt
                | block ;
 
 expr_stmt      → expression ";" ;
 for_stmt       → "for" "(" ( var_decl | expr_stmt | ";" )
                            expression? ";"
                            expression? ")" statement ;
-if_stmt        → "if" "(" expression ")" statement
-                 ( "else" statement )? ;
+if_stmt        → "if" "(" expression ")" statement ( "else" statement )? ;
 print_stmt     → ("print" | "?") print_list ";" ;
 return_stmt    → "return" expression? ";" ;
 while_stmt     → "while" "(" expression ")" statement ;
+case_stmt      → "case" "(" expression ")" "{" when_branch* else_branch? "}"
+when_branch    → "when" expression ":" statement* ;
+else_branch    → "else" statement* ;
 block          → "{" declaration* "}" ;
 
 expression     → assignment ;
@@ -109,7 +113,7 @@ BINDIGIT       → "0" ... "1" ;
 * `.` decimal point, property access, `..` unpack list, rest argument
 * `/` division, `//` comment until end of line
 * `0-9` digit
-* `:` splice separator
+* `:` case branch separator, splice separator
 * `;` statement terminator
 * `<` less than, subclass, `<=` less or equal
 * `=` assignment, `==` equals

@@ -9,6 +9,8 @@ typedef enum {
     OP_ZERO,          // push int 0
     OP_ONE,           // push int 1
     OP_POP,           // pop TOS
+    OP_SWAP,          // swap 2 TOS values
+    OP_DUP,           // duplicate TOS value
     OP_GET_LOCAL,     // push local variable at index byte0 
     OP_SET_LOCAL,     // update local variable at index byte0 with TOS  
     OP_GET_GLOBAL,    // push global variable named str0
@@ -31,8 +33,9 @@ typedef enum {
     OP_PRINT,         // print TOS
     OP_PRINTLN,       // print TOS, print newline
     OP_JUMP,          // jump forwards  by word0 bytes
-    OP_JUMP_TRUE,     // jump forwards  by word0 bytes if TOS is true,  pop TOS otherwise 
-    OP_JUMP_FALSE,    // jump forwards  by word0 bytes if TOS is false, pop TOS otherwise
+    OP_JUMP_OR,       // jump forwards  by word0 bytes if TOS is true,  pop TOS otherwise 
+    OP_JUMP_AND,      // jump forwards  by word0 bytes if TOS is false, pop TOS otherwise
+    OP_JUMP_FALSE,    // jump forwards  by word0 bytes if TOS is false, always pop TOS
     OP_LOOP,          // jump backwards by word0 bytes
     OP_CALL,          // call a value with byte0 arguments on stack
     OP_CALL0,         // call a value with 0 arguments on stack
@@ -51,7 +54,6 @@ typedef enum {
     OP_GET_INDEX,     // get value at index TOS from indexable TOS-1
     OP_SET_INDEX,     // set value of index TOS-1 from indexable TOS-2 to TOS
     OP_GET_SLICE,     // get slice of sliceable TOS-2 from TOS-1 upto TOS
-    OP_SWAP,          // swap 2 TOS values
     OP_UNPACK,        // unpack TOS list onto stack, push its length plus TOS-1
     OP_VCALL,         // call a value with (byte0 + TOS) arguments on stack
     OP_VINVOKE,       // invoke method str0 with (byte1 + TOS) arguments on stack

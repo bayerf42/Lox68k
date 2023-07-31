@@ -5,12 +5,12 @@ fun class_name(cls)->heap(addr(cls)+6)
 fun class_of(ins)->heap(addr(ins)+6)
 fun native_addr(nat)->peekl(addr(nat)+10)
 fun pokew(ad,v) {
-  poke(ad+1,bit_and(v,$ff));
-  poke(ad,bit_and(bit_shift(v,-8),$ff));
+ poke(ad+1,bit_and(v,$ff));
+ poke(ad,bit_and(bit_shift(v,-8),$ff));
 }
 fun pokel(ad,v) {
-  pokew(ad+2,bit_and(v,$ffff));
-  pokew(ad,bit_and(bit_shift(v,-16),$ffff));
+ pokew(ad+2,bit_and(v,$ffff));
+ pokew(ad,bit_and(bit_shift(v,-16),$ffff));
 }
 var pi=3.14159265;
 fun asin(x)->2*atan(x/(1+sqrt(1-x*x)))
@@ -21,120 +21,123 @@ fun atanh(x)->0.5*log((1+x)/(1-x))
 fun rad(x)->pi/180*x
 fun deg(x)->180/pi*x
 fun fmod(a,b) {
-  var q=(a+0.0)/b;
-  return b*(q-trunc(q));
+ var q=(a+0.0)/b;
+ return b*(q-trunc(q));
 }
 fun max(a,b) {
-  if (a>b) return a; else return b;
+ if (a>b) return a; else return b;
 }
 fun min(a,b) {
-  if (a<b) return a; else return b;
+ if (a<b) return a; else return b;
 }
 fun map(fn,lst) {
-  var len=length(lst);
-  var res=list(len);
-  for (var i=0;i<len;i=i+1)
-    res[i]=fn(lst[i]);
-  return res;
+ var len=length(lst);
+ var res=list(len);
+ for (var i=0;i<len;i=i+1)
+  res[i]=fn(lst[i]);
+ return res;
 }
 fun filter(fn,lst) {
-  var len=length(lst);
-  var res=[];
-  for (var i=0;i<len;i=i+1)
-    if (fn(lst[i]))
-      append(res,lst[i]);
-  return res;
+ var len=length(lst);
+ var res=[];
+ for (var i=0;i<len;i=i+1)
+  if (fn(lst[i]))
+   append(res,lst[i]);
+ return res;
 }
 fun complement(fn)->fun(x)->!fn(x)
 fun reduce(fn,lst) {
-  var len=length(lst);
-  if (len==0) return nil;
-  if (len==1) return lst[0];
-  var res=fn(lst[0],lst[1]);
-  for (var i=2;i<len; i=i+1)
-    res=fn(res,lst[i]);
-  return res;
+ var len=length(lst);
+ if (len==0) return nil;
+ if (len==1) return lst[0];
+ var res=fn(lst[0],lst[1]);
+ for (var i=2;i<len; i=i+1)
+  res=fn(res,lst[i]);
+ return res;
 }
 fun string(obj) {
-  var oty=type(obj);
-  if (obj==nil) return "nil";
-  else if (obj==true) return "true";
-  else if (obj==false) return "false";
-  else if (oty=="int") return dec(obj);
-  else if (oty=="real") return dec(obj);
-  else if (oty=="string") return obj;
-  else if (oty=="list") {
-    var sep="";
-    var res="["; 
-    var len=length(obj);
-    for (var i=0;i<len;i=i+1) {	
-      res=res+(sep+string(obj[i]));
-      sep=", ";
-    }
-    return res+"]";
+ case (obj) {
+  when nil: return "nil";
+  when true: return "true";
+  when false: return "false";
+ }
+ case(type(obj)) {
+  when "int": return dec(obj);
+  when "real": return dec(obj);
+  when "string": return obj;
+  when "list": {
+   var sep="";
+   var res="["; 
+   var len=length(obj);
+   for (var i=0;i<len;i=i+1) {	
+    res=res+(sep+string(obj[i]));
+    sep=", ";
+   }
+   return res+"]";
   }
-  else if (oty=="instance") return obj.string();
-  else if (oty=="closure") return "<closure "+fun_name(obj)+">";
-  else if (oty=="native") return "<native "+hex(native_addr(obj))+">";
-  else if (oty=="class") return "<class "+class_name(obj)+">";
-  else if (oty=="bound") return "<bound>";
-  else if (oty=="iterator") return "<iterator>";
+  when "instance": return obj.string();
+  when "closure": return "<closure "+fun_name(obj)+">";
+  when "native": return "<native "+hex(native_addr(obj))+">";
+  when "class": return "<class "+class_name(obj)+">";
+  when "bound": return "<bound>";
+  when "iterator": return "<iterator>";
   else return "<unknown>";
+ }
 }
 fun _bh(h,fmt) {
-  var sep="";
-  var res="";
-  for (var it=slots(h);valid(it);next(it)) {
-    res=res+(sep+fmt(it));
-    sep=", ";
-  }
-  return res;
+ var sep="";
+ var res="";
+ for (var it=slots(h);valid(it);next(it)) {
+  res=res+(sep+fmt(it));
+  sep=", ";
+ }
+ return res;
 }
 class Object {
-  init() {}
-  string()->"<"+class_name(class_of(this))+" instance: "+_bh(this,fun(it)->string(it@)+":"+string(it^))+">" 
-  clone() {
-    var res=class_of(this)();
-    for (var it=slots(this);valid(it);next(it))
-      res[it@]=it^;
-    return res;
-  }  
+ init() {}
+ string()->"<"+class_name(class_of(this))+" instance: "+_bh(this,fun(it)->string(it@)+":"+string(it^))+">" 
+ clone() {
+  var res=class_of(this)();
+  for (var it=slots(this);valid(it);next(it))
+   res[it@]=it^;
+  return res;
+ }  
 }
 class Map<Object {
-  init(..args) {
-    super.init();
-    var len=length(args);
-    if (bit_and(1,len)==1) error("Map init list must have even length.");
-    for (var i=0;i<len;i=i+2)
-      this[args[i]]=args[i+1];
-  }
-  string()->"{"+_bh(this,fun(it)->string(it@)+":"+string(it^))+"}"
+ init(..args) {
+  super.init();
+  var len=length(args);
+  if (bit_and(1,len)==1) error("Map init list must have even length.");
+  for (var i=0;i<len;i=i+2)
+   this[args[i]]=args[i+1];
+ }
+ string()->"{"+_bh(this,fun(it)->string(it@)+":"+string(it^))+"}"
 }
 class Set<Object {
-  init(..args) {
-    super.init();
-    for (var i=0;i<length(args);i=i+1)
-      this[args[i]]=true;
-  }
-  string()->"{"+_bh(this,fun(it)->string(it@))+"}"
-  union(that) {
-    for (var it=slots(that);valid(it);next(it))
-      this[it@]=true;
-    return this;
-  }
-  intersect(that) {
-    for (var it=slots(this);valid(it);next(it))
-      if (!that[it@])
-        remove(this,it@);
-    return this;
-  }
-  subtract(that) {
-    for (var it=slots(that);valid(it);next(it))
-      remove(this,it@);
-    return this;
-  }
+ init(..args) {
+  super.init();
+  for (var i=0;i<length(args);i=i+1)
+   this[args[i]]=true;
+ }
+ string()->"{"+_bh(this,fun(it)->string(it@))+"}"
+ union(that) {
+  for (var it=slots(that);valid(it);next(it))
+   this[it@]=true;
+  return this;
+ }
+ intersect(that) {
+  for (var it=slots(this);valid(it);next(it))
+   if (!that[it@])
+    remove(this,it@);
+  return this;
+ }
+ subtract(that) {
+  for (var it=slots(that);valid(it);next(it))
+   remove(this,it@);
+  return this;
+ }
 }
 fun list_globals() {
-  for (var it=globals();valid(it);next(it))
-    print it@," - ",it^;
+ for (var it=globals();valid(it);next(it))
+  print it@," - ",it^;
 }

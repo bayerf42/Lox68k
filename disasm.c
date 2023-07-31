@@ -68,6 +68,8 @@ int disassembleInst(Chunk* chunk, int offset) {
         case OP_ZERO:          return simpleInst("ZERO", offset);
         case OP_ONE:           return simpleInst("ONE", offset);
         case OP_POP:           return simpleInst("POP", offset);
+        case OP_SWAP:          return simpleInst("SWAP", offset);
+        case OP_DUP:           return simpleInst("DUP", offset);
         case OP_GET_LOCAL:     return byteInst("GET_LOC", chunk, offset);
         case OP_SET_LOCAL:     return byteInst("SET_LOC", chunk, offset);
         case OP_GET_GLOBAL:    return constInst("GET_GLOB", chunk, offset);
@@ -90,7 +92,8 @@ int disassembleInst(Chunk* chunk, int offset) {
         case OP_PRINT:         return simpleInst("PRINT", offset);
         case OP_PRINTLN:       return simpleInst("PRINTLN", offset);
         case OP_JUMP:          return jumpInst("JUMP", 1, chunk, offset);
-        case OP_JUMP_TRUE:     return jumpInst("JUMP_T", 1, chunk, offset);
+        case OP_JUMP_OR:       return jumpInst("JUMP_OR", 1, chunk, offset);
+        case OP_JUMP_AND:      return jumpInst("JUMP_AND", 1, chunk, offset);
         case OP_JUMP_FALSE:    return jumpInst("JUMP_F", 1, chunk, offset);
         case OP_LOOP:          return jumpInst("LOOP", -1, chunk, offset);
         case OP_CALL:          return byteInst("CALL", chunk, offset);
@@ -124,7 +127,6 @@ int disassembleInst(Chunk* chunk, int offset) {
         case OP_GET_INDEX:     return simpleInst("GET_INDEX", offset);
         case OP_SET_INDEX:     return simpleInst("SET_INDEX", offset);
         case OP_GET_SLICE:     return simpleInst("GET_SLICE", offset);
-        case OP_SWAP:          return simpleInst("SWAP", offset);
         case OP_UNPACK:        return simpleInst("UNPACK", offset);
         case OP_VCALL:         return byteInst("VCALL", chunk, offset);
         case OP_VINVOKE:       return invokeInst("VINVOKE", chunk, offset);
