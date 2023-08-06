@@ -3,7 +3,7 @@
 ## Types
 
 ### Any
-`= == != addr print return string type`
+`= == != addr case print return string type when`
 
 
 ### Bool

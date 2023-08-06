@@ -786,13 +786,13 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 aLst = AS_LIST(aVal);
-                itemCount = aLst->count;
+                itemCount = aLst->elements.count;
                 if (vm.stackTop + itemCount >= vm.stack + STACK_MAX) {
                     runtimeError("Lox value stack overflow.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 for (i = 0; i < itemCount; i++)
-                    vm.stackTop[i] = aLst->items[i];
+                    vm.stackTop[i] = aLst->elements.values[i];
                 vm.stackTop += itemCount;
                 push(INT_VAL(itemCount + argCount));
                 break;

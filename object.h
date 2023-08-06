@@ -142,9 +142,7 @@ typedef struct {
 typedef struct {
     OBJ_HEADER
 
-    int16_t      count;
-    int16_t      capacity;
-    Value*       items;
+    ValueArray   elements;
 } ObjList;
 
 typedef struct {

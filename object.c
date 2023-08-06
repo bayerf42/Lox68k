@@ -165,9 +165,9 @@ static void printList(ObjList* list) {
     CHECK_STACKOVERFLOW
 
     printf("[");
-    for (i = 0; i < list->count; i++) {
+    for (i = 0; i < list->elements.count; i++) {
         printf(sep);
-        printValue(list->items[i], false, false);
+        printValue(list->elements.values[i], false, false);
         sep = ", ";
     }
     printf("]");
@@ -206,7 +206,7 @@ void printObject(Value value, bool compact, bool machine) {
         case OBJ_INSTANCE:     printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
         case OBJ_ITERATOR:     printf("<iterator %d>", AS_ITERATOR(value)->position); break;
         case OBJ_LIST:
-            if (compact)       printf("<list %d>", AS_LIST(value)->count);
+            if (compact)       printf("<list %d>", AS_LIST(value)->elements.count);
             else               printList(AS_LIST(value));
             break;
         case OBJ_NATIVE:       printf("<native %05x>", (int32_t) AS_NATIVE(value)); break;
@@ -231,18 +231,18 @@ ObjList* makeList(int len, Value* items, int numCopy, int delta) {
     ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
     int16_t  i, newCap;
 
-    list->items    = NULL;
-    list->count    = 0;
-    list->capacity = 0;
+    list->elements.values   = NULL;
+    list->elements.count    = 0;
+    list->elements.capacity = 0;
 
     push(OBJ_VAL(list));
     if (len > 0) {
         newCap         = MIN_CAPACITY(len); // avoid fragmentation with many small lists
-        list->items    = GROW_ARRAY(Value, list->items, 0, newCap);
-        list->count    = len;
-        list->capacity = newCap;
+        list->elements.values   = GROW_ARRAY(Value, list->elements.values, 0, newCap);
+        list->elements.count    = len;
+        list->elements.capacity = newCap;
         for (i = 0; i < len; i++) {
-            list->items[i] = (--numCopy >= 0) ? *items : NIL_VAL;
+            list->elements.values[i] = (--numCopy >= 0) ? *items : NIL_VAL;
             items += delta;
         }
     }
@@ -253,43 +253,43 @@ ObjList* makeList(int len, Value* items, int numCopy, int delta) {
 void appendToList(ObjList* list, Value value) {
     int oldCapacity;
 
-    if (list->capacity < list->count + 1) {
-        oldCapacity    = list->capacity;
-        list->capacity = GROW_CAPACITY(oldCapacity);
-        list->items    = GROW_ARRAY(Value, list->items, oldCapacity, list->capacity);
+    if (list->elements.capacity < list->elements.count + 1) {
+        oldCapacity             = list->elements.capacity;
+        list->elements.capacity = GROW_CAPACITY(oldCapacity);
+        list->elements.values   = GROW_ARRAY(Value, list->elements.values, oldCapacity, list->elements.capacity);
     }
-    list->items[list->count++] = value;
+    list->elements.values[list->elements.count++] = value;
 }
 
 void insertIntoList(ObjList* list, Value value, int index) {
     int oldCapacity, i;
-    int count = list->count;
+    int count = list->elements.count;
 
-    if (list->capacity < list->count + 1) {
-        oldCapacity    = list->capacity;
-        list->capacity = GROW_CAPACITY(oldCapacity);
-        list->items    = GROW_ARRAY(Value, list->items, oldCapacity, list->capacity);
+    if (list->elements.capacity < list->elements.count + 1) {
+        oldCapacity    = list->elements.capacity;
+        list->elements.capacity = GROW_CAPACITY(oldCapacity);
+        list->elements.values   = GROW_ARRAY(Value, list->elements.values, oldCapacity, list->elements.capacity);
     }
     if (index < 0)
         index = (index < -count) ? 0 : index + count;
     if (index > count)
         index = count;
     for (i = count; i >= index; i--)
-        list->items[i + 1] = list->items[i];
-    list->items[index] = value;
-    ++list->count;
+        list->elements.values[i + 1] = list->elements.values[i];
+    list->elements.values[index] = value;
+    ++list->elements.count;
 }
 
 void storeToList(ObjList* list, int index, Value value) {
     if (index < 0)
-        index += list->count;
-    list->items[index] = value;
+        index += list->elements.count;
+    list->elements.values[index] = value;
 }
 
 Value indexFromList(ObjList* list, int index) {
     if (index < 0)
-        index += list->count;
-    return list->items[index];
+        index += list->elements.count;
+    return list->elements.values[index];
 }
 
 #define LIMIT_SLICE(var) \
@@ -298,35 +298,35 @@ Value indexFromList(ObjList* list, int index) {
     if (var > n) var  = n
 
 ObjList* sliceFromList(ObjList* list, int begin, int end) {
-    int n = list->count;
+    int n = list->elements.count;
     LIMIT_SLICE(begin);
     LIMIT_SLICE(end);
-    return makeList(end - begin, &list->items[begin], end - begin, 1);
+    return makeList(end - begin, &list->elements.values[begin], end - begin, 1);
 }
 
 void deleteFromList(ObjList* list, int index) {
     int i;
 
     if (index < 0)
-        index += list->count;
-    for (i = index; i < list->count - 1; i++)
-        list->items[i] = list->items[i + 1];
-    list->items[--list->count] = NIL_VAL;
+        index += list->elements.count;
+    for (i = index; i < list->elements.count - 1; i++)
+        list->elements.values[i] = list->elements.values[i + 1];
+    list->elements.values[--list->elements.count] = NIL_VAL;
 }
 
 bool isValidListIndex(ObjList* list, int index) {
-    return (index >= 0 && index <   list->count) ||
-           (index <  0 && index >= -list->count);
+    return (index >= 0 && index <   list->elements.count) ||
+           (index <  0 && index >= -list->elements.count);
 }
 
 ObjList* concatLists(ObjList* a, ObjList* b) {
-    ObjList* result = makeList(a->count + b->count, a->items, a->count, 1);
+    ObjList* result = makeList(a->elements.count + b->elements.count, a->elements.values, a->elements.count, 1);
     int16_t  i, dest;
 
-    for (i = 0; i < b->count; i++) {
+    for (i = 0; i < b->elements.count; i++) {
         // expanding dest into next lines generates wrong code in IDE68k
-        dest = a->count + i;
-        result->items[dest] = b->items[i];
+        dest = a->elements.count + i;
+        result->elements.values[dest] = b->elements.values[i];
     }
     return result;
 }
