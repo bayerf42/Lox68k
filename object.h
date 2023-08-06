@@ -142,7 +142,7 @@ typedef struct {
 typedef struct {
     OBJ_HEADER
 
-    ValueArray   elements;
+    ValueArray   arr;
 } ObjList;
 
 typedef struct {

@@ -165,9 +165,9 @@ static void printList(ObjList* list) {
     CHECK_STACKOVERFLOW
 
     printf("[");
-    for (i = 0; i < list->elements.count; i++) {
+    for (i = 0; i < list->arr.count; i++) {
         printf(sep);
-        printValue(list->elements.values[i], false, false);
+        printValue(list->arr.values[i], false, false);
         sep = ", ";
     }
     printf("]");
@@ -206,7 +206,7 @@ void printObject(Value value, bool compact, bool machine) {
         case OBJ_INSTANCE:     printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
         case OBJ_ITERATOR:     printf("<iterator %d>", AS_ITERATOR(value)->position); break;
         case OBJ_LIST:
-            if (compact)       printf("<list %d>", AS_LIST(value)->elements.count);
+            if (compact)       printf("<list %d>", AS_LIST(value)->arr.count);
             else               printList(AS_LIST(value));
             break;
         case OBJ_NATIVE:       printf("<native %05x>", (int32_t) AS_NATIVE(value)); break;
@@ -231,18 +231,18 @@ ObjList* makeList(int len, Value* items, int numCopy, int delta) {
     ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
     int16_t  i, newCap;
 
-    list->elements.values   = NULL;
-    list->elements.count    = 0;
-    list->elements.capacity = 0;
+    list->arr.values   = NULL;
+    list->arr.count    = 0;
+    list->arr.capacity = 0;
 
     push(OBJ_VAL(list));
     if (len > 0) {
-        newCap         = MIN_CAPACITY(len); // avoid fragmentation with many small lists
-        list->elements.values   = GROW_ARRAY(Value, list->elements.values, 0, newCap);
-        list->elements.count    = len;
-        list->elements.capacity = newCap;
+        newCap             = MIN_CAPACITY(len); // avoid fragmentation with many small lists
+        list->arr.values   = GROW_ARRAY(Value, list->arr.values, 0, newCap);
+        list->arr.count    = len;
+        list->arr.capacity = newCap;
         for (i = 0; i < len; i++) {
-            list->elements.values[i] = (--numCopy >= 0) ? *items : NIL_VAL;
+            list->arr.values[i] = (--numCopy >= 0) ? *items : NIL_VAL;
             items += delta;
         }
     }
@@ -253,43 +253,43 @@ ObjList* makeList(int len, Value* items, int numCopy, int delta) {
 void appendToList(ObjList* list, Value value) {
     int oldCapacity;
 
-    if (list->elements.capacity < list->elements.count + 1) {
-        oldCapacity             = list->elements.capacity;
-        list->elements.capacity = GROW_CAPACITY(oldCapacity);
-        list->elements.values   = GROW_ARRAY(Value, list->elements.values, oldCapacity, list->elements.capacity);
+    if (list->arr.capacity < list->arr.count + 1) {
+        oldCapacity        = list->arr.capacity;
+        list->arr.capacity = GROW_CAPACITY(oldCapacity);
+        list->arr.values   = GROW_ARRAY(Value, list->arr.values, oldCapacity, list->arr.capacity);
     }
-    list->elements.values[list->elements.count++] = value;
+    list->arr.values[list->arr.count++] = value;
 }
 
 void insertIntoList(ObjList* list, Value value, int index) {
     int oldCapacity, i;
-    int count = list->elements.count;
+    int count = list->arr.count;
 
-    if (list->elements.capacity < list->elements.count + 1) {
-        oldCapacity    = list->elements.capacity;
-        list->elements.capacity = GROW_CAPACITY(oldCapacity);
-        list->elements.values   = GROW_ARRAY(Value, list->elements.values, oldCapacity, list->elements.capacity);
+    if (list->arr.capacity < list->arr.count + 1) {
+        oldCapacity        = list->arr.capacity;
+        list->arr.capacity = GROW_CAPACITY(oldCapacity);
+        list->arr.values   = GROW_ARRAY(Value, list->arr.values, oldCapacity, list->arr.capacity);
     }
     if (index < 0)
         index = (index < -count) ? 0 : index + count;
     if (index > count)
         index = count;
     for (i = count; i >= index; i--)
-        list->elements.values[i + 1] = list->elements.values[i];
-    list->elements.values[index] = value;
-    ++list->elements.count;
+        list->arr.values[i + 1] = list->arr.values[i];
+    list->arr.values[index] = value;
+    ++list->arr.count;
 }
 
 void storeToList(ObjList* list, int index, Value value) {
     if (index < 0)
-        index += list->elements.count;
-    list->elements.values[index] = value;
+        index += list->arr.count;
+    list->arr.values[index] = value;
 }
 
 Value indexFromList(ObjList* list, int index) {
     if (index < 0)
-        index += list->elements.count;
-    return list->elements.values[index];
+        index += list->arr.count;
+    return list->arr.values[index];
 }
 
 #define LIMIT_SLICE(var) \
@@ -298,35 +298,35 @@ Value indexFromList(ObjList* list, int index) {
     if (var > n) var  = n
 
 ObjList* sliceFromList(ObjList* list, int begin, int end) {
-    int n = list->elements.count;
+    int n = list->arr.count;
     LIMIT_SLICE(begin);
     LIMIT_SLICE(end);
-    return makeList(end - begin, &list->elements.values[begin], end - begin, 1);
+    return makeList(end - begin, &list->arr.values[begin], end - begin, 1);
 }
 
 void deleteFromList(ObjList* list, int index) {
     int i;
 
     if (index < 0)
-        index += list->elements.count;
-    for (i = index; i < list->elements.count - 1; i++)
-        list->elements.values[i] = list->elements.values[i + 1];
-    list->elements.values[--list->elements.count] = NIL_VAL;
+        index += list->arr.count;
+    for (i = index; i < list->arr.count - 1; i++)
+        list->arr.values[i] = list->arr.values[i + 1];
+    list->arr.values[--list->arr.count] = NIL_VAL;
 }
 
 bool isValidListIndex(ObjList* list, int index) {
-    return (index >= 0 && index <   list->elements.count) ||
-           (index <  0 && index >= -list->elements.count);
+    return (index >= 0 && index <   list->arr.count) ||
+           (index <  0 && index >= -list->arr.count);
 }
 
 ObjList* concatLists(ObjList* a, ObjList* b) {
-    ObjList* result = makeList(a->elements.count + b->elements.count, a->elements.values, a->elements.count, 1);
+    ObjList* result = makeList(a->arr.count + b->arr.count, a->arr.values, a->arr.count, 1);
     int16_t  i, dest;
 
-    for (i = 0; i < b->elements.count; i++) {
+    for (i = 0; i < b->arr.count; i++) {
         // expanding dest into next lines generates wrong code in IDE68k
-        dest = a->elements.count + i;
-        result->elements.values[dest] = b->elements.values[i];
+        dest = a->arr.count + i;
+        result->arr.values[dest] = b->arr.values[i];
     }
     return result;
 }

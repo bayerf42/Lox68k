@@ -159,7 +159,7 @@ static bool lengthNative(int argCount, Value* args) {
     if (IS_STRING(args[0]))
         args[-1] = INT_VAL(AS_STRING(args[0])->length);
     else
-        args[-1] = INT_VAL(AS_LIST(args[0])->elements.count);
+        args[-1] = INT_VAL(AS_LIST(args[0])->arr.count);
     return true;
 }
 
@@ -173,7 +173,7 @@ static bool listNative(int argCount, Value* args) {
 
 static bool reverseNative(int argCount, Value* args) {
     ObjList* src = AS_LIST(args[0]);
-    ObjList* res = makeList(src->elements.count, src->elements.values + src->elements.count - 1, src->elements.count, -1);
+    ObjList* res = makeList(src->arr.count, src->arr.values + src->arr.count - 1, src->arr.count, -1);
     args[-1] = OBJ_VAL(res);
     return true;
 }
@@ -211,7 +211,7 @@ static bool indexNative(int argCount, Value* args) {
     int      i;
 
     args[-1] = NIL_VAL;
-    if (list->elements.count == 0)
+    if (list->arr.count == 0)
         return true;
 
     if (!isValidListIndex(list, start)) {
@@ -220,10 +220,10 @@ static bool indexNative(int argCount, Value* args) {
     }
 
     if (start < 0)
-        start += list->elements.count;
+        start += list->arr.count;
 
-    for (i = start; i < list->elements.count; i++) {
-        if (valuesEqual(item, list->elements.values[i])) {
+    for (i = start; i < list->arr.count; i++) {
+        if (valuesEqual(item, list->arr.values[i])) {
             args[-1] = INT_VAL(i);
             break;
         }
@@ -560,13 +560,13 @@ static bool lcdDefcharNative(int argCount, Value* args) {
         runtimeError("%s out of range.", "UDC number");
         return false;
     }
-    if (pattern->elements.count != 8) {
+    if (pattern->arr.count != 8) {
         runtimeError("UDC bitmap must be 8 bytes.");
         return false;
     }
     for (i = 0; i < 8; i++) {
-        if (IS_INT(pattern->elements.values[i])) {
-            byte = AS_INT(pattern->elements.values[i]);
+        if (IS_INT(pattern->arr.values[i])) {
+            byte = AS_INT(pattern->arr.values[i]);
             if (byte < 0 || byte > 255) {
                 runtimeError("%s out of range.", "Byte value");
                 return false;
