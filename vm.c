@@ -630,6 +630,12 @@ static InterpretResult run(void) {
                     drop();
                 break;
 
+            case OP_JUMP_TRUE:
+                offset = READ_USHORT();
+                if (!IS_FALSEY(pop()))
+                    frame->ip += offset;
+                break;
+
             case OP_JUMP_FALSE:
                 offset = READ_USHORT();
                 if (IS_FALSEY(pop()))

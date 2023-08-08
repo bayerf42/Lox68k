@@ -51,8 +51,8 @@ print_stmt     → ("print" | "?") print_list ";" ;
 return_stmt    → "return" expression? ";" ;
 while_stmt     → "while" "(" expression ")" statement ;
 case_stmt      → "case" "(" expression ")" "{" when_branch* else_branch? "}"
-when_branch    → "when" expression ":" statement* ;
-else_branch    → "else" statement* ;
+when_branch    → "when" expression ( "," expression )* ":" statement+ ;
+else_branch    → "else" statement+ ;
 block          → "{" declaration* "}" ;
 
 expression     → assignment ;

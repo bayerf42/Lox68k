@@ -94,6 +94,7 @@ int disassembleInst(Chunk* chunk, int offset) {
         case OP_JUMP:          return jumpInst("JUMP", 1, chunk, offset);
         case OP_JUMP_OR:       return jumpInst("JUMP_OR", 1, chunk, offset);
         case OP_JUMP_AND:      return jumpInst("JUMP_AND", 1, chunk, offset);
+        case OP_JUMP_TRUE:     return jumpInst("JUMP_T", 1, chunk, offset);
         case OP_JUMP_FALSE:    return jumpInst("JUMP_F", 1, chunk, offset);
         case OP_LOOP:          return jumpInst("LOOP", -1, chunk, offset);
         case OP_CALL:          return byteInst("CALL", chunk, offset);

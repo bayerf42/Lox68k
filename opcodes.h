@@ -35,6 +35,7 @@ typedef enum {
     OP_JUMP,          // jump forwards  by word0 bytes
     OP_JUMP_OR,       // jump forwards  by word0 bytes if TOS is true,  pop TOS otherwise 
     OP_JUMP_AND,      // jump forwards  by word0 bytes if TOS is false, pop TOS otherwise
+    OP_JUMP_TRUE,     // jump forwards  by word0 bytes if TOS is true,  always pop TOS
     OP_JUMP_FALSE,    // jump forwards  by word0 bytes if TOS is false, always pop TOS
     OP_LOOP,          // jump backwards by word0 bytes
     OP_CALL,          // call a value with byte0 arguments on stack

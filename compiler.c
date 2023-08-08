@@ -999,8 +999,11 @@ static void ifStatement(void) {
 static void caseStatement(void) {
     int       state        = 0; // 0: before 'when', 1: before 'else', 2: after 'else'
     int       caseCount    = 0;
+    int       labelCount   = 0;
     int       prevCaseSkip = -1;
+    bool      emptyBranch  = false;
     int16_t   caseEnds[MAX_BRANCHES];
+    int16_t   whenLabels[MAX_BRANCHES];
     TokenType caseType;
 
     CHECK_STACKOVERFLOW
@@ -1017,6 +1020,9 @@ static void caseStatement(void) {
 
     while (!match(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
         if (match(TOKEN_WHEN) || match(TOKEN_ELSE)) {
+            if (emptyBranch)
+                error("Can't have empty branch.");
+            emptyBranch = true;
             caseType = parser.previous.type;
             if (state == 2)
                 error("Can't have another branch after 'else'.");
@@ -1030,10 +1036,18 @@ static void caseStatement(void) {
             }
             if (caseType == TOKEN_WHEN) {
                 state = 1;
-                emitByte(OP_DUP);
-                expression();
+                do {
+                    emitByte(OP_DUP);
+                    expression();
+                    emitByte(OP_EQUAL);
+                    if (check(TOKEN_COMMA)) {
+                        // jump over other label tests to statement
+                        whenLabels[labelCount] = emitJump(OP_JUMP_TRUE);
+                        if (++labelCount >= MAX_BRANCHES)
+                            error("Too many when labels.");
+                    } 
+                } while (match(TOKEN_COMMA)); 
                 consumeExp(TOKEN_COLON, "':'", "expression");
-                emitByte(OP_EQUAL);
                 prevCaseSkip = emitJump(OP_JUMP_FALSE);
             } else {
                 state = 2;
@@ -1043,16 +1057,20 @@ static void caseStatement(void) {
             // Statement inside current branch
             if (state == 0)
                 errorAtCurrent("Can't have statement before any branch.");
+            // Fix jumps from previous labels, will execute on first statement in branch only (!)
+            while (labelCount)
+                patchJump(whenLabels[--labelCount]);
             statement();
+            emptyBranch = false;
         }
     }      
+    if (emptyBranch)
+        error("Can't have empty branch.");
     // if we ended without 'else' branch, patch its condition jump.
     if (state == 1)
         patchJump(prevCaseSkip);
-
     while (caseCount)
         patchJump(caseEnds[--caseCount]);
-
     endScope();
 }
 
