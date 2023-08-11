@@ -1018,7 +1018,7 @@ static void caseStatement(void) {
     addLocal(syntheticToken("case"));
     defineVariable(0);
 
-    while (!match(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
         if (match(TOKEN_WHEN) || match(TOKEN_ELSE)) {
             if (emptyBranch)
                 error("Can't have empty branch.");
@@ -1044,7 +1044,7 @@ static void caseStatement(void) {
                         // jump over other label tests to statement
                         whenLabels[labelCount] = emitJump(OP_JUMP_TRUE);
                         if (++labelCount >= MAX_BRANCHES)
-                            error("Too many when labels.");
+                            error("Too many 'when' labels.");
                     } 
                 } while (match(TOKEN_COMMA)); 
                 consumeExp(TOKEN_COLON, "':'", "expression");
@@ -1064,6 +1064,7 @@ static void caseStatement(void) {
             emptyBranch = false;
         }
     }      
+    consumeExp(TOKEN_RIGHT_BRACE, "'}'", "branches");
     if (emptyBranch)
         error("Can't have empty branch.");
     // if we ended without 'else' branch, patch its condition jump.
