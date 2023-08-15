@@ -57,14 +57,13 @@ fun reduce(fn,lst) {
 }
 fun string(obj) {
  case (obj) {
-  when nil: return "nil";
-  when true: return "true";
-  when false: return "false";
+  when nil:return "nil";
+  when true:return "true";
+  when false:return "false";
  }
  case(type(obj)) {
-  when "int": return dec(obj);
-  when "real": return dec(obj);
-  when "string": return obj;
+  when "int","real":return dec(obj);
+  when "string":return obj;
   when "list": {
    var sep="";
    var res="["; 
@@ -75,12 +74,12 @@ fun string(obj) {
    }
    return res+"]";
   }
-  when "instance": return obj.string();
-  when "closure": return "<closure "+fun_name(obj)+">";
-  when "native": return "<native "+hex(native_addr(obj))+">";
-  when "class": return "<class "+class_name(obj)+">";
-  when "bound": return "<bound>";
-  when "iterator": return "<iterator>";
+  when "instance":return obj.string();
+  when "closure":return "<closure "+fun_name(obj)+">";
+  when "native":return "<native "+hex(native_addr(obj))+">";
+  when "class":return "<class "+class_name(obj)+">";
+  when "bound":return "<bound>";
+  when "iterator":return "<iterator>";
   else return "<unknown>";
  }
 }

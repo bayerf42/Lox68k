@@ -30,8 +30,8 @@ void runtimeError(const char* format, ...) {
     printf("\n");
 
     for (i = vm.frameCount - 1; i >= 0; i--) {
-        frame = &vm.frames[i];
-        function = frame->closure->function;
+        frame       = &vm.frames[i];
+        function    = frame->closure->function;
         instruction = frame->ip - function->chunk.code - 1;
         printf("[line %d] in %s\n", getLine(&function->chunk, instruction),
                (function->name == NULL) ? "<script>" : function->name->chars);
@@ -190,7 +190,6 @@ static bool bindMethod(ObjClass* klass, ObjString* name) {
         runtimeError("Undefined property '%s'.", name->chars);
         return false;
     }
-
     bound = newBoundMethod(peek(0), AS_CLOSURE(method));
     dropNpush(1, OBJ_VAL(bound));
     return true;
@@ -328,30 +327,28 @@ static InterpretResult run(void) {
                 break;
 
             case OP_GET_GLOBAL:
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 constant = consts[index];
-                aStr = AS_STRING(constant);
                 if (!tableGet(&vm.globals, constant, &aVal)) {
-                    runtimeError("Undefined variable '%s'.", aStr->chars);
+                    runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 push(aVal);
                 break;
 
             case OP_DEF_GLOBAL:
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 constant = consts[index];
                 tableSet(&vm.globals, constant, peek(0));
                 drop();
                 break;
 
             case OP_SET_GLOBAL:
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 constant = consts[index];
-                aStr = AS_STRING(constant);
                 if (tableSet(&vm.globals, constant, peek(0))) {
                     tableDelete(&vm.globals, constant);
-                    runtimeError("Undefined variable '%s'.", aStr->chars);
+                    runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
@@ -371,16 +368,13 @@ static InterpretResult run(void) {
                     runtimeError("Only instances have properties.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-
                 instance = AS_INSTANCE(peek(0));
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 constant = consts[index];
-
                 if (tableGet(&instance->fields, constant, &aVal)) {
                     dropNpush(1, aVal);
                     break;
                 }
-
                 aStr = AS_STRING(constant);
                 if (!bindMethod(instance->klass, aStr))
                     return INTERPRET_RUNTIME_ERROR;
@@ -391,9 +385,8 @@ static InterpretResult run(void) {
                     runtimeError("Only instances have properties.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                
                 instance = AS_INSTANCE(peek(1));
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 constant = consts[index];
                 tableSet(&instance->fields, constant, peek(0));
                 aVal = pop();
@@ -401,11 +394,10 @@ static InterpretResult run(void) {
                 break;
 
             case OP_GET_SUPER:
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 constant = consts[index];
-                aStr = AS_STRING(constant);
+                aStr     = AS_STRING(constant);
                 superclass = AS_CLASS(pop());
-
                 if (!bindMethod(superclass, aStr))
                     return INTERPRET_RUNTIME_ERROR;
                 break;
@@ -664,7 +656,8 @@ static InterpretResult run(void) {
             cont_call:
                 if (!callValue(peek(argCount), argCount))
                     return INTERPRET_RUNTIME_ERROR;
-                frame = &vm.frames[vm.frameCount - 1];
+            updateFrame:
+                frame  = &vm.frames[vm.frameCount - 1];
                 consts = frame->closure->function->chunk.constants.values;
                 break;
 
@@ -673,46 +666,42 @@ static InterpretResult run(void) {
                 goto cont_call;
 
             case OP_INVOKE:
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 argCount = READ_BYTE();
             cont_invoke:
                 constant = consts[index];
                 aStr = AS_STRING(constant);
                 if (!invoke(aStr, argCount))
                     return INTERPRET_RUNTIME_ERROR;
-                frame = &vm.frames[vm.frameCount - 1];
-                consts = frame->closure->function->chunk.constants.values;
-                break;
+                goto updateFrame;
 
             case OP_VINVOKE:
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 argCount = READ_BYTE() + AS_INT(pop());
                 goto cont_invoke;
 
             case OP_SUPER_INVOKE:
-                index = READ_BYTE();
+                index      = READ_BYTE();
                 superclass = AS_CLASS(pop());
-                argCount = READ_BYTE();
+                argCount   = READ_BYTE();
             cont_super_invoke:
                 constant = consts[index];
-                aStr = AS_STRING(constant);
+                aStr     = AS_STRING(constant);
                 if (!invokeFromClass(superclass, aStr, argCount))
                     return INTERPRET_RUNTIME_ERROR;
-                frame = &vm.frames[vm.frameCount - 1];
-                consts = frame->closure->function->chunk.constants.values;
-                break;
+                goto updateFrame;
 
             case OP_VSUPER_INVOKE:
-                index = READ_BYTE();
+                index      = READ_BYTE();
                 superclass = AS_CLASS(pop());
-                argCount = READ_BYTE() + AS_INT(pop());
+                argCount   = READ_BYTE() + AS_INT(pop());
                 goto cont_super_invoke;
 
             case OP_CLOSURE:
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 constant = consts[index];
                 function = AS_FUNCTION(constant);
-                closure = newClosure(function);
+                closure  = newClosure(function);
                 push(OBJ_VAL(closure));
                 for (i = 0; i < closure->upvalueCount; i++) {
                     upvalue = READ_BYTE();
@@ -741,17 +730,14 @@ static InterpretResult run(void) {
                     drop();
                     return INTERPRET_OK;
                 }
-
                 vm.stackTop = frame->slots;
                 push(resVal);
-                frame = &vm.frames[vm.frameCount - 1];
-                consts = frame->closure->function->chunk.constants.values;
-                break;
+                goto updateFrame;
 
             case OP_CLASS:
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 constant = consts[index];
-                aStr = AS_STRING(constant);
+                aStr     = AS_STRING(constant);
                 push(OBJ_VAL(newClass(aStr)));
                 break;
 
@@ -767,16 +753,16 @@ static InterpretResult run(void) {
                 break;
 
             case OP_METHOD:
-                index = READ_BYTE();
+                index    = READ_BYTE();
                 constant = consts[index];
-                aStr = AS_STRING(constant);
+                aStr     = AS_STRING(constant);
                 defineMethod(aStr);
                 break;
 
             case OP_LIST:
                 argCount = READ_BYTE();
             cont_list:
-                aLst = makeList(argCount, vm.stackTop - argCount, argCount, 1);
+                aLst     = makeList(argCount, vm.stackTop - argCount, argCount, 1);
                 dropNpush(argCount, OBJ_VAL(aLst));
                 break;
 
@@ -785,13 +771,13 @@ static InterpretResult run(void) {
                 goto cont_list;
 
             case OP_UNPACK:
-                aVal = pop();
+                aVal     = pop();
                 argCount = AS_INT(pop());
                 if (!IS_LIST(aVal)) {
                     runtimeError("Can't %s type %s.", "unpack", valueType(aVal));
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                aLst = AS_LIST(aVal);
+                aLst      = AS_LIST(aVal);
                 itemCount = aLst->arr.count;
                 if (vm.stackTop + itemCount >= vm.stack + STACK_MAX) {
                     runtimeError("Lox value stack overflow.");
@@ -837,7 +823,7 @@ static InterpretResult run(void) {
                     break;
                 } else if (IS_INSTANCE(bVal)) {
                     instance = AS_INSTANCE(bVal);
-                    resVal = NIL_VAL;
+                    resVal   = NIL_VAL;
                     tableGet(&instance->fields, aVal, &resVal); // not found -> nil
                     dropNpush(2, resVal);
                     break;
@@ -890,14 +876,13 @@ static InterpretResult run(void) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 end = AS_INT(aVal);
-
                 if (IS_LIST(cVal)) {
-                    aLst = AS_LIST(cVal);
+                    aLst   = AS_LIST(cVal);
                     resVal = OBJ_VAL(sliceFromList(aLst, begin, end));
                     dropNpush(1, resVal);
                     break;
                 } else if (IS_STRING(cVal)) {
-                    aStr = AS_STRING(cVal);
+                    aStr   = AS_STRING(cVal);
                     resVal = OBJ_VAL(sliceFromString(aStr, begin, end));
                     dropNpush(1, resVal);
                     break;

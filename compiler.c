@@ -538,7 +538,6 @@ static void declareVariable(void) {
         if (identifiersEqual(name, &local->name))
             error("Already a variable with this name in this scope.");
     }
-
     addLocal(*name);
 }
 
@@ -614,14 +613,12 @@ static void this_(bool canAssign) {
 
 static void and_(bool canAssign) {
     int endJump = emitJump(OP_JUMP_AND);
-
     parsePrecedence(PREC_AND);
     patchJump(endJump);
 }
 
 static void or_(bool canAssign) {
     int endJump = emitJump(OP_JUMP_OR);
-
     parsePrecedence(PREC_OR);
     patchJump(endJump);
 }
@@ -697,7 +694,6 @@ const ParseRule rules[] = {
     /* [TOKEN_ERROR]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_EOF]           = */ {NULL,     NULL,   PREC_NONE},
 };
-
 
 static void parsePrecedence(Precedence precedence) {
     ParseFn prefixRule;

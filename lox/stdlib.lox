@@ -76,9 +76,8 @@ fun string(obj) {
   }
 
   case(type(obj)) {
-    when "int":    return dec(obj);
-    when "real":   return dec(obj);
-    when "string": return obj;
+    when "int", "real": return dec(obj);
+    when "string":      return obj;
     when "list": {
       var sep = "";
       var res = "["; 
