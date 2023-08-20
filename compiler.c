@@ -293,12 +293,18 @@ static void endScope(void) {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static void  expression(void);
 static void  statement(void);
 static void  declaration(void);
+static void  function(FunctionType type);
 static void  parsePrecedence(Precedence precedence);
 static int   argumentList(bool* isVarArg, TokenType terminator);
 static int   identifierConstant(Token* name);
+
 static const ParseRule* getRule(TokenType type);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -307,7 +313,7 @@ static const ParseRule* getRule(TokenType type);
 
 static void binary(bool canAssign) {
     TokenType operatorType = parser.previous.type;
-    const ParseRule* rule = getRule(operatorType);
+    const ParseRule* rule  = getRule(operatorType);
     parsePrecedence((Precedence)(rule->precedence + 1));
     switch (operatorType) {
         case TOKEN_BANG_EQUAL:    emit2Bytes(OP_EQUAL, OP_NOT); break;
@@ -573,7 +579,7 @@ static void variable(bool canAssign) {
 
 static Token syntheticToken(const char* text) {
     Token token;
-    token.start = text;
+    token.start  = text;
     token.length = (int)strlen(text);
     return token;
 }
@@ -627,15 +633,12 @@ static void unary(bool canAssign) {
     TokenType operatorType = parser.previous.type;
 
     parsePrecedence(PREC_UNARY);
-
     switch (operatorType) {
         case TOKEN_BANG:  emitByte(OP_NOT); break;
         case TOKEN_MINUS: emitByte(OP_NEG); break;
         default: return; // Unreachable
     }
 }
-
-static void function(FunctionType type);
 
 static void lambda(bool canAssign) {
     function(TYPE_FUNCTION);
@@ -698,7 +701,7 @@ const ParseRule rules[] = {
 static void parsePrecedence(Precedence precedence) {
     ParseFn prefixRule;
     ParseFn infixRule;
-    bool canAssign;
+    bool    canAssign;
 
     advance();
     prefixRule = getRule(parser.previous.type)->prefix;
@@ -755,7 +758,7 @@ static int argumentList(bool* isVarArg, TokenType terminator) {
                     emitConstant(INT_VAL(0)); 
                 *isVarArg = true;
                 expression();
-                emitByte(OP_UNPACK); // this also adapts list arguments count
+                emitByte(OP_UNPACK);   // this also adapts list arguments count
             } else {
                 expression();
                 if (*isVarArg)
@@ -779,7 +782,6 @@ static const ParseRule* getRule(TokenType type) {
 
 static void expression(void) {
     CHECK_STACKOVERFLOW
-
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
@@ -797,10 +799,9 @@ static void function(FunctionType type) {
     uint8_t      restParm = 0;
 
     CHECK_STACKOVERFLOW
-
     initCompiler(&compiler, type);
-    beginScope();
 
+    beginScope();
     consumeExp(TOKEN_LEFT_PAREN, "'('",
                parser.previous.type == TOKEN_FUN ? "'fun'" : "function name");
     if (!check(TOKEN_RIGHT_PAREN)) {
@@ -831,7 +832,6 @@ static void function(FunctionType type) {
     }
 
     emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
-
     for (i = 0; i < function->upvalueCount; i++) 
         emitByte(compiler.upvalues[i]);
 }
@@ -865,7 +865,7 @@ static void classDeclaration(void) {
     emit2Bytes(OP_CLASS, nameConstant);
     defineVariable(nameConstant);
 
-    classCompiler.enclosing = currentClass;
+    classCompiler.enclosing     = currentClass;
     classCompiler.hasSuperclass = false;
     currentClass = &classCompiler;
 
@@ -944,7 +944,7 @@ static void forStatement(void) {
         expressionStatement();
 
     loopStart = currentChunk()->count;
-    exitJump = -1;
+    exitJump  = -1;
     if (!match(TOKEN_SEMICOLON)) {
         expression();
         consumeExp(TOKEN_SEMICOLON, "';'", "loop condition");
@@ -953,7 +953,7 @@ static void forStatement(void) {
     }
 
     if (!match(TOKEN_RIGHT_PAREN)) {
-        bodyJump = emitJump(OP_JUMP);
+        bodyJump       = emitJump(OP_JUMP);
         incrementStart = currentChunk()->count;
         expression();
         emitByte(OP_POP);
@@ -1019,7 +1019,7 @@ static void caseStatement(void) {
             if (emptyBranch)
                 error("Can't have empty branch.");
             emptyBranch = true;
-            caseType = parser.previous.type;
+            caseType    = parser.previous.type;
             if (state == 2)
                 error("Can't have another branch after 'else'.");
             if (state == 1) {
@@ -1046,7 +1046,7 @@ static void caseStatement(void) {
                 consumeExp(TOKEN_COLON, "':'", "expression");
                 prevCaseSkip = emitJump(OP_JUMP_FALSE);
             } else {
-                state = 2;
+                state        = 2;
                 prevCaseSkip = -1;
             }
         } else {
@@ -1063,11 +1063,14 @@ static void caseStatement(void) {
     consumeExp(TOKEN_RIGHT_BRACE, "'}'", "branches");
     if (emptyBranch)
         error("Can't have empty branch.");
+
     // if we ended without 'else' branch, patch its condition jump.
     if (state == 1)
         patchJump(prevCaseSkip);
+
     while (caseCount)
         patchJump(caseEnds[--caseCount]);
+
     endScope();
 }
 

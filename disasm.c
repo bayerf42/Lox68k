@@ -38,6 +38,20 @@ static int invokeInst(const char* name, Chunk* chunk, int offset) {
     return offset + 3;
 }
 
+static int closureInst(const char* name, Chunk* chunk, int offset) {
+    int          constant = chunk->code[++offset];
+    ObjFunction* function = AS_FUNCTION(chunk->constants.values[constant]);
+    int          j, upvalue;
+    printf("%-9s %4d ; ", name, constant);
+    printValue(chunk->constants.values[constant], true, true);
+    for (j = 0, offset++; j < function->upvalueCount; j++, offset++) {
+        upvalue = chunk->code[offset];
+        printf("\n%04d    |   %5s   %4d", offset,
+               UV_ISLOC(upvalue) ? "LOCAL" : "UPVAL", UV_INDEX(upvalue));
+    }
+    return offset;
+}
+
 void disassembleChunk(Chunk* chunk, const char* name) {
     int offset;
     printf("== %s ==\n", name);
@@ -48,9 +62,8 @@ void disassembleChunk(Chunk* chunk, const char* name) {
 }
 
 int disassembleInst(Chunk* chunk, int offset) {
-    int          instruction, constant;
-    ObjFunction* function;
-    int          j, upvalue, line;
+    int instruction;
+    int line;
 
     printf("%04d ", offset);
     line = getLine(chunk, offset);
@@ -103,21 +116,7 @@ int disassembleInst(Chunk* chunk, int offset) {
         case OP_CALL2:         return simpleInst("CALL2", offset);
         case OP_INVOKE:        return invokeInst("INVOKE", chunk, offset);
         case OP_SUPER_INVOKE:  return invokeInst("SUP_INV", chunk, offset);
-        case OP_CLOSURE: {
-            offset++;
-            constant = chunk->code[offset++];
-            printf("%-9s %4d ; ", "CLOSURE", constant);
-            printValue(chunk->constants.values[constant], true, true);
-
-            function = AS_FUNCTION(chunk->constants.values[constant]);
-            for (j = 0; j < function->upvalueCount; j++) {
-                upvalue = chunk->code[offset];
-                printf("\n%04d    |   %5s   %4d", offset++,
-                       UV_ISLOC(upvalue) ? "LOCAL" : "UPVAL", UV_INDEX(upvalue));
-            }
-
-            return offset;
-        }
+        case OP_CLOSURE:       return closureInst("CLOSURE", chunk, offset); 
         case OP_CLOSE_UPVALUE: return simpleInst("CLOSE_UPV", offset);
         case OP_RETURN:        return simpleInst("RET", offset);
         case OP_RETURN_NIL:    return simpleInst("RET_NIL", offset);
