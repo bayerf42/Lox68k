@@ -107,7 +107,7 @@ static void skipWhitespace(void) {
 #define UNWRAP(tup,n) ((uint8_t*)&(tup))[(n)]
 
 static TokenType checkKeyword(int args) {
-    // Original args: (int start, int length, int offset, TokenType type) 
+    // Original args: (ubyte start, ubyte length, ubyte offset, TokenType type) 
 
     // Compressed keyword postfixes in single string
     const char* rest = "ileturndasslsefarintuperisue";
@@ -130,12 +130,18 @@ static TokenType checkKeyword(int args) {
     //          Var                    ##
     //          WHEn          #
     //          WHIle    ##
-    if (scanner.current - scanner.start == UNWRAP(args,0) + UNWRAP(args,1) &&
-        fix_memcmp(scanner.start + UNWRAP(args,0), rest + UNWRAP(args,2), UNWRAP(args,1)) == 0)
-            return UNWRAP(args,3);
+    const char  *src, *key;
+    int         len = UNWRAP(args, 1);
+    if (scanner.current - scanner.start == UNWRAP(args, 0) + len) {
+        src = scanner.start + UNWRAP(args, 0);
+        key = rest + UNWRAP(args, 2);
+        while (len--) 
+            if (*src++ != *key++)
+                return TOKEN_IDENTIFIER;
+        return UNWRAP(args, 3);
+    }
     return TOKEN_IDENTIFIER;
 }
-
 
 static TokenType identifierType(void) {
     int id_length = scanner.current - scanner.start;
