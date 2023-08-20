@@ -98,53 +98,84 @@ static void skipWhitespace(void) {
     }
 }
 
-static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
-    if (scanner.current - scanner.start == start + length &&
-        fix_memcmp(scanner.start + start, rest, length) == 0)
-            return type;
+// Wrapping and unwrapping 4 bytes to/from a single 32 bit argument
+#ifdef BIG_ENDIAN
+#define WRAP(a,b,c,d) ((a)<<24|(b)<<16|(c)<<8|(d))
+#else
+#define WRAP(a,b,c,d) ((a)|(b)<<8|(c)<<16|(d)<<24)
+#endif
+#define UNWRAP(tup,n) ((uint8_t*)&(tup))[(n)]
+
+static TokenType checkKeyword(int args) {
+    // Original args: (int start, int length, int offset, TokenType type) 
+
+    // Compressed keyword postfixes in single string
+    const char* rest = "ileturndasslsefarintuperisue";
+    //                  0123456789012345678901234567
+    //          And           ##
+    //          CAse                ##
+    //          CLass           ###
+    //          Else               ###               
+    //          FAlse              ###               
+    //          FOr          #
+    //          FUn           #
+    //          If                    #
+    //          Nil     ##
+    //          Or           #
+    //          Print                   ####
+    //          Return    #####
+    //          Super                       ####             
+    //          THis                            ##
+    //          TRue                              ##
+    //          Var                    ##
+    //          WHEn          #
+    //          WHIle    ##
+    if (scanner.current - scanner.start == UNWRAP(args,0) + UNWRAP(args,1) &&
+        fix_memcmp(scanner.start + UNWRAP(args,0), rest + UNWRAP(args,2), UNWRAP(args,1)) == 0)
+            return UNWRAP(args,3);
     return TOKEN_IDENTIFIER;
 }
 
+
 static TokenType identifierType(void) {
     int id_length = scanner.current - scanner.start;
- 
     switch (scanner.start[0]) {
-        case 'a': return checkKeyword(1, 2, "nd",    TOKEN_AND);
+        case 'a': return checkKeyword(WRAP(1, 2, 6, TOKEN_AND));
         case 'c':
             if (id_length > 1)
                 switch (scanner.start[1]) {
-                    case 'a' : return checkKeyword(2, 2, "se",  TOKEN_CASE);
-                    case 'l' : return checkKeyword(2, 3, "ass", TOKEN_CLASS);
+                    case 'a' : return checkKeyword(WRAP(2, 2, 12, TOKEN_CASE));
+                    case 'l' : return checkKeyword(WRAP(2, 3,  8, TOKEN_CLASS));
                 }
             break;
-        case 'e': return checkKeyword(1, 3, "lse",   TOKEN_ELSE);
+        case 'e': return checkKeyword(WRAP(1, 3, 11, TOKEN_ELSE));
         case 'f':
             if (id_length > 1)
                 switch (scanner.start[1]) {
-                    case 'a' : return checkKeyword(2, 3, "lse", TOKEN_FALSE);
-                    case 'o' : return checkKeyword(2, 1, "r",   TOKEN_FOR);
-                    case 'u' : return checkKeyword(2, 1, "n",   TOKEN_FUN);
+                    case 'a' : return checkKeyword(WRAP(2, 3, 11, TOKEN_FALSE));
+                    case 'o' : return checkKeyword(WRAP(2, 1,  5, TOKEN_FOR));
+                    case 'u' : return checkKeyword(WRAP(2, 1,  6, TOKEN_FUN));
                 }
             break;
-        case 'i': return checkKeyword(1, 1, "f",     TOKEN_IF);
-        case 'n': return checkKeyword(1, 2, "il",    TOKEN_NIL);
-        case 'o': return checkKeyword(1, 1, "r",     TOKEN_OR);
-        case 'p': return checkKeyword(1, 4, "rint",  TOKEN_PRINT);
-        case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
-        case 's': return checkKeyword(1, 4, "uper",  TOKEN_SUPER);
+        case 'i': return checkKeyword(WRAP(1, 1, 14, TOKEN_IF));
+        case 'n': return checkKeyword(WRAP(1, 2,  0, TOKEN_NIL));
+        case 'o': return checkKeyword(WRAP(1, 1,  5, TOKEN_OR));
+        case 'p': return checkKeyword(WRAP(1, 4, 16, TOKEN_PRINT));
+        case 'r': return checkKeyword(WRAP(1, 5,  2, TOKEN_RETURN));
+        case 's': return checkKeyword(WRAP(1, 4, 20, TOKEN_SUPER));
         case 't':
             if (id_length > 1)
                 switch (scanner.start[1]) {
-                    case 'h' : return checkKeyword(2, 2, "is", TOKEN_THIS);
-                    case 'r' : return checkKeyword(2, 2, "ue", TOKEN_TRUE);
+                    case 'h' : return checkKeyword(WRAP(2, 2, 24, TOKEN_THIS));
+                    case 'r' : return checkKeyword(WRAP(2, 2, 26, TOKEN_TRUE));
                 }
             break;
-        case 'v': return checkKeyword(1, 2, "ar",    TOKEN_VAR);
+        case 'v': return checkKeyword(WRAP(1, 2, 15, TOKEN_VAR));
         case 'w':
             if (id_length > 1 && scanner.start[1] == 'h' && id_length > 2)
                 switch (scanner.start[2]) {
-                    case 'e' : return checkKeyword(3, 1, "n",  TOKEN_WHEN);
-                    case 'i' : return checkKeyword(3, 2, "le", TOKEN_WHILE);
+                    case 'e' : return checkKeyword(WRAP(3, 1, 6, TOKEN_WHEN));
+                    case 'i' : return checkKeyword(WRAP(3, 2, 1, TOKEN_WHILE));
                 }
             break;
     }
