@@ -5,12 +5,12 @@
 #include "vm.h"
 
 void initChunk(Chunk* chunk) {
-    chunk->count = 0;
-    chunk->capacity = 0;
-    chunk->code = NULL;
-    chunk->lineCount = 0;
+    chunk->count        = 0;
+    chunk->capacity     = 0;
+    chunk->code         = NULL;
+    chunk->lineCount    = 0;
     chunk->lineCapacity = 0;
-    chunk->lines = NULL;
+    chunk->lines        = NULL;
     initValueArray(&chunk->constants);
 }
 
@@ -22,13 +22,13 @@ void freeChunk(Chunk* chunk) {
 }
 
 void writeChunk(Chunk* chunk, int byte, int line) {
-    int16_t oldCapacity;
+    int16_t    oldCapacity;
     LineStart* lineStart;
 
     if (chunk->capacity < chunk->count + 1) {
-        oldCapacity = chunk->capacity;
+        oldCapacity     = chunk->capacity;
         chunk->capacity = GROW_CAPACITY(oldCapacity);
-        chunk->code = GROW_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacity);
+        chunk->code     = GROW_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacity);
     }
     chunk->code[chunk->count++] = byte;
 
@@ -38,14 +38,14 @@ void writeChunk(Chunk* chunk, int byte, int line) {
 
     // Append new LineStart
     if (chunk->lineCapacity < chunk->lineCount + 1) {
-        oldCapacity = chunk->lineCapacity;
+        oldCapacity         = chunk->lineCapacity;
         chunk->lineCapacity = GROW_CAPACITY(oldCapacity);
-        chunk->lines = GROW_ARRAY(LineStart, chunk->lines, oldCapacity, chunk->lineCapacity);
+        chunk->lines        = GROW_ARRAY(LineStart, chunk->lines, oldCapacity, chunk->lineCapacity);
     }
 
     lineStart = &chunk->lines[chunk->lineCount++];
     lineStart->offset = chunk->count - 1;
-    lineStart->line = line;
+    lineStart->line   = line;
 }
 
 int addConstant(Chunk* chunk, Value value) {
@@ -62,12 +62,12 @@ int addConstant(Chunk* chunk, Value value) {
 
 int getLine(Chunk* chunk, int offset) {
     int start = 0;
-    int end = chunk->lineCount - 1;
+    int end   = chunk->lineCount - 1;
     int mid;
     LineStart* line;
 
     for (;;) {
-        mid = (start + end) >> 1;
+        mid  = (start + end) >> 1;
         line = &chunk->lines[mid];
         if (offset < line->offset)
             end = mid - 1;

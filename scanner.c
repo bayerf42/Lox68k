@@ -99,16 +99,19 @@ static void skipWhitespace(void) {
 }
 
 // Wrapping and unwrapping 4 bytes to/from a single 32 bit argument
-#ifdef BIG_ENDIAN
+#ifdef WRAP_BIG_ENDIAN
 #define WRAP(a,b,c,d) ((a)<<24|(b)<<16|(c)<<8|(d))
 #else
 #define WRAP(a,b,c,d) ((a)|(b)<<8|(c)<<16|(d)<<24)
 #endif
 #define UNWRAP(tup,n) ((uint8_t*)&(tup))[(n)]
 
-static TokenType checkKeyword(int args) {
-    // Original args: (ubyte start, ubyte length, ubyte offset, TokenType type) 
+#define ARG_START  0
+#define ARG_LENGTH 1
+#define ARG_OFFSET 2
+#define ARG_TYPE   3
 
+static TokenType checkKeyword(int args) {
     // Compressed keyword postfixes in single string
     const char* rest = "ileturndasslsefarintuperisue";
     //                  0123456789012345678901234567
@@ -131,14 +134,14 @@ static TokenType checkKeyword(int args) {
     //          WHEn          #
     //          WHIle    ##
     const char  *src, *key;
-    int         len = UNWRAP(args, 1);
-    if (scanner.current - scanner.start == UNWRAP(args, 0) + len) {
-        src = scanner.start + UNWRAP(args, 0);
-        key = rest + UNWRAP(args, 2);
+    int         len = UNWRAP(args, ARG_LENGTH);
+    if (scanner.current - scanner.start == UNWRAP(args, ARG_START) + len) {
+        src = scanner.start + UNWRAP(args, ARG_START);
+        key = rest + UNWRAP(args, ARG_OFFSET);
         while (len--) 
             if (*src++ != *key++)
                 return TOKEN_IDENTIFIER;
-        return UNWRAP(args, 3);
+        return UNWRAP(args, ARG_TYPE);
     }
     return TOKEN_IDENTIFIER;
 }

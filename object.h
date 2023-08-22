@@ -77,7 +77,6 @@ struct Obj {
 
 typedef struct {
     OBJ_HEADER
-
     uint8_t     arity;         // lower 7 bits arity, highest bit rest parameter flag        
     uint8_t     upvalueCount;
     Chunk       chunk;
@@ -89,14 +88,12 @@ typedef char Signature[4];
 
 typedef struct {
     OBJ_HEADER
-
     Signature    signature;
     NativeFn     function;
 } ObjNative;
 
 struct ObjString {
     OBJ_HEADER
-
     int16_t      length;
     uint32_t     hash;
     char         chars[]; // chap 19, single alloc for strings, as embedded char array
@@ -104,7 +101,6 @@ struct ObjString {
 
 struct ObjUpvalue {
     OBJ_HEADER
-
     Value*       location;
     Value        closed;
     ObjUpvalue*  nextUpvalue;
@@ -112,7 +108,6 @@ struct ObjUpvalue {
 
 typedef struct {
     OBJ_HEADER
-
     int16_t      upvalueCount; // too big, but keep alignment
     ObjFunction* function;
     ObjUpvalue*  upvalues[];   // like ObjString, array embedded in structure
@@ -120,40 +115,34 @@ typedef struct {
 
 typedef struct {
     OBJ_HEADER
-
     ObjString*   name;
     Table        methods;
 } ObjClass;
 
 typedef struct {
     OBJ_HEADER
-
     ObjClass*    klass;
     Table        fields;
 } ObjInstance;
 
 typedef struct {
     OBJ_HEADER
-
     Value        receiver;
     ObjClosure*  method;
 } ObjBoundMethod;
 
 typedef struct {
     OBJ_HEADER
-
     ValueArray   arr;
 } ObjList;
 
 typedef struct {
     OBJ_HEADER
-
     Real         content;
 } ObjReal;
 
 struct ObjIterator {
     OBJ_HEADER
-
     int16_t      position;  // -1 means invalid
     ObjInstance* instance;  // for GC
     Table*       table;
@@ -193,7 +182,6 @@ ObjString*      sliceFromString(ObjString* string, int begin, int end);
 bool            isValidStringIndex(ObjString* string, int index);
 ObjString*      concatStrings(ObjString* a, ObjString* b);
 ObjString*      caseString(ObjString* a, bool toUpper);
-
 
 const char*     formatReal(Real val);
 const char*     formatInt(Int val);

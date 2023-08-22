@@ -25,7 +25,7 @@ typedef short          bool;
 #define UINT16_MAX 0xffff
 #define INT32_MAX  0x7fffffff
 
-#define BIG_ENDIAN
+#define WRAP_BIG_ENDIAN
 
 extern void memmove(void *, void *, int);
 
