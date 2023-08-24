@@ -6,12 +6,8 @@
        ; in ROM at $5f000
 
        include ../MotoFFP/ffp_math.inc
-
        section code
-
        xref    _errno        ; indicates overflow or domain error when != 0
-       xref    _terminator   ; pointer to char terminating real number scanning 
-
 
 _fabs
        move.l  d7,-(a7)
@@ -79,7 +75,6 @@ _tanh
        move.l  d7,-(a7)
        move.l  (8,a7),d7
        jsr     ffp_tanh
-       svs     _errno.W
        move.l  d7,d0
        move.l  (a7)+,d7
        rts
@@ -195,17 +190,21 @@ _realToInt
        movem.l (a7)+,d5/d7
        rts
 
-_scanReal
+_strToReal
        movem.l d3-d7,-(a7)
        move.l  (24,a7),a0
        jsr     ffp_asc_to_flp
        svs     _errno.W
        move.l  d7,d0
-       move.l  a0,_terminator
+       move.l  (28,a7),d1
+       beq.s   .nostore 
+       move.l  d1,a1  
+       move.l  a0,(a1)  
+.nostore
        movem.l (a7)+,d3-d7
        rts
 
-_printReal
+_realToStr
        move.l  d7,-(a7)
        move.l  (12,a7),d7
        move.l  (8,a7),a0

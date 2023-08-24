@@ -69,14 +69,15 @@ extern void _stackoverflow(void);
 // Real number implementation
 #include <math.h>
 typedef double Real;
-#define intToReal(x) (x)
-#define realToInt(x) ((Int)(x))
-#define neg(x)       (-(x))
-#define add(x,y)     ((x)+(y))
-#define sub(x,y)     ((x)-(y))
-#define mul(x,y)     ((x)*(y))
-#define div(x,y)     ((x)/(y))
-#define less(x,y)    ((x)<(y))
+#define intToReal(x)   (x)
+#define realToInt(x)   ((Int)(x))
+#define strToReal(s,e) strtod(s,e)
+#define neg(x)         (-(x))
+#define add(x,y)       ((x)+(y))
+#define sub(x,y)       ((x)-(y))
+#define mul(x,y)       ((x)*(y))
+#define div(x,y)       ((x)/(y))
+#define less(x,y)      ((x)<(y))
 
 // hide Kit's assembly helpers 
 #define CHECK_STACKOVERFLOW

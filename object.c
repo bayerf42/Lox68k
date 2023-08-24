@@ -399,11 +399,11 @@ const char* formatReal(Real val) {
     if (val==0)
         return "0.0";
 
-    printReal(buffer, val);
+    realToStr(buffer, val);
     expo = atoi(buffer + 11);
     estr = buffer + 10;
 
-    // Fixed format returned from printReal:
+    // Fixed format returned from realToStr:
     // s.mmmmmmmmEsdd
     //           1111
     // 01234567890123

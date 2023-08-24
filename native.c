@@ -351,26 +351,17 @@ static bool parseIntNative(int argCount, Value* args) {
     return true;
 }
 
-char* terminator; // filled by scanReal()
-
 static bool parseRealNative(int argCount, Value* args) {
     char* start = AS_CSTRING(args[0]);
     char* end   = start;
     Real  real;
 
-#ifdef KIT68K
-    real = scanReal(start);
-    if (errno == 0 && start + strlen(start) == terminator)
+    errno = 0;
+    real  = strToReal(start, &end);
+    if (errno == 0 && start + strlen(start) == end)
         args[-1] = newReal(real);
     else
         args[-1] = NIL_VAL;
-#else
-    real = strtod(start, &end);
-    if (start + strlen(start) == end)
-        args[-1] = newReal(real);
-    else
-        args[-1] = NIL_VAL;
-#endif
     return true;
 }
 

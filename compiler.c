@@ -429,13 +429,9 @@ static void intNum(bool canAssign) {
 }
 
 static void realNum(bool canAssign) {
-#ifdef KIT68K
-    Value value = newReal(scanReal(parser.previous.start));
+    Value value = newReal(strToReal(parser.previous.start, NULL));
     if (errno != 0)
         error("Real constant overflow.");
-#else
-    Value value = newReal(strtod(parser.previous.start, NULL));
-#endif
     emitConstant(value);
 }
 

@@ -21,14 +21,13 @@ Real add(Real x, Real y);
 Real sub(Real x, Real y);
 Real mul(Real x, Real y);
 Real div(Real x, Real y);
-
 int  less(Real x, Real y);
+
 Real intToReal(int n);
+Real strToReal(const char* str, char** endptr);
 int  realToInt(Real x);
-Real scanReal(const char* str);
-void printReal(char* str, Real x);
+void realToStr(char* str, Real x);
 
 extern char  errno;
-extern char* terminator;
 
 #endif
