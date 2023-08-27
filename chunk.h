@@ -4,6 +4,14 @@
 #include "opcodes.h"
 #include "value.h"
 
+typedef uint8_t Upvalue; // lower 7 bits index, highest bit set if local
+#define UV_INDEX(u)    ((u)&0x7f)
+#define UV_ISLOC(u)    ((u)&0x80)
+#define LOCAL_MASK     0x80
+
+#define ARITY_MASK     0x7f
+#define REST_PARM_MASK 0x80
+
 typedef struct {
     int16_t offset;
     int16_t line;

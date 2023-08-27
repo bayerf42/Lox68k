@@ -682,94 +682,105 @@ static bool clockNative(int argCount, Value* args) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Setup everyting 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct {
+    const char* name;
+    const char* signature;
+    NativeFn    function;
+} Native;
 
-static void defineNative(const char* name, const char* signature, NativeFn function) {
-    vm.stack[0] = OBJ_VAL(copyString(name, strlen(name)));
-    vm.stack[1] = OBJ_VAL(newNative(signature, function));
-    tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
-}
+static const Native allNatives[] = {
+    {"abs",         "R",    absNative},
+    {"trunc",       "R",    truncNative},
+    {"sqrt",        "R",    sqrtNative},
+    {"sin",         "R",    sinNative},
+    {"cos",         "R",    cosNative},
+    {"tan",         "R",    tanNative},
+    {"sinh",        "R",    sinhNative},
+    {"cosh",        "R",    coshNative},
+    {"tanh",        "R",    tanhNative},
+    {"exp",         "R",    expNative},
+    {"log",         "R",    logNative},
+    {"atan",        "R",    atanNative},
+    {"pow",         "RR",   powNative},
 
-void defineAllNatives(void) {
-    push(NIL_VAL);
-    push(NIL_VAL);
+    {"asc",         "Sn",   ascNative},
+    {"chr",         "N",    chrNative},
+    {"dec",         "R",    decNative},
+    {"hex",         "N",    hexNative},
+    {"bin",         "N",    binNative},
+    {"parse_int",   "S",    parseIntNative},
+    {"parse_real",  "S",    parseRealNative},
+    {"input",       "s",    inputNative},
 
-    defineNative("abs",         "R",    absNative);
-    defineNative("trunc",       "R",    truncNative);
-    defineNative("sqrt",        "R",    sqrtNative);
-    defineNative("sin",         "R",    sinNative);
-    defineNative("cos",         "R",    cosNative);
-    defineNative("tan",         "R",    tanNative);
-    defineNative("sinh",        "R",    sinhNative);
-    defineNative("cosh",        "R",    coshNative);
-    defineNative("tanh",        "R",    tanhNative);
-    defineNative("exp",         "R",    expNative);
-    defineNative("log",         "R",    logNative);
-    defineNative("atan",        "R",    atanNative);
-    defineNative("pow",         "RR",   powNative);
+    {"bit_and",     "NN",   bitAndNative},
+    {"bit_or",      "NN",   bitOrNative},
+    {"bit_xor",     "NN",   bitXorNative},
+    {"bit_not",     "N",    bitNotNative},
+    {"bit_shift",   "NN",   bitShiftNative},
 
-    defineNative("asc",         "Sn",   ascNative);
-    defineNative("chr",         "N",    chrNative);
-    defineNative("dec",         "R",    decNative);
-    defineNative("hex",         "N",    hexNative);
-    defineNative("bin",         "N",    binNative);
-    defineNative("parse_int",   "S",    parseIntNative);
-    defineNative("parse_real",  "S",    parseRealNative);
-    defineNative("input",       "s",    inputNative);
+    {"random",      "",     randomNative},
+    {"seed_rand",   "N",    seedRandNative},
 
-    defineNative("bit_and",     "NN",   bitAndNative);
-    defineNative("bit_or",      "NN",   bitOrNative);
-    defineNative("bit_xor",     "NN",   bitXorNative);
-    defineNative("bit_not",     "N",    bitNotNative);
-    defineNative("bit_shift",   "NN",   bitShiftNative);
+    {"lower",       "S",    lowerNative},
+    {"upper",       "S",    upperNative},
 
-    defineNative("random",      "",     randomNative);
-    defineNative("seed_rand",   "N",    seedRandNative);
+    {"length",      "Q",    lengthNative},
+    {"list",        "Na",   listNative},
+    {"append",      "LA",   appendNative},
+    {"insert",      "LNA",  insertNative},
+    {"delete",      "LN",   deleteNative},
+    {"index",       "ALn",  indexNative},
+    {"reverse",     "L",    reverseNative},
 
-    defineNative("lower",       "S",    lowerNative);
-    defineNative("upper",       "S",    upperNative);
+    {"remove",      "IA",   removeNative},
+    {"type",        "A",    typeNative},
+    {"clock",       "",     clockNative},
+    {"sleep",       "N",    sleepNative},
+    {"gc",          "",     gcNative},
 
-    defineNative("length",      "Q",    lengthNative);
-    defineNative("list",        "Na",   listNative);
-    defineNative("append",      "LA",   appendNative);
-    defineNative("insert",      "LNA",  insertNative);
-    defineNative("delete",      "LN",   deleteNative);
-    defineNative("index",       "ALn",  indexNative);
-    defineNative("reverse",     "L",    reverseNative);
+    {"globals",     "",     globalsNative},
+    {"slots",       "I",    slotsNative},
+    {"valid",       "T",    validNative},
+    {"next",        "T",    nextNative},
+    {"it_clone",    "T",    itCloneNative},
+    {"it_same",     "TT",   itSameNative},
 
-    defineNative("remove",      "IA",   removeNative);
-    defineNative("type",        "A",    typeNative);
-    defineNative("clock",       "",     clockNative);
-    defineNative("sleep",       "N",    sleepNative);
-    defineNative("gc",          "",     gcNative);
-
-    defineNative("globals",     "",     globalsNative);
-    defineNative("slots",       "I",    slotsNative);
-    defineNative("valid",       "T",    validNative);
-    defineNative("next",        "T",    nextNative);
-    defineNative("it_clone",    "T",    itCloneNative);
-    defineNative("it_same",     "TT",   itSameNative);
-
-    defineNative("peek",        "N",    peekNative);
-    defineNative("poke",        "NN",   pokeNative);
-    defineNative("exec",        "Naaa", execNative);
-    defineNative("addr",        "A",    addrNative);
-    defineNative("heap",        "N",    heapNative);
-    defineNative("error",       "S",    errorNative);
+    {"peek",        "N",    peekNative},
+    {"poke",        "NN",   pokeNative},
+    {"exec",        "Naaa", execNative},
+    {"addr",        "A",    addrNative},
+    {"heap",        "N",    heapNative},
+    {"error",       "S",    errorNative},
 
 #ifdef KIT68K
-    defineNative("trap",        "",     trapNative);
-    defineNative("lcd_clear",   "",     lcdClearNative);
-    defineNative("lcd_goto",    "NN",   lcdGotoNative);
-    defineNative("lcd_puts",    "S",    lcdPutsNative);
-    defineNative("lcd_defchar", "NL",   lcdDefcharNative);
-    defineNative("keycode",     "",     keycodeNative);
-    defineNative("sound",       "NN",   soundNative);
+    {"trap",        "",     trapNative},
+    {"lcd_clear",   "",     lcdClearNative},
+    {"lcd_goto",    "NN",   lcdGotoNative},
+    {"lcd_puts",    "S",    lcdPutsNative},
+    {"lcd_defchar", "NL",   lcdDefcharNative},
+    {"keycode",     "",     keycodeNative},
+    {"sound",       "NN",   soundNative},
 #endif
 
-    defineNative("dbg_code",    "B",    dbgCodeNative);
-    defineNative("dbg_trace",   "B",    dbgTraceNative);
-    defineNative("dbg_gc",      "N",    dbgGcNative);
-    defineNative("dbg_stat",    "B",    dbgStatNative);
+    {"dbg_code",    "B",    dbgCodeNative},
+    {"dbg_trace",   "B",    dbgTraceNative},
+    {"dbg_gc",      "N",    dbgGcNative},
+    {"dbg_stat",    "B",    dbgStatNative},
+};
+
+void defineAllNatives() {
+    int           natCount = sizeof(allNatives) / sizeof(Native);
+    const Native* currNat  = allNatives;
+
+    push(NIL_VAL);
+    push(NIL_VAL);
+
+    while (natCount--) {
+        vm.stack[0] = OBJ_VAL(copyString(currNat->name, strlen(currNat->name)));
+        vm.stack[1] = OBJ_VAL(newNative(currNat->signature, currNat->function));
+        tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
+        currNat++;
+    }
 
     drop();
     drop();
