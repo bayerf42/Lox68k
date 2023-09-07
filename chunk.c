@@ -55,7 +55,7 @@ int addConstant(Chunk* chunk, Value value) {
             return i;
 
     push(value);
-    writeValueArray(&chunk->constants, value);
+    appendValueArray(&chunk->constants, value);
     drop();
     return chunk->constants.count - 1;
 }

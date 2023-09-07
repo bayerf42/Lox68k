@@ -10,7 +10,7 @@ void initValueArray(ValueArray* array) {
     array->count    = 0;
 }
 
-void writeValueArray(ValueArray* array, Value value) {
+void appendValueArray(ValueArray* array, Value value) {
     int oldCapacity;
     if (array->capacity < array->count + 1) {
         oldCapacity     = array->capacity;

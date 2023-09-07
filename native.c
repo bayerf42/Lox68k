@@ -74,7 +74,6 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
         return false;                      \
     }
 
-
 static bool absNative(int argCount, Value* args) {
     if (IS_INT(args[0]))
         args[-1] = INT_VAL(abs(AS_INT(args[0])));
@@ -180,7 +179,7 @@ static bool reverseNative(int argCount, Value* args) {
 
 static bool appendNative(int argCount, Value* args) {
     ObjList* list = AS_LIST(args[0]);
-    appendToList(list, args[1]);
+    appendValueArray(&list->arr, args[1]);
     args[-1] = NIL_VAL;
     return true;
 }

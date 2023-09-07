@@ -3,8 +3,11 @@
 class Demo < Object {
     init(..args) { // allow 0 args to be clonable
         super.init();
-        if (length(args) > 0) 
-            this.x = args[0];
+        case (length(args)) {
+            when 0: {} // clone, fields already copied in superclass
+            when 1: this.x = args[0];
+            else  error("Too many args in Demo constructor.");
+        }
     }
 
     show() {

@@ -158,7 +158,6 @@ void            printObject(Value value, bool compact, bool machine);
 const char*     typeName(ObjType type);
 bool            isObjType(Value value, ObjType type);
 
-void            appendToList(ObjList* list, Value value);
 void            insertIntoList(ObjList* list, Value value, int index);
 void            storeToList(ObjList* list, int index, Value value);
 Value           indexFromList(ObjList* list, int index);

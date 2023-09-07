@@ -68,3 +68,15 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 ### Debugging
 `dbg_code dbg_gc dbg_stat dbg_trace`
+
+## Some numbers
+* 18 keywords
+* 65 native functions
+* 61 VM opcodes
+* 12 data types
+* 48 k bytes code size on 68008 kit
+* Performance
+  * 7k ops on 68008 kit
+  * 60M ops on Raspberry 4 Linux
+  * 230M ops on Intel i7 Laptop Windows 11
+

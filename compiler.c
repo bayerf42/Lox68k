@@ -28,6 +28,7 @@ typedef enum {
 } Precedence;
 
 typedef void (*ParseFn)(bool canAssign);
+
 typedef struct {
     ParseFn    prefix;
     ParseFn    infix;
@@ -304,7 +305,6 @@ static void  function(FunctionType type);
 static void  parsePrecedence(Precedence precedence);
 static int   argumentList(bool* isVarArg, TokenType terminator);
 static int   identifierConstant(Token* name);
-
 static const ParseRule* getRule(TokenType type);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

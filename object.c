@@ -19,8 +19,7 @@ bool isObjType(Value value, ObjType type) {
     (type*)allocateObject(sizeof(type), objectType)
 
 static Obj* allocateObject(size_t size, ObjType type) {
-    Obj* object = (Obj*)reallocate(NULL, 0, size);
-
+    Obj* object      = (Obj*)reallocate(NULL, 0, size);
     object->type     = type;
     object->isMarked = false;
     object->nextObj  = vm.objects;
@@ -38,16 +37,14 @@ static Obj* allocateObject(size_t size, ObjType type) {
 
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method) {
     ObjBoundMethod* bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
-
-    bound->receiver = receiver;
-    bound->method   = method;
+    bound->receiver       = receiver;
+    bound->method         = method;
     return bound;
 }
 
 ObjClass* newClass(ObjString* name) {
     ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
-
-    klass->name = name;
+    klass->name     = name;
     initTable(&klass->methods);
     return klass;
 }
@@ -57,7 +54,6 @@ ObjClosure* newClosure(ObjFunction* function) {
         allocateObject(sizeof(ObjClosure) + sizeof(ObjUpvalue*) * function->upvalueCount,
                        OBJ_CLOSURE);
     int i;
-
     for (i = 0; i < function->upvalueCount; i++)
         closure->upvalues[i] = NULL;
     closure->function     = function;
@@ -67,8 +63,7 @@ ObjClosure* newClosure(ObjFunction* function) {
 }
 
 ObjFunction* newFunction() {
-    ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
-
+    ObjFunction* function  = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
     function->arity        = 0;
     function->upvalueCount = 0;
     function->name         = NULL;
@@ -78,8 +73,7 @@ ObjFunction* newFunction() {
 
 ObjInstance* newInstance(ObjClass* klass) {
     ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
-
-    instance->klass = klass;
+    instance->klass       = klass;
     initTable(&instance->fields);
     return instance;
 }
@@ -134,7 +128,6 @@ ObjUpvalue* newUpvalue(Value* slot) {
 ObjIterator* newIterator(Table* table, ObjInstance* instance) {
     ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
     int16_t      i;
-
     iter->table    = table;
     iter->position = -1;
     iter->instance = instance;
@@ -231,10 +224,7 @@ ObjList* makeList(int len, Value* items, int numCopy, int delta) {
     ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
     int16_t  i, newCap;
 
-    list->arr.values   = NULL;
-    list->arr.count    = 0;
-    list->arr.capacity = 0;
-
+    initValueArray(&list->arr);
     push(OBJ_VAL(list));
     if (len > 0) {
         newCap             = MIN_CAPACITY(len); // avoid fragmentation with many small lists
@@ -248,17 +238,6 @@ ObjList* makeList(int len, Value* items, int numCopy, int delta) {
     }
     drop();
     return list;
-}
-
-void appendToList(ObjList* list, Value value) {
-    int oldCapacity;
-
-    if (list->arr.capacity < list->arr.count + 1) {
-        oldCapacity        = list->arr.capacity;
-        list->arr.capacity = GROW_CAPACITY(oldCapacity);
-        list->arr.values   = GROW_ARRAY(Value, list->arr.values, oldCapacity, list->arr.capacity);
-    }
-    list->arr.values[list->arr.count++] = value;
 }
 
 void insertIntoList(ObjList* list, Value value, int index) {

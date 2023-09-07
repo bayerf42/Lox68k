@@ -28,7 +28,6 @@ typedef enum {
     TOKEN_ERROR, TOKEN_EOF
 } TokenType;
 
-
 // The IDE68K compiler has a bug when returning structs by value, which are smaller
 // than 3 longs. In this case, very strange FMOVE instructions are generated, which
 // trap on the 68008 of course. So the Token struct must be at least 12 bytes long,
@@ -40,7 +39,6 @@ typedef struct {
     int16_t     length;
     int32_t     line; 
 } Token;
-
 
 void  initScanner(const char* source);
 Token scanToken(void);

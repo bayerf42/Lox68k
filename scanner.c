@@ -25,10 +25,8 @@ void initScanner(const char* source) {
 }
 
 #define isAtEnd() (*scanner.current == '\0')
-
-#define advance() scanner.current++
-
-#define peek() (*scanner.current)
+#define advance()   scanner.current++
+#define peek()    (*scanner.current)
 
 static char peekNext(void) {
     if (isAtEnd())
@@ -82,7 +80,6 @@ static void skipWhitespace(void) {
             case CHAR_HT:
                 advance();
                 break;
-
             case '/':
                 if (peekNext() == '/') {
                     // A comment goes until the end of the line.
@@ -91,7 +88,6 @@ static void skipWhitespace(void) {
                     break;
                 }
                 // fall thru
-
             default:
                 return;
         }
@@ -113,26 +109,27 @@ static void skipWhitespace(void) {
 
 static TokenType checkKeyword(int args) {
     // Compressed keyword postfixes in single string
-    const char* rest = "ileturndasslsefarintuperisue";
-    //                  0123456789012345678901234567
-    //          And           ##
-    //          CAse                ##
-    //          CLass           ###
-    //          Else               ###               
-    //          FAlse              ###               
-    //          FOr          #
-    //          FUn           #
-    //          If                    #
-    //          Nil     ##
-    //          Or           #
-    //          Print                   ####
-    //          Return    #####
-    //          Super                       ####             
-    //          THis                            ##
-    //          TRue                              ##
-    //          Var                    ##
-    //          WHEn          #
-    //          WHIle    ##
+    const char* const rest =
+              "ileturndasslsefarintuperisue";
+    //         0123456789012345678901234567
+    // And           ##
+    // CAse                ##
+    // CLass           ###
+    // Else               ###               
+    // FAlse              ###               
+    // FOr          #
+    // FUn           #
+    // If                    #
+    // Nil     ##
+    // Or           #
+    // Print                   ####
+    // Return    #####
+    // Super                       ####             
+    // THis                            ##
+    // TRue                              ##
+    // Var                    ##
+    // WHEn          #
+    // WHIle    ##
     const char  *src, *key;
     int         len = UNWRAP(args, ARG_LENGTH);
     if (scanner.current - scanner.start == UNWRAP(args, ARG_START) + len) {
@@ -292,6 +289,5 @@ Token scanToken(void) {
         case '"': return string();
         case '?': return makeToken(TOKEN_PRINT);
     }
-
     return errorToken("Invalid character.");
 }

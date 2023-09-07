@@ -67,7 +67,6 @@ void push(Value value) {
         vm.hadStackoverflow = true;
         return;
     }
-  
     *vm.stackTop++ = value;
 }
 
