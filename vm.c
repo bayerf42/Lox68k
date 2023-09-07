@@ -12,7 +12,7 @@
 VM vm;
 
 static void resetStack(void) {
-    vm.stackTop     = vm.stack;
+    vm.sp           = vm.stack;
     vm.frameCount   = 0;
     vm.openUpvalues = NULL;
 }
@@ -63,16 +63,16 @@ void freeVM(void) {
 }
 
 void push(Value value) {
-    if (vm.stackTop >= (vm.stack + (STACK_MAX-1))) {
+    if (vm.sp >= (vm.stack + (STACK_MAX-1))) {
         vm.hadStackoverflow = true;
         return;
     }
-    *vm.stackTop++ = value;
+    *vm.sp++ = value;
 }
 
 #define dropNpush(n,value) {   \
-    vm.stackTop -= (n) - 1;    \
-    vm.stackTop[-1] = (value); \
+    vm.sp -= (n) - 1;    \
+    vm.sp[-1] = (value); \
 }
 
 #define CHECK_ARITH_ERROR              \
@@ -99,7 +99,7 @@ static bool call(ObjClosure* closure, int argCount) {
             return false;
         }
         itemCount = argCount - arity + 1;
-        args = makeList(itemCount, vm.stackTop - itemCount, itemCount, 1);
+        args = makeList(itemCount, vm.sp - itemCount, itemCount, 1);
         dropNpush(itemCount, OBJ_VAL(args));
     }
     else if (argCount != arity) {
@@ -110,7 +110,7 @@ static bool call(ObjClosure* closure, int argCount) {
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
     frame->ip      = closure->function->chunk.code;
-    frame->slots   = vm.stackTop - arity - 1;
+    frame->fp      = vm.sp - arity - 1;
     return true;
 }
 
@@ -124,12 +124,12 @@ static bool callValue(Value callee, int argCount) {
         switch (OBJ_TYPE(callee)) {
             case OBJ_BOUND_METHOD:
                 bound = AS_BOUND_METHOD(callee);
-                vm.stackTop[-argCount - 1] = bound->receiver;
+                vm.sp[-argCount - 1] = bound->receiver;
                 return call(bound->method, argCount);
 
             case OBJ_CLASS:
                 klass = AS_CLASS(callee);
-                vm.stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
+                vm.sp[-argCount - 1] = OBJ_VAL(newInstance(klass));
                 if (tableGet(&klass->methods, OBJ_VAL(vm.initString), &initializer))
                     return call(AS_CLOSURE(initializer), argCount);
                 else if (argCount != 0) {
@@ -143,11 +143,11 @@ static bool callValue(Value callee, int argCount) {
 
             case OBJ_NATIVE:
                 native = AS_NATIVE(callee);
-                if (!checkNativeSignature(AS_NATIVE_SIG(callee), argCount, vm.stackTop - argCount))
+                if (!checkNativeSignature(AS_NATIVE_SIG(callee), argCount, vm.sp - argCount))
                     return false;
-                if (!(*native)(argCount, vm.stackTop - argCount))
+                if (!(*native)(argCount, vm.sp - argCount))
                     return false;
-                vm.stackTop -= argCount;
+                vm.sp -= argCount;
                 return true;
         }
     }
@@ -176,7 +176,7 @@ static bool invoke(ObjString* name, int argCount) {
     instance = AS_INSTANCE(receiver);
 
     if (tableGet(&instance->fields, OBJ_VAL(name), &value)) {
-        vm.stackTop[-argCount - 1] = value;
+        vm.sp[-argCount - 1] = value;
         return callValue(value, argCount);
     }
     return invokeFromClass(instance->klass, name, argCount);
@@ -281,7 +281,7 @@ static InterpretResult run(void) {
         }
 
         if (vm.debug_trace_execution) {
-            for (slot = vm.stack; slot < vm.stackTop; slot++) {
+            for (slot = vm.stack; slot < vm.sp; slot++) {
                 printValue(*slot, true, true);
                 printf(" | ");
             }
@@ -317,12 +317,12 @@ static InterpretResult run(void) {
   
             case OP_GET_LOCAL:
                 slotNr = READ_BYTE();
-                push(frame->slots[slotNr]);
+                push(frame->fp[slotNr]);
                 break;
 
             case OP_SET_LOCAL:
                 slotNr = READ_BYTE();
-                frame->slots[slotNr] = peek(0);
+                frame->fp[slotNr] = peek(0);
                 break;
 
             case OP_GET_GLOBAL:
@@ -705,14 +705,14 @@ static InterpretResult run(void) {
                 for (i = 0; i < closure->upvalueCount; i++) {
                     upvalue = READ_BYTE();
                     if (UV_ISLOC(upvalue))
-                        closure->upvalues[i] = captureUpvalue(frame->slots + UV_INDEX(upvalue));
+                        closure->upvalues[i] = captureUpvalue(frame->fp + UV_INDEX(upvalue));
                     else
                         closure->upvalues[i] = frame->closure->upvalues[UV_INDEX(upvalue)];
                 }
                 break;
 
             case OP_CLOSE_UPVALUE:
-                closeUpvalues(vm.stackTop - 1);
+                closeUpvalues(vm.sp - 1);
                 drop();
                 break;
 
@@ -723,13 +723,13 @@ static InterpretResult run(void) {
             case OP_RETURN:
                 resVal = pop();
             cont_ret:
-                closeUpvalues(frame->slots);
+                closeUpvalues(frame->fp);
                 vm.frameCount--;
                 if (vm.frameCount == 0) {
                     drop();
                     return INTERPRET_OK;
                 }
-                vm.stackTop = frame->slots;
+                vm.sp = frame->fp;
                 push(resVal);
                 goto updateFrame;
 
@@ -761,7 +761,7 @@ static InterpretResult run(void) {
             case OP_LIST:
                 argCount = READ_BYTE();
             cont_list:
-                aLst     = makeList(argCount, vm.stackTop - argCount, argCount, 1);
+                aLst     = makeList(argCount, vm.sp - argCount, argCount, 1);
                 dropNpush(argCount, OBJ_VAL(aLst));
                 break;
 
@@ -778,13 +778,13 @@ static InterpretResult run(void) {
                 }
                 aLst      = AS_LIST(aVal);
                 itemCount = aLst->arr.count;
-                if (vm.stackTop + itemCount >= vm.stack + STACK_MAX) {
+                if (vm.sp + itemCount >= vm.stack + STACK_MAX) {
                     runtimeError("Lox value stack overflow.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 for (i = 0; i < itemCount; i++)
-                    vm.stackTop[i] = aLst->arr.values[i];
-                vm.stackTop += itemCount;
+                    vm.sp[i] = aLst->arr.values[i];
+                vm.sp += itemCount;
                 push(INT_VAL(itemCount + argCount));
                 break;
 

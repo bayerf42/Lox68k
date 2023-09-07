@@ -201,7 +201,7 @@ static void markRoots(void) {
     ObjUpvalue* upvalue;
     CallFrame*  frame = vm.frames;
 
-    for (slot = vm.stack; slot < vm.stackTop; slot++)
+    for (slot = vm.stack; slot < vm.sp; slot++)
         markValue(*slot);
 
     for (i = 0; i < vm.frameCount; i++, frame++)

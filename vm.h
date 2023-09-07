@@ -5,13 +5,13 @@
 #include "value.h"
 
 typedef struct {
-    uint8_t*    ip;                  // keep first to allow fast addressing without offset  
+    uint8_t*    ip;  // keep first to allow fast addressing without offset  
+    Value*      fp;
     ObjClosure* closure;
-    Value*      slots;
 } CallFrame;
 
 typedef struct {
-    Value*      stackTop;            // keep first to allow fast addressing without offset
+    Value*      sp;  // keep first to allow fast addressing without offset
     Value       stack[STACK_MAX];
     CallFrame   frames[FRAMES_MAX];
     int         frameCount;
@@ -58,8 +58,8 @@ InterpretResult interpret(const char* source);
 void            push(Value value);
 void            runtimeError(const char* format, ...);
 
-#define drop()         --vm.stackTop
-#define pop()          (*(--vm.stackTop))
-#define peek(distance) (vm.stackTop[-1 - (distance)])
+#define drop()         --vm.sp
+#define pop()          (*(--vm.sp))
+#define peek(distance) (vm.sp[-1 - (distance)])
 
 #endif
