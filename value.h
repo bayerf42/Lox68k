@@ -19,8 +19,8 @@ typedef int32_t  Int;
 #define IS_BOOL(value)   (((value) | 2) == FALSE_VAL)
 #define IS_NIL(value)    ((value) == NIL_VAL)
 #define IS_EMPTY(value)  ((value) == EMPTY_VAL)
-#define IS_INT(value)    (((value) & 1) == 1)
-#define IS_OBJ(value)    (((value) & 0x80000001) == 0)
+#define IS_INT(value)    ((value) & 1)
+#define IS_OBJ(value)    (!((value) & 0x80000001))
 #define IS_FALSEY(value) (((value) | 4) == FALSE_VAL)
 
 #define AS_BOOL(value)   ((value) == TRUE_VAL)

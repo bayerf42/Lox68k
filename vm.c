@@ -569,11 +569,8 @@ static InterpretResult run(void) {
                     bInt = AS_INT(pop());
                     aInt = AS_INT(pop());
                     push(INT_VAL(aInt % bInt));
-                } else {
-                    runtimeError("Can't %s types %s and %s.", "modulo",
-                                 valueType(peek(1)), valueType(peek(0)));
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+                } else
+                    goto typeErrorDiv;
                 break;
 
             case OP_NOT:
