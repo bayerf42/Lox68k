@@ -37,10 +37,18 @@ typedef struct {
     Value*  values;
 } ValueArray;
 
-// referenced by other Objects
+// Stupid C with separate namespaces for structs and types
 typedef struct Obj         Obj;
-typedef struct ObjString   ObjString;
+typedef struct ObjBound    ObjBound;
+typedef struct ObjClass    ObjClass;
+typedef struct ObjClosure  ObjClosure;
+typedef struct ObjFunction ObjFunction;
+typedef struct ObjInstance ObjInstance;
 typedef struct ObjIterator ObjIterator;
+typedef struct ObjList     ObjList;
+typedef struct ObjNative   ObjNative;
+typedef struct ObjReal     ObjReal;
+typedef struct ObjString   ObjString;
 typedef struct ObjUpvalue  ObjUpvalue;
 
 

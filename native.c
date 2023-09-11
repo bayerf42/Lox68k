@@ -78,7 +78,7 @@ static bool absNative(int argCount, Value* args) {
     if (IS_INT(args[0]))
         args[-1] = INT_VAL(abs(AS_INT(args[0])));
     else
-        args[-1] = newReal(fabs(AS_REAL(args[0])));
+        args[-1] = makeReal(fabs(AS_REAL(args[0])));
     return true;
 }
 
@@ -95,9 +95,9 @@ typedef Real (*RealFun)(Real);
 
 static bool transcendentalNative(int argCount, Value* args, RealFun fn) {
     if (IS_INT(args[0]))
-        args[-1] = newReal((*fn)(intToReal(AS_INT(args[0]))));
+        args[-1] = makeReal((*fn)(intToReal(AS_INT(args[0]))));
     else
-        args[-1] = newReal((*fn)(AS_REAL(args[0])));
+        args[-1] = makeReal((*fn)(AS_REAL(args[0])));
     CHECK_ARITH_ERROR
     return true;
 }
@@ -145,7 +145,7 @@ static bool atanNative(int argCount, Value* args) {
 static bool powNative(int argCount, Value* args) {
     Real x = (IS_INT(args[0])) ? intToReal(AS_INT(args[0])) : AS_REAL(args[0]);
     Real y = (IS_INT(args[1])) ? intToReal(AS_INT(args[1])) : AS_REAL(args[1]);
-    args[-1] = newReal(pow(x,y));
+    args[-1] = makeReal(pow(x,y));
     CHECK_ARITH_ERROR
     return true;
 }
@@ -252,13 +252,13 @@ static bool upperNative(int argCount, Value* args) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static bool globalsNative(int argCount, Value* args) {
-    args[-1] = OBJ_VAL(newIterator(&vm.globals, NULL));
+    args[-1] = OBJ_VAL(makeIterator(&vm.globals, NULL));
     return true;
 }
 
 static bool slotsNative(int argCount, Value* args) {
     ObjInstance* instance = AS_INSTANCE(args[0]);
-    args[-1] = OBJ_VAL(newIterator(&instance->fields, instance));
+    args[-1] = OBJ_VAL(makeIterator(&instance->fields, instance));
     return true;
 }
 
@@ -277,7 +277,7 @@ static bool nextNative(int argCount, Value* args) {
 
 static bool itCloneNative(int argCount, Value* args) {
     ObjIterator* src  = AS_ITERATOR(args[0]);
-    ObjIterator* dest = newIterator(src->table, src->instance);
+    ObjIterator* dest = makeIterator(src->table, src->instance);
     dest->position = src->position;
     args[-1] = OBJ_VAL(dest);
     return true;
@@ -319,7 +319,7 @@ static bool chrNative(int argCount, Value* args) {
         return false;
     }
     codepoint = (char)code;
-    args[-1] = OBJ_VAL(copyString(&codepoint, 1));
+    args[-1] = OBJ_VAL(makeString(&codepoint, 1));
     return true;
 }
 
@@ -329,19 +329,19 @@ static bool decNative(int argCount, Value* args) {
         res = formatInt(AS_INT(args[0]));
     else
         res = formatReal(AS_REAL(args[0]));
-    args[-1] = OBJ_VAL(copyString(res, strlen(res)));
+    args[-1] = OBJ_VAL(makeString(res, strlen(res)));
     return true;
 }
 
 static bool hexNative(int argCount, Value* args) {
     const char* res = formatHex(AS_INT(args[0]));
-    args[-1] = OBJ_VAL(copyString(res, strlen(res)));
+    args[-1] = OBJ_VAL(makeString(res, strlen(res)));
     return true;
 }
 
 static bool binNative(int argCount, Value* args) {
     const char* res = formatBin(AS_INT(args[0]));
-    args[-1] = OBJ_VAL(copyString(res, strlen(res)));
+    args[-1] = OBJ_VAL(makeString(res, strlen(res)));
     return true;
 }
 
@@ -358,7 +358,7 @@ static bool parseRealNative(int argCount, Value* args) {
     errno = 0;
     real  = strToReal(start, &end);
     if (errno == 0 && start + strlen(start) == end)
-        args[-1] = newReal(real);
+        args[-1] = makeReal(real);
     else
         args[-1] = NIL_VAL;
     return true;
@@ -368,7 +368,7 @@ static bool inputNative(int argCount, Value* args) {
     if (argCount > 0)
         printf("%s ", AS_CSTRING(args[0]));
     GETS(input_line);
-    args[-1] = OBJ_VAL(copyString(input_line, strlen(input_line)));
+    args[-1] = OBJ_VAL(makeString(input_line, strlen(input_line)));
     return true;
 }
 
@@ -661,7 +661,7 @@ static bool gcNative(int argCount, Value* args) {
 
 static bool typeNative(int argCount, Value* args) {
     const char* type = valueType(args[0]);
-    args[-1] = OBJ_VAL(copyString(type, strlen(type)));
+    args[-1] = OBJ_VAL(makeString(type, strlen(type)));
     return true;
 }
 
@@ -775,8 +775,8 @@ void defineAllNatives() {
     push(NIL_VAL);
 
     while (natCount--) {
-        vm.stack[0] = OBJ_VAL(copyString(currNat->name, strlen(currNat->name)));
-        vm.stack[1] = OBJ_VAL(newNative(currNat->signature, currNat->function));
+        vm.stack[0] = OBJ_VAL(makeString(currNat->name, strlen(currNat->name)));
+        vm.stack[1] = OBJ_VAL(makeNative(currNat->signature, currNat->function));
         tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
         currNat++;
     }

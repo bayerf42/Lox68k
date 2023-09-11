@@ -98,9 +98,9 @@ static void blackenObject(Obj* object) {
     }
 
     switch (object->type) {
-        case OBJ_BOUND_METHOD:
-            markValue(((ObjBoundMethod*)object)->receiver);
-            markObject((Obj*)((ObjBoundMethod*)object)->method);
+        case OBJ_BOUND:
+            markValue(((ObjBound*)object)->receiver);
+            markObject((Obj*)((ObjBound*)object)->method);
             break;
 
         case OBJ_CLASS:
@@ -144,8 +144,8 @@ static void freeObject(Obj* object) {
         printf("GC %05x free %s\n", (int32_t)object, typeName(object->type));
 
     switch (object->type) {
-        case OBJ_BOUND_METHOD:
-            FREE(ObjBoundMethod, object);
+        case OBJ_BOUND:
+            FREE(ObjBound, object);
             break;
 
         case OBJ_CLASS:

@@ -240,15 +240,15 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     compiler->type       = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
-    compiler->target     = newFunction();
+    compiler->target     = makeFunction();
     currentComp          = compiler;
 
     if (type != TYPE_SCRIPT) {
         if (parser.previous.type == TOKEN_FUN) {
             sprintf(buffer, "#%d", vm.lambdaCount++);
-            currentComp->target->name = copyString(buffer, strlen(buffer));
+            currentComp->target->name = makeString(buffer, strlen(buffer));
         } else
-            currentComp->target->name = copyString(parser.previous.start, parser.previous.length);
+            currentComp->target->name = makeString(parser.previous.start, parser.previous.length);
     }
 
     local = &currentComp->locals[currentComp->localCount++];
@@ -429,18 +429,18 @@ static void intNum(bool canAssign) {
 }
 
 static void realNum(bool canAssign) {
-    Value value = newReal(strToReal(parser.previous.start, NULL));
+    Value value = makeReal(strToReal(parser.previous.start, NULL));
     if (errno != 0)
         error("Real constant overflow.");
     emitConstant(value);
 }
 
 static void string(bool canAssign) {
-    emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
+    emitConstant(OBJ_VAL(makeString(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
 static int identifierConstant(Token* name) {
-    return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
+    return makeConstant(OBJ_VAL(makeString(name->start, name->length)));
 }
 
 static bool identifiersEqual(Token* a, Token* b) {
@@ -1072,14 +1072,14 @@ static void caseStatement(void) {
 
 static void printStatement(void) {
     if (match(TOKEN_SEMICOLON)) {
-        emitConstant(OBJ_VAL(copyString("", 0)));
+        emitConstant(OBJ_VAL(makeString("", 0)));
         emitByte(OP_PRINTLN);
     } else {
         expression();
         while (match(TOKEN_COMMA)) {
             emitByte(OP_PRINT);
             if (match(TOKEN_COMMA)) {
-                emitConstant(OBJ_VAL(copyString(PRINT_SEPARATOR, sizeof(PRINT_SEPARATOR) - 1)));
+                emitConstant(OBJ_VAL(makeString(PRINT_SEPARATOR, sizeof(PRINT_SEPARATOR) - 1)));
                 emitByte(OP_PRINT);
             }
             if (match(TOKEN_SEMICOLON))

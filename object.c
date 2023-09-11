@@ -34,22 +34,21 @@ static Obj* allocateObject(size_t size, ObjType type) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object creation 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method) {
-    ObjBoundMethod* bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
-    bound->receiver       = receiver;
-    bound->method         = method;
+ObjBound* makeBound(Value receiver, ObjClosure* method) {
+    ObjBound* bound = ALLOCATE_OBJ(ObjBound, OBJ_BOUND);
+    bound->receiver = receiver;
+    bound->method   = method;
     return bound;
 }
 
-ObjClass* newClass(ObjString* name) {
+ObjClass* makeClass(ObjString* name) {
     ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
     klass->name     = name;
     initTable(&klass->methods);
     return klass;
 }
 
-ObjClosure* newClosure(ObjFunction* function) {
+ObjClosure* makeClosure(ObjFunction* function) {
     ObjClosure* closure = (ObjClosure*)
         allocateObject(sizeof(ObjClosure) + sizeof(ObjUpvalue*) * function->upvalueCount,
                        OBJ_CLOSURE);
@@ -58,11 +57,10 @@ ObjClosure* newClosure(ObjFunction* function) {
         closure->upvalues[i] = NULL;
     closure->function     = function;
     closure->upvalueCount = function->upvalueCount;
-
     return closure;
 }
 
-ObjFunction* newFunction() {
+ObjFunction* makeFunction() {
     ObjFunction* function  = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
     function->arity        = 0;
     function->upvalueCount = 0;
@@ -71,14 +69,51 @@ ObjFunction* newFunction() {
     return function;
 }
 
-ObjInstance* newInstance(ObjClass* klass) {
+ObjInstance* makeInstance(ObjClass* klass) {
     ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
     instance->klass       = klass;
     initTable(&instance->fields);
     return instance;
 }
 
-ObjNative* newNative(const char* signature, NativeFn function) {
+ObjIterator* makeIterator(Table* table, ObjInstance* instance) {
+    ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
+    int16_t      i;
+    iter->table    = table;
+    iter->position = -1;
+    iter->instance = instance;
+    if (table->count > 0)
+        for (i = 0; i < table->capacity; i++)
+            if (!IS_EMPTY(table->entries[i].key)) {
+                iter->position = i;
+                return iter;
+            }
+    return iter;
+}
+
+ObjList* makeList(int len, Value* items, int numCopy, int stride) {
+    // Create new list of length len. Init it with numCopy values taken from items (rest NIL)
+    // stepping items by stride (1 = array copy, 0 = init from unique value, -1 = list reverse)
+    ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
+    int16_t  i, newCap;
+
+    initValueArray(&list->arr);
+    push(OBJ_VAL(list));
+    if (len > 0) {
+        newCap             = MIN_CAPACITY(len); // avoid fragmentation with many small lists
+        list->arr.values   = GROW_ARRAY(Value, list->arr.values, 0, newCap);
+        list->arr.count    = len;
+        list->arr.capacity = newCap;
+        for (i = 0; i < len; i++) {
+            list->arr.values[i] = (--numCopy >= 0) ? *items : NIL_VAL;
+            items += stride;
+        }
+    }
+    drop();
+    return list;
+}
+
+ObjNative* makeNative(const char* signature, NativeFn function) {
     ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
 
 #ifdef __GNUC__
@@ -95,7 +130,13 @@ ObjNative* newNative(const char* signature, NativeFn function) {
     return native;
 }
 
-ObjString* copyString(const char* chars, int length) {
+Value makeReal(Real val) {
+    ObjReal* real = ALLOCATE_OBJ(ObjReal, OBJ_REAL);
+    real->content = val;
+    return OBJ_VAL(real);
+}
+
+ObjString* makeString(const char* chars, int length) {
     // Check if we already have an equal string
     uint32_t hash = hashBytes((const uint8_t*)chars, length);
     ObjString* string;
@@ -117,27 +158,12 @@ ObjString* copyString(const char* chars, int length) {
     return string;
 }
 
-ObjUpvalue* newUpvalue(Value* slot) {
+ObjUpvalue* makeUpvalue(Value* slot) {
     ObjUpvalue* upvalue  = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);
     upvalue->closed      = NIL_VAL;
     upvalue->location    = slot;
     upvalue->nextUpvalue = NULL;
     return upvalue;
-}
-
-ObjIterator* newIterator(Table* table, ObjInstance* instance) {
-    ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
-    int16_t      i;
-    iter->table    = table;
-    iter->position = -1;
-    iter->instance = instance;
-    if (table->count > 0)
-        for (i = 0; i < table->capacity; i++)
-            if (!IS_EMPTY(table->entries[i].key)) {
-                iter->position = i;
-                return iter;
-            }
-    return iter;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,18 +194,18 @@ static void printList(ObjList* list) {
 
 const char* typeName(ObjType type) {
     switch(type) {
-        case OBJ_BOUND_METHOD: return "bound";
-        case OBJ_CLASS:        return "class";
-        case OBJ_CLOSURE:      return "closure";
-        case OBJ_FUNCTION:     return "fun";      // internal
-        case OBJ_INSTANCE:     return "instance";
-        case OBJ_ITERATOR:     return "iterator";
-        case OBJ_LIST:         return "list";
-        case OBJ_NATIVE:       return "native";
-        case OBJ_REAL:         return "real";
-        case OBJ_STRING:       return "string";
-        case OBJ_UPVALUE:      return "upvalue";  // internal
-        default:               return "unknown";  // shouldn't happen
+        case OBJ_BOUND:    return "bound";
+        case OBJ_CLASS:    return "class";
+        case OBJ_CLOSURE:  return "closure";
+        case OBJ_FUNCTION: return "fun";      // internal
+        case OBJ_INSTANCE: return "instance";
+        case OBJ_ITERATOR: return "iterator";
+        case OBJ_LIST:     return "list";
+        case OBJ_NATIVE:   return "native";
+        case OBJ_REAL:     return "real";
+        case OBJ_STRING:   return "string";
+        case OBJ_UPVALUE:  return "upvalue";  // internal
+        default:           return "unknown";  // shouldn't happen
     }
 }
 
@@ -192,24 +218,24 @@ static void fix_printf(const char* str) {
 
 void printObject(Value value, bool compact, bool machine) {
     switch (OBJ_TYPE(value)) {
-        case OBJ_BOUND_METHOD: printFunction("bound", AS_BOUND_METHOD(value)->method->function); break;
-        case OBJ_CLASS:        printf("<class %s>", AS_CLASS(value)->name->chars); break;
-        case OBJ_CLOSURE:      printFunction("closure", AS_CLOSURE(value)->function); break;
-        case OBJ_FUNCTION:     printFunction("fun", AS_FUNCTION(value)); break;
-        case OBJ_INSTANCE:     printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
-        case OBJ_ITERATOR:     printf("<iterator %d>", AS_ITERATOR(value)->position); break;
+        case OBJ_BOUND:    printFunction("bound", AS_BOUND(value)->method->function); break;
+        case OBJ_CLASS:    printf("<class %s>", AS_CLASS(value)->name->chars); break;
+        case OBJ_CLOSURE:  printFunction("closure", AS_CLOSURE(value)->function); break;
+        case OBJ_FUNCTION: printFunction("fun", AS_FUNCTION(value)); break;
+        case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
+        case OBJ_ITERATOR: printf("<iterator %d>", AS_ITERATOR(value)->position); break;
         case OBJ_LIST:
-            if (compact)       printf("<list %d>", AS_LIST(value)->arr.count);
-            else               printList(AS_LIST(value));
+            if (compact)   printf("<list %d>", AS_LIST(value)->arr.count);
+            else           printList(AS_LIST(value));
             break;
-        case OBJ_NATIVE:       printf("<native %05x>", (int32_t) AS_NATIVE(value)); break;
-        case OBJ_REAL:         printf("%s", formatReal(AS_REAL(value))); break;
+        case OBJ_NATIVE:   printf("<native %05x>", (int32_t) AS_NATIVE(value)); break;
+        case OBJ_REAL:     printf("%s", formatReal(AS_REAL(value))); break;
         case OBJ_STRING:
-            if (machine)       fix_printf("\"");
+            if (machine)   fix_printf("\"");
             fix_printf(AS_CSTRING(value));
-            if (machine)       fix_printf("\"");
+            if (machine)   fix_printf("\"");
             break;
-        case OBJ_UPVALUE:      printf("<upvalue>"); break;
+        case OBJ_UPVALUE:  printf("<upvalue>"); break;
     }
 }
 
@@ -217,29 +243,6 @@ void printObject(Value value, bool compact, bool machine) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Lists 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Create a new list of length len. Initialize it with numCopy values taken from items (rest NIL)
-// stepping items by delta (1 = array copy, 0 = init from unique value, -1 = list reverse)
-ObjList* makeList(int len, Value* items, int numCopy, int delta) {
-    ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
-    int16_t  i, newCap;
-
-    initValueArray(&list->arr);
-    push(OBJ_VAL(list));
-    if (len > 0) {
-        newCap             = MIN_CAPACITY(len); // avoid fragmentation with many small lists
-        list->arr.values   = GROW_ARRAY(Value, list->arr.values, 0, newCap);
-        list->arr.count    = len;
-        list->arr.capacity = newCap;
-        for (i = 0; i < len; i++) {
-            list->arr.values[i] = (--numCopy >= 0) ? *items : NIL_VAL;
-            items += delta;
-        }
-    }
-    drop();
-    return list;
-}
-
 void insertIntoList(ObjList* list, Value value, int index) {
     int oldCapacity, i;
     int count = list->arr.count;
@@ -317,7 +320,7 @@ ObjList* concatLists(ObjList* a, ObjList* b) {
 ObjString* indexFromString(ObjString* string, int index) {
     if (index < 0)
         index += string->length;
-    return copyString(string->chars + index, 1);
+    return makeString(string->chars + index, 1);
 }
 
 bool isValidStringIndex(ObjString* string, int index) {
@@ -329,7 +332,7 @@ ObjString* sliceFromString(ObjString* string, int begin, int end) {
     int n = string->length;
     LIMIT_SLICE(begin);
     LIMIT_SLICE(end);
-    return copyString(string->chars + begin, (end > begin) ? end - begin : 0);
+    return makeString(string->chars + begin, (end > begin) ? end - begin : 0);
 }
 
 ObjString* concatStrings(ObjString* a, ObjString* b) {
@@ -339,7 +342,7 @@ ObjString* concatStrings(ObjString* a, ObjString* b) {
     fix_memcpy(input_line + a->length, b->chars, b->length);
     input_line[length] = '\0';
 
-    return copyString(input_line, length);
+    return makeString(input_line, length);
 }
 
 ObjString* caseString(ObjString* a, bool toUpper) {
@@ -355,20 +358,12 @@ ObjString* caseString(ObjString* a, bool toUpper) {
         for (cp=input_line; *cp; ++cp)
             *cp = tolower(*cp);
 
-    return copyString(input_line, length);
+    return makeString(input_line, length);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Reals 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-Value newReal(Real val) {
-    ObjReal* real = ALLOCATE_OBJ(ObjReal, OBJ_REAL);
-
-    real->content = val;
-    return OBJ_VAL(real);
-}
-
 const char* formatReal(Real val) {
 #ifdef KIT68K
     int   expo, dp, off;

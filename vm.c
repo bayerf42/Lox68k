@@ -50,7 +50,7 @@ void initVM(void) {
     initTable(&vm.strings);
 
     vm.initString = NULL;
-    vm.initString = copyString("init", 4);
+    vm.initString = makeString("init", 4);
 
     defineAllNatives();
 }
@@ -115,21 +115,21 @@ static bool call(ObjClosure* closure, int argCount) {
 }
 
 static bool callValue(Value callee, int argCount) {
-    NativeFn        native;
-    ObjClass*       klass;
-    Value           initializer = NIL_VAL;
-    ObjBoundMethod* bound;
+    NativeFn  native;
+    ObjClass* klass;
+    Value     initializer = NIL_VAL;
+    ObjBound* bound;
 
     if (IS_OBJ(callee)) {
         switch (OBJ_TYPE(callee)) {
-            case OBJ_BOUND_METHOD:
-                bound = AS_BOUND_METHOD(callee);
+            case OBJ_BOUND:
+                bound = AS_BOUND(callee);
                 vm.sp[-argCount - 1] = bound->receiver;
                 return call(bound->method, argCount);
 
             case OBJ_CLASS:
                 klass = AS_CLASS(callee);
-                vm.sp[-argCount - 1] = OBJ_VAL(newInstance(klass));
+                vm.sp[-argCount - 1] = OBJ_VAL(makeInstance(klass));
                 if (tableGet(&klass->methods, OBJ_VAL(vm.initString), &initializer))
                     return call(AS_CLOSURE(initializer), argCount);
                 else if (argCount != 0) {
@@ -183,13 +183,13 @@ static bool invoke(ObjString* name, int argCount) {
 }
 
 static bool bindMethod(ObjClass* klass, ObjString* name) {
-    Value           method = NIL_VAL;
-    ObjBoundMethod* bound;
+    Value     method = NIL_VAL;
+    ObjBound* bound;
     if (!tableGet(&klass->methods, OBJ_VAL(name), &method)) {
         runtimeError("Undefined property '%s'.", name->chars);
         return false;
     }
-    bound = newBoundMethod(peek(0), AS_CLOSURE(method));
+    bound = makeBound(peek(0), AS_CLOSURE(method));
     dropNpush(1, OBJ_VAL(bound));
     return true;
 }
@@ -207,7 +207,7 @@ static ObjUpvalue* captureUpvalue(Value* local) {
     if (upvalue != NULL && upvalue->location == local)
         return upvalue;
 
-    createdUpvalue = newUpvalue(local);
+    createdUpvalue = makeUpvalue(local);
     createdUpvalue->nextUpvalue = upvalue;
 
     if (prevUpvalue == NULL)
@@ -460,7 +460,7 @@ static InterpretResult run(void) {
                         aReal = AS_REAL(peek(1));
                     else goto typeErrorAdd;
                 addReals: 
-                    dropNpush(2, newReal(add(aReal,bReal)));
+                    dropNpush(2, makeReal(add(aReal,bReal)));
                     CHECK_ARITH_ERROR
                 } else if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
                     bStr = AS_STRING(peek(0));
@@ -504,7 +504,7 @@ static InterpretResult run(void) {
                                  valueType(peek(1)), valueType(peek(0)));
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                dropNpush(2, newReal(sub(aReal,bReal)));
+                dropNpush(2, makeReal(sub(aReal,bReal)));
                 CHECK_ARITH_ERROR
                 break;
 
@@ -532,7 +532,7 @@ static InterpretResult run(void) {
                                  valueType(peek(1)), valueType(peek(0)));
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                dropNpush(2, newReal(mul(aReal,bReal)));
+                dropNpush(2, makeReal(mul(aReal,bReal)));
                 CHECK_ARITH_ERROR
                 break;
 
@@ -560,7 +560,7 @@ static InterpretResult run(void) {
                                  valueType(peek(1)), valueType(peek(0)));
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                dropNpush(2, newReal(div(aReal,bReal)));
+                dropNpush(2, makeReal(div(aReal,bReal)));
                 CHECK_ARITH_ERROR
                 break;
 
@@ -581,7 +581,7 @@ static InterpretResult run(void) {
                 if (IS_INT(peek(0)))
                     peek(0) = INT_VAL(-AS_INT(peek(0)));
                 else if (IS_REAL(peek(0)))
-                    peek(0) = newReal(neg(AS_REAL(peek(0))));
+                    peek(0) = makeReal(neg(AS_REAL(peek(0))));
                 else {
                     runtimeError("Can't %s type %s.", "negate", valueType(peek(0)));
                     return INTERPRET_RUNTIME_ERROR;
@@ -697,7 +697,7 @@ static InterpretResult run(void) {
                 index    = READ_BYTE();
                 constant = consts[index];
                 function = AS_FUNCTION(constant);
-                closure  = newClosure(function);
+                closure  = makeClosure(function);
                 push(OBJ_VAL(closure));
                 for (i = 0; i < closure->upvalueCount; i++) {
                     upvalue = READ_BYTE();
@@ -734,7 +734,7 @@ static InterpretResult run(void) {
                 index    = READ_BYTE();
                 constant = consts[index];
                 aStr     = AS_STRING(constant);
-                push(OBJ_VAL(newClass(aStr)));
+                push(OBJ_VAL(makeClass(aStr)));
                 break;
 
             case OP_INHERIT:
@@ -936,7 +936,7 @@ InterpretResult interpret(const char* source) {
         return INTERPRET_COMPILE_ERROR;
 
     push(OBJ_VAL(function));
-    closure = newClosure(function);
+    closure = makeClosure(function);
     dropNpush(1, OBJ_VAL(closure));
     
     call(closure, 0);

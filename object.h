@@ -8,39 +8,38 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object accessors 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #define OBJ_TYPE(value)        (AS_OBJ(value)->type)
 
-#define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
+#define IS_BOUND(value)        isObjType(value, OBJ_BOUND)
 #define IS_CLASS(value)        isObjType(value, OBJ_CLASS)
 #define IS_CLOSURE(value)      isObjType(value, OBJ_CLOSURE)
-#define IS_FUNCTION(value)     isObjType(value, OBJ_FUNCTION)
 #define IS_INSTANCE(value)     isObjType(value, OBJ_INSTANCE)
+#define IS_ITERATOR(value)     isObjType(value, OBJ_ITERATOR)
 #define IS_LIST(value)         isObjType(value, OBJ_LIST)
 #define IS_NATIVE(value)       isObjType(value, OBJ_NATIVE)
-#define IS_STRING(value)       isObjType(value, OBJ_STRING)
 #define IS_REAL(value)         isObjType(value, OBJ_REAL)
-#define IS_ITERATOR(value)     isObjType(value, OBJ_ITERATOR)
+#define IS_STRING(value)       isObjType(value, OBJ_STRING)
 
-#define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
+#define AS_BOUND(value)        ((ObjBound*)AS_OBJ(value))
 #define AS_CLASS(value)        ((ObjClass*)AS_OBJ(value))
 #define AS_CLOSURE(value)      ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value)     ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value)     ((ObjInstance*)AS_OBJ(value))
+#define AS_ITERATOR(value)     ((ObjIterator*)AS_OBJ(value))
 #define AS_LIST(value)         ((ObjList*)AS_OBJ(value))
 #define AS_NATIVE(value)       (((ObjNative*)AS_OBJ(value))->function)
 #define AS_NATIVE_SIG(value)   (((ObjNative*)AS_OBJ(value))->signature)
+#define AS_REAL(value)         (((ObjReal*)AS_OBJ(value))->content)
 #define AS_STRING(value)       ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)      (((ObjString*)AS_OBJ(value))->chars)
-#define AS_REAL(value)         (((ObjReal*)AS_OBJ(value))->content)
-#define AS_ITERATOR(value)     ((ObjIterator*)AS_OBJ(value))
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object types 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
+typedef bool (*NativeFn)(int argCount, Value* args);
+typedef char Signature[4];
 typedef enum {
-    OBJ_BOUND_METHOD,
+    OBJ_BOUND,
     OBJ_CLASS,
     OBJ_CLOSURE,
     OBJ_FUNCTION,
@@ -65,22 +64,61 @@ struct Obj {
     OBJ_HEADER
 };
 
-typedef struct {
+struct ObjBound {
+    OBJ_HEADER
+    Value        receiver;
+    ObjClosure*  method;
+};
+
+struct ObjClass {
+    OBJ_HEADER
+    ObjString*   name;
+    Table        methods;
+};
+
+struct ObjClosure {
+    OBJ_HEADER
+    int16_t      upvalueCount; // too big, but keep alignment
+    ObjFunction* function;
+    ObjUpvalue*  upvalues[];   // like ObjString, array embedded in structure
+};
+
+struct ObjFunction {
     OBJ_HEADER
     uint8_t     arity;         // lower 7 bits arity, highest bit rest parameter flag        
     uint8_t     upvalueCount;
     Chunk       chunk;
     ObjString*  name;
-} ObjFunction;
+};
 
-typedef bool (*NativeFn)(int argCount, Value* args);
-typedef char Signature[4];
+struct ObjInstance {
+    OBJ_HEADER
+    ObjClass*    klass;
+    Table        fields;
+};
 
-typedef struct {
+struct ObjIterator {
+    OBJ_HEADER
+    int16_t      position;  // -1 means invalid
+    ObjInstance* instance;  // for GC
+    Table*       table;
+};
+
+struct ObjList {
+    OBJ_HEADER
+    ValueArray   arr;
+};
+
+struct ObjNative {
     OBJ_HEADER
     Signature    signature;
     NativeFn     function;
-} ObjNative;
+};
+
+struct ObjReal {
+    OBJ_HEADER
+    Real         content;
+};
 
 struct ObjString {
     OBJ_HEADER
@@ -96,88 +134,46 @@ struct ObjUpvalue {
     ObjUpvalue*  nextUpvalue;
 };
 
-typedef struct {
-    OBJ_HEADER
-    int16_t      upvalueCount; // too big, but keep alignment
-    ObjFunction* function;
-    ObjUpvalue*  upvalues[];   // like ObjString, array embedded in structure
-} ObjClosure;
-
-typedef struct {
-    OBJ_HEADER
-    ObjString*   name;
-    Table        methods;
-} ObjClass;
-
-typedef struct {
-    OBJ_HEADER
-    ObjClass*    klass;
-    Table        fields;
-} ObjInstance;
-
-typedef struct {
-    OBJ_HEADER
-    Value        receiver;
-    ObjClosure*  method;
-} ObjBoundMethod;
-
-typedef struct {
-    OBJ_HEADER
-    ValueArray   arr;
-} ObjList;
-
-typedef struct {
-    OBJ_HEADER
-    Real         content;
-} ObjReal;
-
-struct ObjIterator {
-    OBJ_HEADER
-    int16_t      position;  // -1 means invalid
-    ObjInstance* instance;  // for GC
-    Table*       table;
-};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object functions 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
-ObjClass*       newClass(ObjString* name);
-ObjClosure*     newClosure(ObjFunction* function);
-ObjFunction*    newFunction(void);
-ObjInstance*    newInstance(ObjClass* klass);
-Value           newReal(Real val);
-ObjNative*      newNative(const char* signature, NativeFn function);
-ObjIterator*    newIterator(Table* table, ObjInstance* instance);
-ObjUpvalue*     newUpvalue(Value* slot);
-ObjString*      copyString(const char* chars, int length);
-ObjList*        makeList(int len, Value* items, int numCopy, int delta);
+ObjBound*    makeBound(Value receiver, ObjClosure* method);
+ObjClass*    makeClass(ObjString* name);
+ObjClosure*  makeClosure(ObjFunction* function);
+ObjFunction* makeFunction(void);
+ObjInstance* makeInstance(ObjClass* klass);
+ObjIterator* makeIterator(Table* table, ObjInstance* instance);
+ObjList*     makeList(int len, Value* items, int numCopy, int stride);
+ObjNative*   makeNative(const char* signature, NativeFn function);
+Value        makeReal(Real val);
+ObjString*   makeString(const char* chars, int length);
+ObjUpvalue*  makeUpvalue(Value* slot);
 
-void            printObject(Value value, bool compact, bool machine);
-const char*     typeName(ObjType type);
-bool            isObjType(Value value, ObjType type);
+void         printObject(Value value, bool compact, bool machine);
+const char*  typeName(ObjType type);
+bool         isObjType(Value value, ObjType type);
 
-void            insertIntoList(ObjList* list, Value value, int index);
-void            storeToList(ObjList* list, int index, Value value);
-Value           indexFromList(ObjList* list, int index);
-ObjList*        sliceFromList(ObjList* list, int begin, int end);
-void            deleteFromList(ObjList* list, int index);
-bool            isValidListIndex(ObjList* list, int index);
-ObjList*        concatLists(ObjList* a, ObjList* b);
+void         insertIntoList(ObjList* list, Value value, int index);
+void         storeToList(ObjList* list, int index, Value value);
+Value        indexFromList(ObjList* list, int index);
+ObjList*     sliceFromList(ObjList* list, int begin, int end);
+void         deleteFromList(ObjList* list, int index);
+bool         isValidListIndex(ObjList* list, int index);
+ObjList*     concatLists(ObjList* a, ObjList* b);
 
-ObjString*      indexFromString(ObjString* string, int index);
-ObjString*      sliceFromString(ObjString* string, int begin, int end);
-bool            isValidStringIndex(ObjString* string, int index);
-ObjString*      concatStrings(ObjString* a, ObjString* b);
-ObjString*      caseString(ObjString* a, bool toUpper);
+ObjString*   indexFromString(ObjString* string, int index);
+ObjString*   sliceFromString(ObjString* string, int begin, int end);
+bool         isValidStringIndex(ObjString* string, int index);
+ObjString*   concatStrings(ObjString* a, ObjString* b);
+ObjString*   caseString(ObjString* a, bool toUpper);
 
-const char*     formatReal(Real val);
-const char*     formatInt(Int val);
-const char*     formatHex(Int val);
-const char*     formatBin(Int val);
-Value           parseInt(const char* start, bool checkLen);
+const char*  formatReal(Real val);
+const char*  formatInt(Int val);
+const char*  formatHex(Int val);
+const char*  formatBin(Int val);
+Value        parseInt(const char* start, bool checkLen);
 
-extern char     buffer[];
+extern char  buffer[];
 
 #endif
