@@ -62,9 +62,9 @@ void markObject(Obj* object) {
     object->isMarked = true;
 
     switch (object->type) {
-        case OBJ_STRING:
-        case OBJ_REAL:
         case OBJ_NATIVE:
+        case OBJ_REAL:
+        case OBJ_STRING:
             // Leaf object, nothing to do
             break;
 
@@ -124,16 +124,16 @@ static void blackenObject(Obj* object) {
             markTable(&((ObjInstance*)object)->fields);
             break;
 
+        case OBJ_ITERATOR:
+            markObject((Obj*)((ObjIterator*)object)->instance);
+            break;
+
         case OBJ_LIST:
             markArray(&((ObjList*)object)->arr);
             break;
 
         case OBJ_UPVALUE:
             markValue(((ObjUpvalue*)object)->closed);
-            break;
-
-        case OBJ_ITERATOR:
-            markObject((Obj*)((ObjIterator*)object)->instance);
             break;
     }
 }
@@ -168,6 +168,10 @@ static void freeObject(Obj* object) {
             FREE(ObjInstance, object);
             break;
 
+        case OBJ_ITERATOR:
+            FREE(ObjIterator, object);
+            break;
+
         case OBJ_LIST:
             freeValueArray(&((ObjList*)object)->arr);
             FREE(ObjList, object);
@@ -177,20 +181,16 @@ static void freeObject(Obj* object) {
             FREE(ObjNative, object);
             break;
 
+        case OBJ_REAL:
+            FREE(ObjReal, object);
+            break;
+
         case OBJ_STRING:
             reallocate(object, sizeof(ObjString) + ((ObjString*)object)->length + 1, 0);  
             break;
 
         case OBJ_UPVALUE:
             FREE(ObjUpvalue, object);
-            break;
-
-        case OBJ_REAL:
-            FREE(ObjReal, object);
-            break;
-
-        case OBJ_ITERATOR:
-            FREE(ObjIterator, object);
             break;
     }
 }

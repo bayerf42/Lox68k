@@ -393,9 +393,9 @@ static InterpretResult run(void) {
                 break;
 
             case OP_GET_SUPER:
-                index    = READ_BYTE();
-                constant = consts[index];
-                aStr     = AS_STRING(constant);
+                index      = READ_BYTE();
+                constant   = consts[index];
+                aStr       = AS_STRING(constant);
                 superclass = AS_CLASS(pop());
                 if (!bindMethod(superclass, aStr))
                     return INTERPRET_RUNTIME_ERROR;

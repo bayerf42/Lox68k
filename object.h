@@ -55,10 +55,10 @@ typedef enum {
 // The IDE68K C compiler doesn't seem to like including struct Obj in the following structures
 // and generates wrong code when casting, so we expand struct Obj manually.
 
-#define OBJ_HEADER        \
-    struct Obj* nextObj;  \
-    uint8_t     type;     \
-    uint8_t     isMarked;
+#define OBJ_HEADER         \
+    Obj*         nextObj;  \
+    uint8_t      type;     \
+    uint8_t      isMarked;
 
 struct Obj {
     OBJ_HEADER
@@ -85,10 +85,10 @@ struct ObjClosure {
 
 struct ObjFunction {
     OBJ_HEADER
-    uint8_t     arity;         // lower 7 bits arity, highest bit rest parameter flag        
-    uint8_t     upvalueCount;
-    Chunk       chunk;
-    ObjString*  name;
+    uint8_t      arity;        // lower 7 bits arity, highest bit rest parameter flag        
+    uint8_t      upvalueCount;
+    Chunk        chunk;
+    ObjString*   name;
 };
 
 struct ObjInstance {

@@ -22,7 +22,7 @@ typedef enum {
     PREC_EQUALITY,   // == !=
     PREC_COMPARISON, // < > <= >=
     PREC_TERM,       // + -
-    PREC_FACTOR,     // * / %
+    PREC_FACTOR,     // * \ / 
     PREC_UNARY,      // ! -
     PREC_POSTFIX     // . () [] @ ^
 } Precedence;
@@ -463,7 +463,7 @@ static int resolveLocal(Compiler* compiler, Token* name) {
     int    i;
     Local* local;
 
-    for (i = compiler->localCount-1; i >= 0; i--) {
+    for (i = compiler->localCount - 1; i >= 0; i--) {
         local = &compiler->locals[i];
         if (identifiersEqual(name, &local->name)) {
             if (local->depth == -1)
