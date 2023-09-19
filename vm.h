@@ -38,7 +38,9 @@ typedef struct {
     int         numGCs;
 
     bool        debug_print_code;
-    bool        debug_trace_execution;
+    bool        debug_trace_steps;
+    bool        debug_trace_calls;
+    bool        debug_trace_natives;
     int16_t     debug_log_gc;
     bool        debug_statistics;
 } VM;

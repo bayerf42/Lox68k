@@ -9,7 +9,8 @@
 #include "value.h"
 #include "vm.h"
 
-char buffer[48]; // general purpose: numbers, error messages
+char buffer[48];      // general purpose: debugging, numbers, error messages
+char cvBuffer[32];    // for number conversion
 
 bool isObjType(Value value, ObjType type) {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
@@ -113,7 +114,7 @@ ObjList* makeList(int len, Value* items, int numCopy, int stride) {
     return list;
 }
 
-ObjNative* makeNative(const char* signature, NativeFn function) {
+ObjNative* makeNative(const char* signature, NativeFn function, ObjString* name) {
     ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
 
 #ifdef __GNUC__
@@ -127,6 +128,7 @@ ObjNative* makeNative(const char* signature, NativeFn function) {
 #endif
 
     native->function = function;
+    native->name     = name;
     return native;
 }
 
@@ -228,8 +230,8 @@ void printObject(Value value, bool compact, bool machine) {
             if (compact)   printf("<list %d>", AS_LIST(value)->arr.count);
             else           printList(AS_LIST(value));
             break;
-        case OBJ_NATIVE:   printf("<native %05x>", (int32_t) AS_NATIVE(value)); break;
-        case OBJ_REAL:     printf("%s", formatReal(AS_REAL(value))); break;
+        case OBJ_NATIVE:   printf("<native %s>", AS_NATIVE(value)->name->chars); break;
+        case OBJ_REAL:     printf("%s", formatReal(AS_REAL(value), buffer)); break;
         case OBJ_STRING:
             if (machine)   fix_printf("\"");
             fix_printf(AS_CSTRING(value));
@@ -364,7 +366,7 @@ ObjString* caseString(ObjString* a, bool toUpper) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Reals 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-const char* formatReal(Real val) {
+const char* formatReal(Real val, char* actBuffer) {
 #ifdef KIT68K
     int   expo, dp, off;
     char* estr;
@@ -373,9 +375,9 @@ const char* formatReal(Real val) {
     if (val==0)
         return "0.0";
 
-    realToStr(buffer, val);
-    expo = atoi(buffer + 11);
-    estr = buffer + 10;
+    realToStr(actBuffer, val);
+    expo = atoi(actBuffer + 11);
+    estr = actBuffer + 10;
 
     // Fixed format returned from realToStr:
     // s.mmmmmmmmEsdd
@@ -385,42 +387,42 @@ const char* formatReal(Real val) {
     if (expo >= 1 && expo <= 7) {
         // shift DP to the right
         for (dp = 1; expo > 0; dp++, expo--) {
-            buffer[dp] = buffer[dp + 1];
-            buffer[dp + 1] = '.';
+            actBuffer[dp] = actBuffer[dp + 1];
+            actBuffer[dp + 1] = '.';
         }
-        buffer[10] = '\0'; // cut off exponent
+        actBuffer[10] = '\0'; // cut off exponent
         estr = NULL;
     } else if (expo <= 0 && expo >= -3) {
         // shift mantissa to the right
         for (off = 9; off > 1; off--)
-            buffer[off - expo + 1] = buffer[off];
-        buffer[11 - expo] = '\0'; // cut off exponent
+            actBuffer[off - expo + 1] = actBuffer[off];
+        actBuffer[11 - expo] = '\0'; // cut off exponent
         estr = NULL;
         for (off = 2 - expo; off > 0; off--)
-            buffer[off] = '0';
-        buffer[2] = '.';
+            actBuffer[off] = '0';
+        actBuffer[2] = '.';
     } else {
         // exponential display, but 1 digit left to DP
-        buffer[1] = buffer[2];
-        buffer[2] = '.';
-        sprintf(buffer + 11, "%d", expo - 1);
+        actBuffer[1] = actBuffer[2];
+        actBuffer[2] = '.';
+        sprintf(actBuffer + 11, "%d", expo - 1);
     }
 
     // Squeeze out trailing zeros in mantissa
-    for (dest = estr ? estr : buffer + strlen(buffer);
+    for (dest = estr ? estr : actBuffer + strlen(actBuffer);
          dest[-1] == '0' && dest[-2] != '.';)
         *--dest = '\0';
     if (estr)
         memmove(dest, estr, 6);
 
-    if (buffer[0] == '+')
-        return buffer + 1;
+    if (actBuffer[0] == '+')
+        return actBuffer + 1;
 
 #else
-    sprintf(buffer, "%.15g", val);
+    sprintf(actBuffer, "%.15g", val);
 #endif
 
-    return buffer;
+    return actBuffer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -429,32 +431,32 @@ const char* formatReal(Real val) {
 
 const char* formatInt(Int val) {
 #ifndef linux
-    itoa(val, buffer, 10);
+    itoa(val, cvBuffer, 10);
 #else
-    sprintf(buffer, "%d", val);
+    sprintf(cvBuffer, "%d", val);
 #endif
-    return buffer;
+    return cvBuffer;
 }
 
 const char* formatHex(Int val) {
 #ifndef linux
-    itoa(val, buffer, 16);
+    itoa(val, cvBuffer, 16);
 #else
-    sprintf(buffer, "%x", val);
+    sprintf(cvBuffer, "%x", val);
 #endif
-    return buffer;
+    return cvBuffer;
 }
 
 const char* formatBin(Int val) {
     uint32_t mask = 0x80000000;
-    char*    outp = buffer;
+    char*    outp = cvBuffer;
 
     for (; mask; mask >>= 1)
         *outp++ = val & mask ? '1' : '0';
     *outp = 0;
 
     // find first non-zero
-    for (outp = buffer; *outp == '0'; outp++)
+    for (outp = cvBuffer; *outp == '0'; outp++)
         ;
     return val == 0 ? outp - 1 : outp;
 }

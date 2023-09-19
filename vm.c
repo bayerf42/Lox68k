@@ -17,6 +17,26 @@ static void resetStack(void) {
     vm.openUpvalues = NULL;
 }
 
+static const char* funName(ObjFunction* fun) {
+    return (fun->name == NULL) ? "<script>" : fun->name->chars;
+}
+
+static void indentCallTrace(void) {
+    int i;
+    for (i = vm.frameCount; i > 0; i--)
+        printf("  ");
+}
+
+static void printArgList(int argCount, Value* args) {
+    const char* separator = "";
+    while (--argCount >= 0) {
+        printf(separator);
+        separator = ", ";
+        printValue(*args++, false, true);
+    } 
+    printf(")\n");
+}
+
 void runtimeError(const char* format, ...) {
     va_list      args;
     size_t       instruction;
@@ -33,8 +53,7 @@ void runtimeError(const char* format, ...) {
         frame       = &vm.frames[i];
         function    = frame->closure->function;
         instruction = frame->ip - function->chunk.code - 1;
-        printf("[line %d] in %s\n", getLine(&function->chunk, instruction),
-               (function->name == NULL) ? "<script>" : function->name->chars);
+        printf("[line %d] in %s\n", getLine(&function->chunk, instruction), funName(function));
     }
     resetStack();
 }
@@ -82,14 +101,20 @@ if (errno != 0) {                      \
 }
 
 static bool call(ObjClosure* closure, int argCount) {
-    CallFrame* frame;
-    ObjList*   args;
-    int        itemCount;
-    int        arity;
+    CallFrame*  frame;
+    ObjList*    args;
+    int         itemCount;
+    int         arity;
 
     if (vm.frameCount == FRAMES_MAX) {
         runtimeError("Lox call stack overflow.");
         return false;
+    }
+
+    if (vm.debug_trace_calls) {
+        indentCallTrace();
+        printf("--> %s (", funName(closure->function));
+        printArgList(argCount, vm.sp - argCount);
     }
 
     arity = closure->function->arity & ARITY_MASK;
@@ -115,10 +140,10 @@ static bool call(ObjClosure* closure, int argCount) {
 }
 
 static bool callValue(Value callee, int argCount) {
-    NativeFn  native;
-    ObjClass* klass;
-    Value     initializer = NIL_VAL;
-    ObjBound* bound;
+    ObjNative* native;
+    ObjClass*  klass;
+    Value      initializer = NIL_VAL;
+    ObjBound*  bound;
 
     if (IS_OBJ(callee)) {
         switch (OBJ_TYPE(callee)) {
@@ -143,11 +168,25 @@ static bool callValue(Value callee, int argCount) {
 
             case OBJ_NATIVE:
                 native = AS_NATIVE(callee);
-                if (!checkNativeSignature(AS_NATIVE_SIG(callee), argCount, vm.sp - argCount))
+
+                if (vm.debug_trace_natives) {
+                    indentCallTrace();
+                    printf("--> <native %s> (", native->name->chars);
+                    printArgList(argCount, vm.sp - argCount);
+                }
+
+                if (!checkNativeSignature(native->signature, argCount, vm.sp - argCount))
                     return false;
-                if (!(*native)(argCount, vm.sp - argCount))
+                if (!(*native->function)(argCount, vm.sp - argCount))
                     return false;
                 vm.sp -= argCount;
+
+                if (vm.debug_trace_natives) {
+                    indentCallTrace();
+                    printf("<-- <native %s> ", native->name->chars);
+                    printValue(vm.sp[-1], false, true);
+                    printf("\n");
+                } 
                 return true;
         }
     }
@@ -280,7 +319,7 @@ static InterpretResult run(void) {
             return INTERPRET_INTERRUPTED;
         }
 
-        if (vm.debug_trace_execution) {
+        if (vm.debug_trace_steps) {
             for (slot = vm.stack; slot < vm.sp; slot++) {
                 printValue(*slot, true, true);
                 printf(" | ");
@@ -722,6 +761,14 @@ static InterpretResult run(void) {
             cont_ret:
                 closeUpvalues(frame->fp);
                 vm.frameCount--;
+
+                if (vm.debug_trace_calls) {
+                    indentCallTrace();
+                    printf("<-- %s ", funName(frame->closure->function));
+                    printValue(resVal, false, true);
+                    printf("\n");
+                }
+
                 if (vm.frameCount == 0) {
                     drop();
                     return INTERPRET_OK;

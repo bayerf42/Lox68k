@@ -328,7 +328,7 @@ static bool decNative(int argCount, Value* args) {
     if (IS_INT(args[0]))
         res = formatInt(AS_INT(args[0]));
     else
-        res = formatReal(AS_REAL(args[0]));
+        res = formatReal(AS_REAL(args[0]), cvBuffer);
     args[-1] = OBJ_VAL(makeString(res, strlen(res)));
     return true;
 }
@@ -433,8 +433,20 @@ static bool dbgCodeNative(int argCount, Value* args) {
     return true;
 }
 
-static bool dbgTraceNative(int argCount, Value* args) {
-    vm.debug_trace_execution = AS_BOOL(args[0]);
+static bool dbgStepNative(int argCount, Value* args) {
+    vm.debug_trace_steps = AS_BOOL(args[0]);
+    args[-1] = args[0];
+    return true;
+}
+
+static bool dbgCallNative(int argCount, Value* args) {
+    vm.debug_trace_calls = AS_BOOL(args[0]);
+    args[-1] = args[0];
+    return true;
+}
+
+static bool dbgNatNative(int argCount, Value* args) {
+    vm.debug_trace_natives = AS_BOOL(args[0]);
     args[-1] = args[0];
     return true;
 }
@@ -762,7 +774,9 @@ static const Native allNatives[] = {
 #endif
 
     {"dbg_code",    "B",    dbgCodeNative},
-    {"dbg_trace",   "B",    dbgTraceNative},
+    {"dbg_call",    "B",    dbgCallNative},
+    {"dbg_step",    "B",    dbgStepNative},
+    {"dbg_nat",     "B",    dbgNatNative},
     {"dbg_gc",      "N",    dbgGcNative},
     {"dbg_stat",    "B",    dbgStatNative},
 };
@@ -770,13 +784,15 @@ static const Native allNatives[] = {
 void defineAllNatives() {
     int           natCount = sizeof(allNatives) / sizeof(Native);
     const Native* currNat  = allNatives;
+    ObjString*    name;
 
     push(NIL_VAL);
     push(NIL_VAL);
 
     while (natCount--) {
-        vm.stack[0] = OBJ_VAL(makeString(currNat->name, strlen(currNat->name)));
-        vm.stack[1] = OBJ_VAL(makeNative(currNat->signature, currNat->function));
+        name        = makeString(currNat->name, strlen(currNat->name));
+        vm.stack[0] = OBJ_VAL(name);
+        vm.stack[1] = OBJ_VAL(makeNative(currNat->signature, currNat->function, name));
         tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
         currNat++;
     }

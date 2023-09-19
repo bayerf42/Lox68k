@@ -24,10 +24,12 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | clock       | -                      | int         | all          | runtime in milliseconds after start. Returns 0 on Kit, since no clock available.  |  
 | cos         | num                    | real        | all          | cosine                                                                            |  
 | cosh        | num                    | real        | all          | hyperbolic cosine                                                                 |  
+| dbg_call    | bool                   | bool        | all          | trace call/return Lox functions/methods, including arguments and return value     |  
 | dbg_code    | bool                   | bool        | all          | prints byte code after compiling                                                  |  
 | dbg_gc      | int                    | int         | all          | prints garbage collection diagnostics according to bit flags *int*, see `memory.h`|  
+| dbg_nat     | bool                   | bool        | all          | trace call/return Lox natives, including arguments and return value               |  
 | dbg_stat    | bool                   | bool        | all          | print statistics (steps, allocations) after execution                             |  
-| dbg_trace   | bool                   | bool        | all          | trace each VM instruction executed, prints stack                                  |  
+| dbg_step    | bool                   | bool        | all          | trace each VM instruction executed, prints stack                                  |  
 | dec         | num                    | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int              | nil         | all          | deletes element at *int* from *list*                                              |
 | error       | string                 | *no return* | all          | Aborts program execution with error message *string*                              |  
