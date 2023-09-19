@@ -18,12 +18,12 @@ _fabs
        rts
 
 _sqrt
-       move.l  d7,-(a7)
-       move.l  (8,a7),d7
+       movem.l d3-d7,-(a7)
+       move.l  (24,a7),d7
        jsr     ffp_sqrt
        svs     _errno.W
        move.l  d7,d0
-       move.l  (a7)+,d7
+       movem.l (a7)+,d3-d7
        rts
 
 _sin
