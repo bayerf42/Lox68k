@@ -21,7 +21,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | bit_shift   | int, int               | int         | all          | first integer shifted left, if second positive, right if negative by second int   |
 | bit_xor     | int, int               | int         | all          | bitwise exclusive OR of 2 integer                                                 |
 | chr         | int                    | string      | all          | character with ASCII code *int*                                                   |
-| clock       | -                      | int         | all          | runtime in milliseconds after start. Returns 0 on Kit, since no clock available.  |  
+| clock       | -                      | int         | all          | runtime in milliseconds after start                                               |  
 | cos         | num                    | real        | all          | cosine                                                                            |  
 | cosh        | num                    | real        | all          | hyperbolic cosine                                                                 |  
 | dbg_call    | bool                   | bool        | all          | trace call/return Lox functions/methods, including arguments and return value     |  

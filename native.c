@@ -10,6 +10,9 @@
 #include "memory.h"
 #include "vm.h"
 
+int32_t ticks;
+bool    onKit;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Typechecking natives 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -17,13 +20,13 @@
 static const char* matchesType(Value value, int type) {
     switch (type) {
         case 'A': return                                      NULL;  // any value
-        case 'N': return IS_INT(value)                      ? NULL : "an int";
-        case 'R': return IS_INT(value) || IS_REAL(value)    ? NULL : "a number";
-        case 'S': return IS_STRING(value)                   ? NULL : "a string";
-        case 'L': return IS_LIST(value)                     ? NULL : "a list";
-        case 'Q': return IS_STRING(value) || IS_LIST(value) ? NULL : "a sequence";
         case 'B': return IS_BOOL(value)                     ? NULL : "a bool";
         case 'I': return IS_INSTANCE(value)                 ? NULL : "an instance";
+        case 'L': return IS_LIST(value)                     ? NULL : "a list";
+        case 'N': return IS_INT(value)                      ? NULL : "an int";
+        case 'Q': return IS_STRING(value) || IS_LIST(value) ? NULL : "a sequence";
+        case 'R': return IS_INT(value) || IS_REAL(value)    ? NULL : "a number";
+        case 'S': return IS_STRING(value)                   ? NULL : "a string";
         case 'T': return IS_ITERATOR(value)                 ? NULL : "an iterator";
         default:  return                                             "an unknown type";
     }
@@ -679,7 +682,7 @@ static bool typeNative(int argCount, Value* args) {
 
 static bool clockNative(int argCount, Value* args) {
 #ifdef KIT68K
-    args[-1] = INT_VAL(0); // not available
+    args[-1] = INT_VAL(clock() * 10);   // CLOCKS_PER_SEC == 100 
 #else
 #ifdef _WIN32
     args[-1] = INT_VAL(clock());        // CLOCKS_PER_SEC == 1000
@@ -802,27 +805,24 @@ void defineAllNatives() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Interrupting computations 
+// Interrupting computations and ticker handling
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef KIT68K
 
 #define INTERRUPT2_VECTOR ((long*)0x0068)
 
-interrupt void irqHandler(void) {
-    vm.interrupted = true;
+extern void ticker(void); // in cstart_lox_rom.asm
+
+void startTicker(void) {
+    ticks = 0;
+    *INTERRUPT2_VECTOR = (long)ticker;
+    // ANDI  #$f0ff,SR  ; clear interrupt mask in status register
+    _word(0x027c); _word(0xf0ff);
 }
 
 void handleInterrupts(bool enable) {
-    *INTERRUPT2_VECTOR = (long)irqHandler;
-
-    if (enable) {
-        // ANDI  #$f0ff,SR  ; clear interrupt mask in status register
-        _word(0x027c); _word(0xf0ff);
-    } else {
-        // ORI   #$0f00,SR  ; set interrupt mask in status register
-        _word(0x007c); _word(0x0f00);
-    }
+    // not needed
 }
 
 #else

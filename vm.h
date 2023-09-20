@@ -21,21 +21,22 @@ typedef struct {
     ObjUpvalue* openUpvalues;
     int         lambdaCount;
 
-  volatile bool interrupted;
     bool        hadStackoverflow;
     size_t      bytesAllocated;
     Obj*        objects;
     int         grayCount;
     Obj*        grayStack[GRAY_MAX];
-
     size_t      totallyAllocated;
+    int         numGCs;
+  volatile bool interrupted;
+
 #ifdef KIT68K
     uint32_t    stepsExecuted;
+    int32_t     started;
 #else
     uint64_t    stepsExecuted;
     clock_t     started;
 #endif
-    int         numGCs;
 
     bool        debug_print_code;
     bool        debug_trace_steps;

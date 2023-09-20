@@ -53,6 +53,8 @@ extern void _stackoverflow(void);
   _word(0x6c06); \
   _stackoverflow();
 
+#define clock() ticks
+
 #else
 
 /////////////////////////////////////////////////////////////////

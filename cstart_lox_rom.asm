@@ -121,6 +121,9 @@ __stackoverflow:                       ; label for manual check
            jsr         $04010c         ; entry to _pstring in Monitor 4.x
            bra         __exit          ; abort program
 
+_ticker    addq.l      #1,_ticks.w     ; 10 ms interrupt handler
+           rte
+
            section     const
 stackmsg:
            dc.b        'C stack overflow!',$0A,$0D

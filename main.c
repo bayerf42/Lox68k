@@ -38,6 +38,8 @@ int main() {
         lcd_puts("Use terminal for");
         lcd_goto(0,1);
         lcd_puts("Lox68k REPL");
+        onKit = true;
+        startTicker();
     }
 
     rand32 = 47110815;

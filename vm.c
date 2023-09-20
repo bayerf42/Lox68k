@@ -22,14 +22,14 @@ static const char* funName(ObjFunction* fun) {
 }
 
 static void indentCallTrace(void) {
-    int i;
-    for (i = vm.frameCount; i > 0; i--)
+    int depth = vm.frameCount;
+    while (depth--)
         printf("  ");
 }
 
 static void printArgList(int argCount, Value* args) {
     const char* separator = "";
-    while (--argCount >= 0) {
+    while (argCount--) {
         printf(separator);
         separator = ", ";
         printValue(*args++, false, true);
@@ -277,6 +277,12 @@ static void defineMethod(ObjString* name) {
 #define READ_BYTE()   (*frame->ip++)
 #define READ_USHORT() (frame->ip += 2, (frame->ip[-2] << 8) | frame->ip[-1])
 
+#ifdef KIT68K
+#define INTERRUPTED() onKit && (*((char*)0x80000) & 0x40) == 0
+#else
+#define INTERRUPTED() vm.interrupted
+#endif
+
 static InterpretResult run(void) {
     Value*  slot;
     int     instruction;
@@ -313,7 +319,7 @@ static InterpretResult run(void) {
             return INTERPRET_RUNTIME_ERROR;
         }
 
-        if (vm.interrupted) {
+        if (INTERRUPTED()) {
             (void)READ_BYTE();
             runtimeError("Interrupted.");
             return INTERPRET_INTERRUPTED;
@@ -989,9 +995,7 @@ InterpretResult interpret(const char* source) {
     call(closure, 0);
 
     vm.interrupted = false;
-#ifndef KIT68K
-    vm.started = clock();
-#endif
+    vm.started     = clock();
 
     handleInterrupts(true);
     result = run();
@@ -1001,11 +1005,13 @@ InterpretResult interpret(const char* source) {
 
     if (vm.debug_statistics) {
 #ifdef KIT68K
-        printf("[%u steps; %d bytes; %d GCs]\n",
+        printf("[%d.%02d sec; %u steps; %d bytes; %d GCs]\n",
+               (clock() - vm.started) / 100, (clock() - vm.started) % 100,
                vm.stepsExecuted, vm.totallyAllocated, vm.numGCs);
 #else
         printf("[%.3f sec; %llu steps; %d bytes; %d GCs]\n",
-               (double)(clock() - vm.started) / CLOCKS_PER_SEC, vm.stepsExecuted, vm.totallyAllocated, vm.numGCs);
+               (double)(clock() - vm.started) / CLOCKS_PER_SEC,
+               vm.stepsExecuted, vm.totallyAllocated, vm.numGCs);
 #endif
     }
     return result;
