@@ -116,17 +116,12 @@ ObjList* makeList(int len, Value* items, int numCopy, int stride) {
 
 ObjNative* makeNative(const char* signature, NativeFn function, ObjString* name) {
     ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+    char* dest        = native->signature;
+    int   maxChars    = sizeof(Signature);
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-truncation"
-#endif
     *((uint32_t*)native->signature) = 0;
-    strncpy(native->signature, signature, sizeof(Signature));
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-
+    while (maxChars-- && (*dest++ = *signature++) != 0)
+        ;    
     native->function = function;
     native->name     = name;
     return native;
