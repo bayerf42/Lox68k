@@ -70,7 +70,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * Hexadecimal literals via the `$` prefix, like `$ff` == `255`.
 * Binary literals via the `%` prefix, like `%1110` == `14`.
 * Modulo operator `\`
-* Interrupting long-running computations by **REP** key (or `ctrl-C` in Windows/Linux versions).
+* Interrupting long-running computations with **REP** key (or `ctrl-C` in Windows/Linux versions).
 * `print` allows list of expression, all printed on one line. With trailing comma,
   no line feed is printed. When expressions are separated by two commas, 3 spaces are inserted.
 * Anonymous functions (*lambdas*) as expressions.
@@ -151,7 +151,7 @@ and press **GO**. Now you can send commands to the REPL running at the Kit via t
 
 To interrupt long-running computations, press the **REP** key bringing you back to the input
 prompt. Be sure to put the interrupt source switch to *10ms TICK* to have an accurate timer.
-In versions before 1.4, the **IRQ** key was used for this purposes, but this has been changed.
+In versions before 1.4, the **IRQ** key was used for this purpose.
 
 You can also run this version in the *IDE68K* emulator, but there are some differences to the Kit:
   * You have to set the start address`$44008` manually into the PC register. You can't use start
@@ -228,7 +228,7 @@ When inputting Lox code, **ENTER** sends your input to the Lox REPL and interpre
 you want to input a line feed without starting interpretation, press **Ctrl-ENTER** instead.
 
 To exit the terminal, press **Ctrl-C**, but to interrupt a running computation, press the
-**IRQ** key on the Kit.
+**REP** key on the Kit.
 
 The entire terminal session is written to `transcript.log`. 
 

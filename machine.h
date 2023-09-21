@@ -55,6 +55,10 @@ extern void _stackoverflow(void);
 
 #define clock() ticks
 
+// Only on Kit: Check, if button REP is pressed
+#define INTERRUPTED()       (onKit && (*((char*)0x80000) & 0x40) == 0)
+#define RESET_INTERRUPTED() // nothing to do
+
 #else
 
 /////////////////////////////////////////////////////////////////
@@ -84,6 +88,10 @@ typedef double Real;
 // hide Kit's assembly helpers 
 #define CHECK_STACKOVERFLOW
 #define _trap(n)
+
+// Set by SIGINT handler
+#define INTERRUPTED()       (vm.interrupted)
+#define RESET_INTERRUPTED()  vm.interrupted = false;
 
 #endif
 

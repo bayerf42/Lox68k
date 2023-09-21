@@ -277,12 +277,6 @@ static void defineMethod(ObjString* name) {
 #define READ_BYTE()   (*frame->ip++)
 #define READ_USHORT() (frame->ip += 2, (frame->ip[-2] << 8) | frame->ip[-1])
 
-#ifdef KIT68K
-#define INTERRUPTED() onKit && (*((char*)0x80000) & 0x40) == 0
-#else
-#define INTERRUPTED() vm.interrupted
-#endif
-
 static InterpretResult run(void) {
     Value*  slot;
     int     instruction;
@@ -994,9 +988,8 @@ InterpretResult interpret(const char* source) {
     
     call(closure, 0);
 
-    vm.interrupted = false;
-    vm.started     = clock();
-
+    RESET_INTERRUPTED();
+    vm.started = clock();
     handleInterrupts(true);
     result = run();
     handleInterrupts(false);

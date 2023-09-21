@@ -28,12 +28,12 @@ typedef struct {
     Obj*        grayStack[GRAY_MAX];
     size_t      totallyAllocated;
     int         numGCs;
-  volatile bool interrupted;
 
 #ifdef KIT68K
     uint32_t    stepsExecuted;
     int32_t     started;
 #else
+  volatile bool interrupted;
     uint64_t    stepsExecuted;
     clock_t     started;
 #endif
