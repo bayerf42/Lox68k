@@ -597,7 +597,8 @@ static bool keycodeNative(int argCount, Value* args) {
     return true;
 }
 
-#define LOOPS_NOTE 91900
+#define LOOPS_NOTE  97400
+#define DELAY_EXTRA     2
 
 static bool soundNative(int argCount, Value* args) {
     int delay = AS_INT(args[0]);
@@ -607,7 +608,7 @@ static bool soundNative(int argCount, Value* args) {
 
     loops *= len;
     loops /= 1000;
-    loops /= delay; // direct init generates wrong code, PEA 34483.W, which is negative
+    loops /= (delay + DELAY_EXTRA);
 
     *port2 = 0;
     for (i = 0; i < loops; i++) {
@@ -627,7 +628,7 @@ static bool trapNative(int argCount, Value* args) {
     return true;
 }
 
-#define LOOPS_PER_MILLI 142
+#define LOOPS_PER_MILLI 147
 
 static bool sleepNative(int argCount, Value* args) {
     int32_t millis = AS_INT(args[0]);
