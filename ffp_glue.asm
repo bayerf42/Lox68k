@@ -54,29 +54,29 @@ _tan
        rts
 
 _sinh
-       move.l  d7,-(a7)
-       move.l  (8,a7),d7
+       movem.l d3-d5/d7,-(a7)
+       move.l  (20,a7),d7
        jsr     ffp_sinh
        svs     _errno.W
        move.l  d7,d0
-       move.l  (a7)+,d7
+       movem.l (a7)+,d3-d5/d7
        rts
 
 _cosh
-       move.l  d7,-(a7)
-       move.l  (8,a7),d7
+       movem.l d3-d5/d7,-(a7)
+       move.l  (20,a7),d7
        jsr     ffp_cosh
        svs     _errno.W
        move.l  d7,d0
-       move.l  (a7)+,d7
+       movem.l (a7)+,d3-d5/d7
        rts
 
 _tanh
-       move.l  d7,-(a7)
-       move.l  (8,a7),d7
+       movem.l d3-d5/d7,-(a7)
+       move.l  (20,a7),d7
        jsr     ffp_tanh
        move.l  d7,d0
-       move.l  (a7)+,d7
+       movem.l (a7)+,d3-d5/d7
        rts
 
 _atan
