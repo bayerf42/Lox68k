@@ -249,7 +249,9 @@ static Token string(void) {
 }
 
 Token scanToken(void) {
-    char c;
+    char      c;
+    TokenType token;
+
     skipWhitespace();
     scanner.start = scanner.current;
 
@@ -265,29 +267,30 @@ Token scanToken(void) {
         return number(c);
 
     switch (c) {
-        case '(': return makeToken(TOKEN_LEFT_PAREN);
-        case ')': return makeToken(TOKEN_RIGHT_PAREN);
-        case '{': return makeToken(TOKEN_LEFT_BRACE);
-        case '}': return makeToken(TOKEN_RIGHT_BRACE);
-        case '[': return makeToken(TOKEN_LEFT_BRACKET);
-        case ']': return makeToken(TOKEN_RIGHT_BRACKET);
-        case ';': return makeToken(TOKEN_SEMICOLON);
-        case ':': return makeToken(TOKEN_COLON);
-        case ',': return makeToken(TOKEN_COMMA);
-        case '.': return makeToken(match('.') ? TOKEN_DOT_DOT       : TOKEN_DOT);
-        case '-': return makeToken(match('>') ? TOKEN_ARROW         : TOKEN_MINUS);
-        case '+': return makeToken(TOKEN_PLUS);
-        case '/': return makeToken(TOKEN_SLASH);
-        case '*': return makeToken(TOKEN_STAR);
-        case 92 : return makeToken(TOKEN_BACKSLASH); // IDE68k doesn't like '\\'
-        case '@': return makeToken(TOKEN_AT);
-        case '^': return makeToken(TOKEN_HAT);
-        case '!': return makeToken(match('=') ? TOKEN_BANG_EQUAL    : TOKEN_BANG);
-        case '=': return makeToken(match('=') ? TOKEN_EQUAL_EQUAL   : TOKEN_EQUAL);
-        case '<': return makeToken(match('=') ? TOKEN_LESS_EQUAL    : TOKEN_LESS);
-        case '>': return makeToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
         case '"': return string();
-        case '?': return makeToken(TOKEN_PRINT);
+        case '(': token = TOKEN_LEFT_PAREN;    break;
+        case ')': token = TOKEN_RIGHT_PAREN;   break;
+        case '{': token = TOKEN_LEFT_BRACE;    break;
+        case '}': token = TOKEN_RIGHT_BRACE;   break;
+        case '[': token = TOKEN_LEFT_BRACKET;  break;
+        case ']': token = TOKEN_RIGHT_BRACKET; break;
+        case ';': token = TOKEN_SEMICOLON;     break;
+        case ':': token = TOKEN_COLON;         break;
+        case ',': token = TOKEN_COMMA;         break;
+        case '+': token = TOKEN_PLUS;          break;
+        case '/': token = TOKEN_SLASH;         break;
+        case '*': token = TOKEN_STAR;          break;
+        case 92 : token = TOKEN_BACKSLASH;     break; // IDE68k doesn't like '\\'
+        case '@': token = TOKEN_AT;            break;
+        case '^': token = TOKEN_HAT;           break;
+        case '?': token = TOKEN_PRINT;         break;
+        case '!': if (match('=')) token = TOKEN_BANG_EQUAL;    else token = TOKEN_BANG;    break;
+        case '=': if (match('=')) token = TOKEN_EQUAL_EQUAL;   else token = TOKEN_EQUAL;   break;
+        case '<': if (match('=')) token = TOKEN_LESS_EQUAL;    else token = TOKEN_LESS;    break;
+        case '>': if (match('=')) token = TOKEN_GREATER_EQUAL; else token = TOKEN_GREATER; break;
+        case '.': if (match('.')) token = TOKEN_DOT_DOT;       else token = TOKEN_DOT;     break;
+        case '-': if (match('>')) token = TOKEN_ARROW;         else token = TOKEN_MINUS;   break;
+        default:  return errorToken("Invalid character.");
     }
-    return errorToken("Invalid character.");
+    return makeToken(token);
 }

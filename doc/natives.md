@@ -16,10 +16,10 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | atan        | num                    | real        | all          | inverse tangent                                                                   |  
 | bin         | int                    | string      | all          | *int* as binary string                                                            |
 | bit_and     | int, int               | int         | all          | bitwise AND of 2 integers                                                         |
-| bit_not     | int                    | int         | all          | bitwise NOT of a integer                                                          |
+| bit_not     | int                    | int         | all          | bitwise NOT of an integer                                                         |
 | bit_or      | int, int               | int         | all          | bitwise inclusive OR of 2 integers                                                |
 | bit_shift   | int, int               | int         | all          | first integer shifted left, if second positive, right if negative by second int   |
-| bit_xor     | int, int               | int         | all          | bitwise exclusive OR of 2 integer                                                 |
+| bit_xor     | int, int               | int         | all          | bitwise exclusive OR of 2 integers                                                |
 | chr         | int                    | string      | all          | character with ASCII code *int*                                                   |
 | clock       | -                      | int         | all          | runtime in milliseconds after start                                               |  
 | cos         | num                    | real        | all          | cosine                                                                            |  

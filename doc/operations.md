@@ -7,6 +7,8 @@
 
 
 ### Bool
+Works for any type, used in a boolean context
+ 
 `! and if for or while`
 
 
@@ -33,7 +35,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### Instance
-`[] . class_of clone init remove slots this`
+`[] . class_of clone init remove slots super this`
 
 
 ### Closure
@@ -41,7 +43,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### Native
-`() native_addr`
+`() native_name`
 
 
 ### Bound
@@ -71,9 +73,10 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 ## Some numbers
 * 18 keywords
-* 65 native functions
+* 67 native functions
 * 61 VM opcodes
 * 12 data types
+* about 6000 lines source code
 * 48 k bytes code size on 68008 kit
 * Performance
   * 7k ops on 68008 kit

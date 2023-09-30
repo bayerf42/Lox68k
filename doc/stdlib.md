@@ -41,7 +41,7 @@ You can start Lox68k with or without the standard library:
 | max          | string, string        | string      | maximum of arguments                                                              |  
 | min          | num, num              | num         | minimum of arguments                                                              |  
 | min          | string, string        | string      | minimum of arguments                                                              |  
-| native_addr  | native                | int         | address of *native*                                                               |  
+| native_name  | native                | string      | name of *native*                                                                  |  
 | peekl        | int                   | int         | reads 31 bit long from address *int*                                              |  
 | peekw        | int                   | int         | reads 16 bit word from address *int*                                              |  
 | pi           |                       | real        | variable containing pi = 3.1415926535897932384626433                              |  
