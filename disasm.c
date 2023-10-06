@@ -101,7 +101,6 @@ int disassembleInst(Chunk* chunk, int offset) {
         case OP_DIV:           return simpleInst("DIV", offset);
         case OP_MOD:           return simpleInst("MOD", offset);
         case OP_NOT:           return simpleInst("NOT", offset);
-        case OP_NEG:           return simpleInst("NEG", offset);
         case OP_PRINT:         return simpleInst("PRINT", offset);
         case OP_PRINTLN:       return simpleInst("PRINTLN", offset);
         case OP_JUMP:          return jumpInst("JUMP", 1, chunk, offset);

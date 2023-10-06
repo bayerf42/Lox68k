@@ -9,7 +9,6 @@ void handleInterrupts(bool enable);
 void startTicker(void);
 
 extern uint32_t rand32;
-extern int32_t  ticks;
 extern bool     onKit;
 
 #endif

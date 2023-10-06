@@ -340,13 +340,13 @@ static InterpretResult run(void) {
                 push(constant);
                 break;
 
-            case OP_NIL:   push(NIL_VAL);         break;
-            case OP_TRUE:  push(BOOL_VAL(true));  break;
-            case OP_FALSE: push(BOOL_VAL(false)); break;
-            case OP_ZERO:  push(INT_VAL(0));      break;
-            case OP_ONE:   push(INT_VAL(1));      break;
-            case OP_POP:   drop();                break;
-            case OP_DUP:   push(peek(0));         break;
+            case OP_NIL:   push(NIL_VAL);    break;
+            case OP_TRUE:  push(TRUE_VAL);   break;
+            case OP_FALSE: push(FALSE_VAL);  break;
+            case OP_ZERO:  push(INT_VAL(0)); break;
+            case OP_ONE:   push(INT_VAL(1)); break;
+            case OP_POP:   drop();           break;
+            case OP_DUP:   push(peek(0));    break;
 
             case OP_SWAP:
                 aVal    = peek(0);
@@ -614,17 +614,6 @@ static InterpretResult run(void) {
 
             case OP_NOT:
                 peek(0) = BOOL_VAL(IS_FALSEY(peek(0)));
-                break;
-
-            case OP_NEG:
-                if (IS_INT(peek(0)))
-                    peek(0) = INT_VAL(-AS_INT(peek(0)));
-                else if (IS_REAL(peek(0)))
-                    peek(0) = makeReal(neg(AS_REAL(peek(0))));
-                else {
-                    runtimeError("Can't %s type %s.", "negate", valueType(peek(0)));
-                    return INTERPRET_RUNTIME_ERROR;
-                }
                 break;
 
             case OP_PRINT:

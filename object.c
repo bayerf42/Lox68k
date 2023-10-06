@@ -407,8 +407,10 @@ const char* formatReal(Real val, char* actBuffer) {
     for (dest = estr ? estr : actBuffer + strlen(actBuffer);
          dest[-1] == '0' && dest[-2] != '.';)
         *--dest = '\0';
+    // Move exponent over squeezed zeros
     if (estr)
-        memmove(dest, estr, 6);
+        while ((*dest++ = *estr++) != 0)
+            ;
 
     if (actBuffer[0] == '+')
         return actBuffer + 1;

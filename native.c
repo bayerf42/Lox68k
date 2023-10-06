@@ -10,11 +10,10 @@
 #include "memory.h"
 #include "vm.h"
 
-int32_t ticks;
 bool    onKit;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Typechecking natives 
+// Typechecking natives
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static const char* matchesType(Value value, int type) {
@@ -42,7 +41,7 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
     // Trailing lower-case letters in signature indicate optional arguments.
     while (i--)
         if (*--currParm) {
-            ++maxParmCount;  
+            ++maxParmCount;
             if (!(*currParm & 0x20))
                 ++minParmCount;
         }
@@ -167,7 +166,7 @@ static bool lengthNative(int argCount, Value* args) {
 
 static bool listNative(int argCount, Value* args) {
     Value    item = (argCount == 2) ? args[1] : NIL_VAL;
-    Int      len  = AS_INT(args[0]); 
+    Int      len  = AS_INT(args[0]);
     ObjList* list = makeList(len, &item, len, 0);
     args[-1] = OBJ_VAL(list);
     return true;
@@ -666,7 +665,7 @@ static bool sleepNative(int argCount, Value* args) {
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// System 
+// System
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static bool gcNative(int argCount, Value* args) {
@@ -683,7 +682,7 @@ static bool typeNative(int argCount, Value* args) {
 
 static bool clockNative(int argCount, Value* args) {
 #ifdef KIT68K
-    args[-1] = INT_VAL(clock() * 10);   // CLOCKS_PER_SEC == 100 
+    args[-1] = INT_VAL(clock() * 10);   // CLOCKS_PER_SEC == 100
 #else
 #ifdef _WIN32
     args[-1] = INT_VAL(clock());        // CLOCKS_PER_SEC == 1000
@@ -695,7 +694,7 @@ static bool clockNative(int argCount, Value* args) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Setup everyting 
+// Setup everyting
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef struct {
     const char* name;
@@ -811,13 +810,9 @@ void defineAllNatives() {
 
 #ifdef KIT68K
 
-#define INTERRUPT2_VECTOR ((long*)0x0068)
-
-extern void ticker(void); // in cstart_lox_rom.asm
-
 void startTicker(void) {
-    ticks = 0;
-    *INTERRUPT2_VECTOR = (long)ticker;
+    clock()     = 0;
+    IRQ2_VECTOR = (void *)ticker;
     // ANDI  #$f0ff,SR  ; clear interrupt mask in status register
     _word(0x027c); _word(0xf0ff);
 }

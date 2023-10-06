@@ -16,7 +16,6 @@ Real exp(Real x);
 Real log(Real x);
 Real pow(Real x, Real y);
 
-Real neg(Real x);
 Real add(Real x, Real y);
 Real sub(Real x, Real y);
 Real mul(Real x, Real y);

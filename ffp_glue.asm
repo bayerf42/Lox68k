@@ -115,14 +115,6 @@ _pow
        movem.l (a7)+,d6-d7
        rts
 
-_neg
-       move.l  d7,-(a7)
-       move.l  (8,a7),d7
-       jsr     ffp_neg
-       move.l  d7,d0
-       move.l  (a7)+,d7
-       rts
-
 _add
        movem.l d3-d7,-(a7)
        move.l  (24,a7),d7
@@ -213,7 +205,7 @@ _realToStr
        move.l  (a7)+,(a0)+
        move.l  (a7)+,(a0)+
        move.w  (a7)+,(a0)+
-       move.b  #0,(a0)         ; Terminate string
+       clr.b   (a0)            ; Terminate string
        move.l  (a7)+,d7
        rts
 

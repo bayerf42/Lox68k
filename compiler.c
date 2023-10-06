@@ -626,12 +626,18 @@ static void or_(bool canAssign) {
 }
 
 static void unary(bool canAssign) {
-    TokenType operatorType = parser.previous.type;
+    switch (parser.previous.type) {
+        case TOKEN_BANG:
+            parsePrecedence(PREC_UNARY);
+            emitByte(OP_NOT);
+            break;
 
-    parsePrecedence(PREC_UNARY);
-    switch (operatorType) {
-        case TOKEN_BANG:  emitByte(OP_NOT); break;
-        case TOKEN_MINUS: emitByte(OP_NEG); break;
+        case TOKEN_MINUS:
+            emitConstant(INT_VAL(0)); 
+            parsePrecedence(PREC_UNARY);
+            emitByte(OP_SUB);
+            break;
+
         default: return; // Unreachable
     }
 }

@@ -12,6 +12,7 @@ stklen     equ         $4000           ; Default stacksize
 
 magic_val  equ         $1138           ; If this value is stored
 magic_addr equ         $200            ; at this address, we run on the 68008 SBC
+ticks      equ         $268            ; monitor variable counting 100 Hz ticks
 
 
 ; Official monitor entry points in 4.x   
@@ -121,7 +122,7 @@ __stackoverflow:                       ; label for manual check
            jsr         $04010c         ; entry to _pstring in Monitor 4.x
            bra         __exit          ; abort program
 
-_ticker    addq.l      #1,_ticks.w     ; 10 ms interrupt handler
+_ticker    addq.l      #1,ticks.w      ; 10 ms interrupt handler
            rte
 
            section     const

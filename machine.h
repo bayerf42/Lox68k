@@ -27,8 +27,6 @@ typedef short          bool;
 
 #define WRAP_BIG_ENDIAN
 
-extern void memmove(void *, void *, int);
-
 #define GETS(var) gets(var)
 
 // Real number implementation
@@ -53,7 +51,10 @@ extern void _stackoverflow(void);
   _word(0x6c06); \
   _stackoverflow();
 
-#define clock() ticks
+// Using the 100 Hz IRQ as a timer
+#define clock()     (*((int32_t*)0x0268))
+#define IRQ2_VECTOR (*((int32_t*)0x0068))
+extern void ticker(void); // in cstart_lox_rom.asm
 
 // Only on Kit: Check, if button REP is pressed
 #define INTERRUPTED()       (onKit && (*((char*)0x80000) & 0x40) == 0)
@@ -78,7 +79,6 @@ typedef double Real;
 #define intToReal(x)   (x)
 #define realToInt(x)   ((Int)(x))
 #define strToReal(s,e) strtod(s,e)
-#define neg(x)         (-(x))
 #define add(x,y)       ((x)+(y))
 #define sub(x,y)       ((x)-(y))
 #define mul(x,y)       ((x)*(y))

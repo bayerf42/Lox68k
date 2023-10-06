@@ -69,12 +69,12 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 `lcd_clear lcd_defchar lcd_goto lcd_puts`
 
 ### Debugging
-`dbg_code dbg_gc dbg_stat dbg_trace`
+`dbg_call dbg_code dbg_gc dbg_nat dbg_stat dbg_step`
 
 ## Some numbers
 * 18 keywords
 * 67 native functions
-* 61 VM opcodes
+* 60 VM opcodes
 * 12 data types
 * about 6000 lines source code
 * 48 k bytes code size on 68008 kit

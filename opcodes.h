@@ -29,7 +29,6 @@ typedef enum {
     OP_DIV,           // divide 2 TOS values
     OP_MOD,           // remainder of 2 TOS values 
     OP_NOT,           // invert logical value of TOS
-    OP_NEG,           // invert sign of TOS 
     OP_PRINT,         // print TOS
     OP_PRINTLN,       // print TOS, print newline
     OP_JUMP,          // jump forwards  by word0 bytes
