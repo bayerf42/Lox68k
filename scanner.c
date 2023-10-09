@@ -207,7 +207,7 @@ static Token number(char start) {
     bool isReal        = false;
 
     if (start == '%')
-        while (peek() == '0' || peek() == '1')
+        while ((peek() | 0x01) == '1') // '0' or '1'
             advance();
     else if (start == '$')
         while (isxdigit(peek()))
@@ -225,7 +225,7 @@ static Token number(char start) {
                 advance();
         }
         // Look for exponential part
-        if (peek() == 'e' || peek() == 'E') {
+        if ((peek() | 0x20) == 'e') { // 'E' or 'e'
             advance();
             isReal = true;
             if (peek() == '+' || peek() == '-')
