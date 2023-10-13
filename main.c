@@ -18,10 +18,7 @@ const char* loxLibSrc;
 static void repl(void) {
     for (;;) {
         printf("> ");
-        if (!GETS(input_line)) {
-            printf("\n");
-            break;
-        }
+        GETS(input_line)
         interpret(input_line);
     }
 }
@@ -96,11 +93,8 @@ static bool runFile(const char* path) {
 static void repl(void) {
     for (;;) {
         printf("> ");
+        GETS(input_line)
 
-        if (!GETS(input_line)) {
-            printf("\n");
-            break;
-        }
         if (input_line[0] == '&') {
             *strchr(input_line, '\n') = '\0';
             runFile(input_line + 1);

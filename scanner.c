@@ -148,48 +148,50 @@ static TokenType identifierType(void) {
     int  args      = 0;
     char c         = scanner.start[0];
 
-    // Use a hard-coded trie to recognize keywords
-    // bisect on first char to reduce number of sequential comparisons
-    if (c <= 'n') {
-        if      (c == 'a')                 args = WRAP(1, 2,  6, TOKEN_AND);
-        else if (c == 'c') {
-            if (id_length > 1) {
-                c = scanner.start[1];
-                if      (c == 'a')         args = WRAP(2, 2, 12, TOKEN_CASE);
-                else if (c == 'l')         args = WRAP(2, 3,  8, TOKEN_CLASS);
+    if (c & LOWER_CASE_MASK) { // only lower-case names can be keywords
+        // Use a hard-coded trie to recognize keywords
+        // bisect on first char to reduce number of sequential comparisons
+        if (c <= 'n') {
+            if      (c == 'a')                 args = WRAP(1, 2,  6, TOKEN_AND);
+            else if (c == 'c') {
+                if (id_length > 1) {
+                    c = scanner.start[1];
+                    if      (c == 'a')         args = WRAP(2, 2, 12, TOKEN_CASE);
+                    else if (c == 'l')         args = WRAP(2, 3,  8, TOKEN_CLASS);
+                }
             }
-        }
-        else if (c == 'e')                 args = WRAP(1, 3, 11, TOKEN_ELSE);
-        else if (c == 'f') {
-            if (id_length > 1) {
-                c = scanner.start[1];
-                if      (c == 'a')         args = WRAP(2, 3, 11, TOKEN_FALSE);
-                else if (c == 'o')         args = WRAP(2, 1,  5, TOKEN_FOR);
-                else if (c == 'u')         args = WRAP(2, 1,  6, TOKEN_FUN);
+            else if (c == 'e')                 args = WRAP(1, 3, 11, TOKEN_ELSE);
+            else if (c == 'f') {
+                if (id_length > 1) {
+                    c = scanner.start[1];
+                    if      (c == 'a')         args = WRAP(2, 3, 11, TOKEN_FALSE);
+                    else if (c == 'o')         args = WRAP(2, 1,  5, TOKEN_FOR);
+                    else if (c == 'u')         args = WRAP(2, 1,  6, TOKEN_FUN);
+                }
             }
-        }
-        else if (c == 'i')                 args = WRAP(1, 1, 14, TOKEN_IF);
-        else if (c == 'n')                 args = WRAP(1, 2,  0, TOKEN_NIL);
-    } else {  // c >  'n' 
-        if      (c == 'o')                 args = WRAP(1, 1,  5, TOKEN_OR);
-        else if (c == 'p')                 args = WRAP(1, 4, 16, TOKEN_PRINT);
-        else if (c == 'r')                 args = WRAP(1, 5,  2, TOKEN_RETURN);
-        else if (c == 's')                 args = WRAP(1, 4, 20, TOKEN_SUPER);
-        else if (c == 't') {
-            if (id_length > 1) {
-                c = scanner.start[1];
-                if      (c == 'h')         args = WRAP(2, 2, 24, TOKEN_THIS);
-                else if (c == 'r')         args = WRAP(2, 2, 26, TOKEN_TRUE);
+            else if (c == 'i')                 args = WRAP(1, 1, 14, TOKEN_IF);
+            else if (c == 'n')                 args = WRAP(1, 2,  0, TOKEN_NIL);
+        } else {  // c >  'n' 
+            if      (c == 'o')                 args = WRAP(1, 1,  5, TOKEN_OR);
+            else if (c == 'p')                 args = WRAP(1, 4, 16, TOKEN_PRINT);
+            else if (c == 'r')                 args = WRAP(1, 5,  2, TOKEN_RETURN);
+            else if (c == 's')                 args = WRAP(1, 4, 20, TOKEN_SUPER);
+            else if (c == 't') {
+                if (id_length > 1) {
+                    c = scanner.start[1];
+                    if      (c == 'h')         args = WRAP(2, 2, 24, TOKEN_THIS);
+                    else if (c == 'r')         args = WRAP(2, 2, 26, TOKEN_TRUE);
+                }
             }
-        }
-        else if (c == 'v')                 args = WRAP(1, 2, 15, TOKEN_VAR);
-        else if (c == 'w') {
-            if (id_length > 1 &&
-                scanner.start[1] == 'h' &&
-                id_length > 2) {
-                c = scanner.start[2];
-                if      (c == 'e')         args = WRAP(3, 1,  6, TOKEN_WHEN);
-                else if (c == 'i')         args = WRAP(3, 2,  1, TOKEN_WHILE);
+            else if (c == 'v')                 args = WRAP(1, 2, 15, TOKEN_VAR);
+            else if (c == 'w') {
+                if (id_length > 1 &&
+                    scanner.start[1] == 'h' &&
+                    id_length > 2) {
+                    c = scanner.start[2];
+                    if      (c == 'e')         args = WRAP(3, 1,  6, TOKEN_WHEN);
+                    else if (c == 'i')         args = WRAP(3, 2,  1, TOKEN_WHILE);
+                }
             }
         }
     }
@@ -225,7 +227,7 @@ static Token number(char start) {
                 advance();
         }
         // Look for exponential part
-        if ((peek() | 0x20) == 'e') { // 'E' or 'e'
+        if ((peek() | LOWER_CASE_MASK) == 'e') { // 'E' or 'e'
             advance();
             isReal = true;
             if (peek() == '+' || peek() == '-')

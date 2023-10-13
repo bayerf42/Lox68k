@@ -27,7 +27,7 @@ typedef short          bool;
 
 #define WRAP_BIG_ENDIAN
 
-#define GETS(var) gets(var)
+#define GETS(var) gets(var);
 
 // Real number implementation
 typedef int32_t Real; // sic!
@@ -71,7 +71,7 @@ extern void ticker(void); // in cstart_lox_rom.asm
 #include <errno.h>
 #include <time.h>
 
-#define GETS(var) fgets(var, sizeof(var), stdin)
+#define GETS(var) { fgets(var, sizeof(var), stdin); var[strcspn(var, "\n")] = 0; }
 
 // Real number implementation
 #include <math.h>
@@ -106,5 +106,6 @@ typedef double Real;
 #define GRAY_MAX     1024
 
 #define PRINT_SEPARATOR "   "
+#define LOWER_CASE_MASK 0x20
 
 #endif

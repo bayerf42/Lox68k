@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <time.h>
-#include <ctype.h>
+//#include <ctype.h>
 
 #include "object.h"
 #include "native.h"
@@ -42,7 +42,7 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
     while (i--)
         if (*--currParm) {
             ++maxParmCount;
-            if (!(*currParm & 0x20))
+            if (!(*currParm & LOWER_CASE_MASK))
                 ++minParmCount;
         }
 
@@ -56,7 +56,7 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
     }
 
     for (i = 0; i < argCount; i++) {
-        expected = matchesType(args[i], signature[i] & ~0x20);
+        expected = matchesType(args[i], signature[i] & ~LOWER_CASE_MASK);
         if (expected != NULL) {
             runtimeError("Type mismatch at argument %d, expected %s but got %s.",
                          i + 1, expected, valueType(args[i]));
@@ -369,7 +369,7 @@ static bool parseRealNative(int argCount, Value* args) {
 static bool inputNative(int argCount, Value* args) {
     if (argCount > 0)
         printf("%s ", AS_CSTRING(args[0]));
-    GETS(input_line);
+    GETS(input_line)
     args[-1] = OBJ_VAL(makeString(input_line, strlen(input_line)));
     return true;
 }
