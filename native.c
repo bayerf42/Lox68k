@@ -369,7 +369,7 @@ static bool parseRealNative(int argCount, Value* args) {
 static bool inputNative(int argCount, Value* args) {
     if (argCount > 0)
         printf("%s ", AS_CSTRING(args[0]));
-    GETS(input_line)
+    getline();
     args[-1] = OBJ_VAL(makeString(input_line, strlen(input_line)));
     return true;
 }
@@ -520,11 +520,6 @@ static bool heapNative(int argCount, Value* args) {
     int32_t address = AS_INT(args[0]);
     args[-1] = *((Value*)address);
     return true;
-}
-
-static bool errorNative(int argCount, Value* args) {
-    runtimeError("User error: %s", AS_CSTRING(args[0]));
-    return false;
 }
 
 #ifdef KIT68K
@@ -680,6 +675,11 @@ static bool typeNative(int argCount, Value* args) {
     return true;
 }
 
+static bool errorNative(int argCount, Value* args) {
+    runtimeError("User error: %s", AS_CSTRING(args[0]));
+    return false;
+}
+
 static bool clockNative(int argCount, Value* args) {
 #ifdef KIT68K
     args[-1] = INT_VAL(clock() * 10);   // CLOCKS_PER_SEC == 100
@@ -692,6 +692,18 @@ static bool clockNative(int argCount, Value* args) {
 #endif
     return true;
 }
+
+char* getline() {
+#ifdef KIT68K
+    return gets(input_line);
+#else
+    char* res = fgets(input_line, sizeof(input_line), stdin);
+    if (res)
+        input_line[strcspn(input_line, "\n")] = 0;
+    return res;      
+#endif
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Setup everyting

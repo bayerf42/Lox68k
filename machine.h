@@ -27,8 +27,6 @@ typedef short          bool;
 
 #define WRAP_BIG_ENDIAN
 
-#define GETS(var) gets(var);
-
 // Real number implementation
 typedef int32_t Real; // sic!
 #include "ffp_glue.h"
@@ -70,8 +68,6 @@ extern void ticker(void); // in cstart_lox_rom.asm
 #include <stdint.h>
 #include <errno.h>
 #include <time.h>
-
-#define GETS(var) { fgets(var, sizeof(var), stdin); var[strcspn(var, "\n")] = 0; }
 
 // Real number implementation
 #include <math.h>
