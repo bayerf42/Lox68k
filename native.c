@@ -369,8 +369,10 @@ static bool parseRealNative(int argCount, Value* args) {
 static bool inputNative(int argCount, Value* args) {
     if (argCount > 0)
         printf("%s ", AS_CSTRING(args[0]));
-    getline();
-    args[-1] = OBJ_VAL(makeString(input_line, strlen(input_line)));
+    if (readLine())
+        args[-1] = OBJ_VAL(makeString(input_line, strlen(input_line)));
+    else
+        args[-1] = NIL_VAL;
     return true;
 }
 
@@ -693,7 +695,7 @@ static bool clockNative(int argCount, Value* args) {
     return true;
 }
 
-char* getline() {
+char* readLine() {
 #ifdef KIT68K
     return gets(input_line);
 #else

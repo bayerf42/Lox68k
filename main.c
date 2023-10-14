@@ -18,7 +18,7 @@ const char* loxLibSrc;
 static void repl(void) {
     for (;;) {
         printf("> ");
-        getline();
+        readLine();
         interpret(input_line);
     }
 }
@@ -93,7 +93,7 @@ static bool runFile(const char* path) {
 static void repl(void) {
     for (;;) {
         printf("> ");
-        if (!getline()) {
+        if (!readLine()) {
             printf("\n");
             break;
         }
