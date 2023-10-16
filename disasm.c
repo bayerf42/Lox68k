@@ -69,18 +69,16 @@ static void closureInst(const char* name) {
 }
 
 static void disassembleIntern(void) {
-    int instruction;
-    int line;
+    int opcd = chunk->code[offset];
+    int line = getLine(chunk, offset);
 
     printf("%04d ", offset);
-    line = getLine(chunk, offset);
     if (offset > 0 && line == getLine(chunk, offset - 1))
         printf("   | ");
     else
         printf("%4d ", line);
 
-    instruction = chunk->code[offset];
-    switch (instruction) {
+    switch (opcd) {
         case OP_CONSTANT:      constInst("CONST");      break;
         case OP_NIL:           simpleInst("NIL");       break;
         case OP_TRUE:          simpleInst("TRUE");      break;
@@ -142,7 +140,7 @@ static void disassembleIntern(void) {
         case OP_SET_ITVAL:     simpleInst("SET_ITVAL"); break;
         case OP_GET_ITKEY:     simpleInst("GET_ITKEY"); break;
         default:
-            printf("Unknown opcode %d", instruction);
+            printf("Unknown opcode %d", opcd);
             ++offset;
     }
 }
