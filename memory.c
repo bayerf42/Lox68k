@@ -62,6 +62,7 @@ void markObject(Obj* object) {
     object->isMarked = true;
 
     switch (object->type) {
+        case OBJ_NATIVE:
         case OBJ_REAL:
         case OBJ_STRING:
             // Leaf object, nothing to do
@@ -129,10 +130,6 @@ static void blackenObject(Obj* object) {
 
         case OBJ_LIST:
             markArray(&((ObjList*)object)->arr);
-            break;
-
-        case OBJ_NATIVE:
-            markObject((Obj*)((ObjNative*)object)->name);
             break;
 
         case OBJ_UPVALUE:

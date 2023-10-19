@@ -112,7 +112,6 @@ struct ObjNative {
     OBJ_HEADER
     Signature    signature;
     NativeFn     function;
-    ObjString*   name;
 };
 
 struct ObjReal {
@@ -145,7 +144,7 @@ ObjFunction* makeFunction(void);
 ObjInstance* makeInstance(ObjClass* klass);
 ObjIterator* makeIterator(Table* table, ObjInstance* instance);
 ObjList*     makeList(int len, Value* items, int numCopy, int stride);
-ObjNative*   makeNative(const char* signature, NativeFn function, ObjString* name);
+ObjNative*   makeNative(const char* signature, NativeFn function);
 Value        makeReal(Real val);
 ObjString*   makeString(const char* chars, int length);
 ObjUpvalue*  makeUpvalue(Value* slot);
@@ -172,6 +171,7 @@ const char*  formatReal(Real val, char* actBuffer);
 const char*  formatInt(Int val);
 const char*  formatHex(Int val);
 const char*  formatBin(Int val);
+const char*  functionName(ObjFunction* function);
 Value        parseInt(const char* start, bool checkLen);
 
 extern char  buffer[];

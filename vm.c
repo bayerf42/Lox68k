@@ -17,10 +17,6 @@ static void resetStack(void) {
     vm.openUpvalues = NULL;
 }
 
-static const char* funName(ObjFunction* fun) {
-    return (fun->name == NULL) ? "<script>" : fun->name->chars;
-}
-
 static void indentCallTrace(void) {
     int depth = vm.frameCount;
     while (depth--)
@@ -34,7 +30,6 @@ static void printArgList(int argCount, Value* args) {
         separator = ", ";
         printValue(*args++, false, true);
     } 
-    printf(")\n");
 }
 
 void runtimeError(const char* format, ...) {
@@ -53,7 +48,7 @@ void runtimeError(const char* format, ...) {
         frame       = &vm.frames[i];
         function    = frame->closure->function;
         instruction = frame->ip - function->chunk.code - 1;
-        printf("[line %d] in %s\n", getLine(&function->chunk, instruction), funName(function));
+        printf("[line %d] in %s\n", getLine(&function->chunk, instruction), functionName(function));
     }
     resetStack();
 }
@@ -113,8 +108,9 @@ static bool call(ObjClosure* closure, int argCount) {
 
     if (vm.debug_trace_calls) {
         indentCallTrace();
-        printf("--> %s (", funName(closure->function));
+        printf("--> %s (", functionName(closure->function));
         printArgList(argCount, vm.sp - argCount);
+        printf(")\n");
     }
 
     arity = closure->function->arity & ARITY_MASK;
@@ -142,8 +138,9 @@ static bool call(ObjClosure* closure, int argCount) {
 static bool callValue(Value callee, int argCount) {
     ObjNative* native;
     ObjClass*  klass;
-    Value      initializer = NIL_VAL;
     ObjBound*  bound;
+    Value      initializer = NIL_VAL;
+    bool       logNatRes   = false;
 
     if (IS_OBJ(callee)) {
         switch (OBJ_TYPE(callee)) {
@@ -170,20 +167,20 @@ static bool callValue(Value callee, int argCount) {
                 native = AS_NATIVE(callee);
 
                 if (vm.debug_trace_natives) {
-                    indentCallTrace();
-                    printf("--> <native %s> (", native->name->chars);
+                    if (vm.debug_trace_calls)
+                        indentCallTrace();
+                    logNatRes = true;
+                    printf("--- %s (", nativeName(native->function));
                     printArgList(argCount, vm.sp - argCount);
+                    printf(") -> ");
                 }
 
-                if (!checkNativeSignature(native->signature, argCount, vm.sp - argCount))
-                    return false;
-                if (!(*native->function)(argCount, vm.sp - argCount))
+                if (!checkNativeSignature(native->signature, argCount, vm.sp - argCount) ||
+                    !(*native->function)(argCount, vm.sp - argCount))
                     return false;
                 vm.sp -= argCount;
 
-                if (vm.debug_trace_natives) {
-                    indentCallTrace();
-                    printf("<-- <native %s> ", native->name->chars);
+                if (logNatRes) {
                     printValue(vm.sp[-1], false, true);
                     printf("\n");
                 } 
@@ -753,7 +750,7 @@ static InterpretResult run(void) {
 
                 if (vm.debug_trace_calls) {
                     indentCallTrace();
-                    printf("<-- %s ", funName(frame->closure->function));
+                    printf("<-- %s ", functionName(frame->closure->function));
                     printValue(resVal, false, true);
                     printf("\n");
                 }

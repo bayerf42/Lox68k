@@ -7,7 +7,7 @@
 #include "memory.h"
 #include "vm.h"
 
-#define VERSION "V1.4pre"
+#define VERSION "V1.4"
 
 #ifdef KIT68K
 

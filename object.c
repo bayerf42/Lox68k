@@ -3,10 +3,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include "native.h"
 #include "memory.h"
 #include "object.h"
-#include "table.h"
-#include "value.h"
 #include "vm.h"
 
 char buffer[48];      // general purpose: debugging, numbers, error messages
@@ -114,7 +113,7 @@ ObjList* makeList(int len, Value* items, int numCopy, int stride) {
     return list;
 }
 
-ObjNative* makeNative(const char* signature, NativeFn function, ObjString* name) {
+ObjNative* makeNative(const char* signature, NativeFn function) {
     ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
     char* dest        = native->signature;
     int   maxChars    = sizeof(Signature);
@@ -123,7 +122,6 @@ ObjNative* makeNative(const char* signature, NativeFn function, ObjString* name)
     while (maxChars-- && (*dest++ = *signature++) != 0)
         ;    
     native->function = function;
-    native->name     = name;
     return native;
 }
 
@@ -166,6 +164,10 @@ ObjUpvalue* makeUpvalue(Value* slot) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object printing 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const char* functionName(ObjFunction* function) {
+    return (function->name == NULL) ? "<script>" : function->name->chars;
+}
 
 static void printFunction(const char* subType, ObjFunction* function) {
     if (function->name == NULL)
@@ -225,7 +227,7 @@ void printObject(Value value, bool compact, bool machine) {
             if (compact)   printf("<list %d>", AS_LIST(value)->arr.count);
             else           printList(AS_LIST(value));
             break;
-        case OBJ_NATIVE:   printf("<native %s>", AS_NATIVE(value)->name->chars); break;
+        case OBJ_NATIVE:   printf("<native %s>", nativeName(AS_NATIVE(value)->function)); break;
         case OBJ_REAL:     printf("%s", formatReal(AS_REAL(value), buffer)); break;
         case OBJ_STRING:
             if (machine)   fix_printf("\"");

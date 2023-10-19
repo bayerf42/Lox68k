@@ -3,7 +3,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <time.h>
-//#include <ctype.h>
 
 #include "object.h"
 #include "native.h"
@@ -801,21 +800,31 @@ static const Native allNatives[] = {
 void defineAllNatives() {
     int           natCount = sizeof(allNatives) / sizeof(Native);
     const Native* currNat  = allNatives;
-    ObjString*    name;
 
     push(NIL_VAL);
     push(NIL_VAL);
 
     while (natCount--) {
-        name        = makeString(currNat->name, strlen(currNat->name));
-        vm.stack[0] = OBJ_VAL(name);
-        vm.stack[1] = OBJ_VAL(makeNative(currNat->signature, currNat->function, name));
+        vm.stack[0] = OBJ_VAL(makeString(currNat->name, strlen(currNat->name)));
+        vm.stack[1] = OBJ_VAL(makeNative(currNat->signature, currNat->function));
         tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
         currNat++;
     }
 
     drop();
     drop();
+}
+
+const char* nativeName(NativeFn native) {
+    int           natCount = sizeof(allNatives) / sizeof(Native);
+    const Native* currNat  = allNatives;
+
+    while (natCount--) {
+        if (currNat->function == native)
+            return currNat->name;
+        currNat++;
+    }
+    return "?";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

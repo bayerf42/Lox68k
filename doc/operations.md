@@ -43,7 +43,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### Native
-`() native_name`
+`()`
 
 
 ### Bound

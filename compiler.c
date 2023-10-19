@@ -270,8 +270,7 @@ static ObjFunction* endCompiler(bool addReturn) {
     function = currentComp->target;
 
     if (vm.debug_print_code && !parser.hadError)
-        disassembleChunk(currentChunk(), function->name != NULL
-                                       ? function->name->chars : "<script>");
+        disassembleChunk(currentChunk(), functionName(function));
 
     currentComp = currentComp->enclosing;
     return function;

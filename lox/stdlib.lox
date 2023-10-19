@@ -4,7 +4,6 @@ fun peekl(ad)        -> bit_or(bit_shift(peekw(ad + 2), 16), peekw(ad))
 fun fun_name(clo)    -> heap(addr(heap(addr(clo) + 8)) + 32)
 fun class_name(cls)  -> heap(addr(cls) + 8)
 fun class_of(ins)    -> heap(addr(ins) + 8)
-fun native_name(nat) -> heap(addr(nat) + 16)
 
 fun pokew(ad,v) {
   poke(ad, bit_and(v,$ff));
@@ -90,7 +89,7 @@ fun string(obj) {
     }
     when "instance": return obj.string();
     when "closure":  return "<closure " + fun_name(obj) + ">";
-    when "native":   return "<native " + native_name(obj) + ">";
+    when "native":   return "<native>";
     when "class":    return "<class " + class_name(obj) + ">";
     when "bound":    return "<bound>";
     when "iterator": return "<iterator>";
