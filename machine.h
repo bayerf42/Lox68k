@@ -72,7 +72,7 @@ extern void ticker(void); // in cstart_lox_rom.asm
 // Real number implementation
 #include <math.h>
 typedef double Real;
-#define intToReal(x)   (x)
+#define intToReal(x)   ((Real)(x))
 #define realToInt(x)   ((Int)(x))
 #define strToReal(s,e) strtod(s,e)
 #define add(x,y)       ((x)+(y))

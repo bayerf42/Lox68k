@@ -173,7 +173,8 @@ static bool listNative(int argCount, Value* args) {
 
 static bool reverseNative(int argCount, Value* args) {
     ObjList* src = AS_LIST(args[0]);
-    ObjList* res = makeList(src->arr.count, src->arr.values + src->arr.count - 1, src->arr.count, -1);
+    ObjList* res = makeList(src->arr.count, src->arr.values + src->arr.count - 1,
+                            src->arr.count, -1);
     args[-1] = OBJ_VAL(res);
     return true;
 }
@@ -238,6 +239,32 @@ static bool removeNative(int argCount, Value* args) {
     return true;
 }
 
+static bool equalNative(int argCount, Value* args) {
+    Value       a   = args[0];
+    Value       b   = args[1];
+    bool        res = false;
+    ObjIterator *ait, *bit;
+
+    if (IS_REAL(a)) {
+        if (IS_INT(b))
+            res = AS_REAL(a) == intToReal(AS_INT(b));
+        else if (IS_REAL(b))
+            res = AS_REAL(a) == AS_REAL(b);
+    } else if (IS_REAL(b)) {
+        if (IS_INT(a)) 
+            res = AS_REAL(b) == intToReal(AS_INT(a));  
+        else if (IS_REAL(a))
+            res = AS_REAL(b) == AS_REAL(b);
+    } else if (IS_ITERATOR(a) && IS_ITERATOR(b)) {
+        ait = AS_ITERATOR(a);  
+        bit = AS_ITERATOR(b);  
+        res = ait->table == bit->table && ait->position == bit->position;
+    } else
+        res  = a == b;
+    args[-1] = BOOL_VAL(res);
+    return true;
+}
+
 static bool lowerNative(int argCount, Value* args) {
     args[-1] = OBJ_VAL(caseString(AS_STRING(args[0]), false));
     return true;
@@ -281,13 +308,6 @@ static bool itCloneNative(int argCount, Value* args) {
     ObjIterator* dest = makeIterator(src->table, src->instance);
     dest->position = src->position;
     args[-1] = OBJ_VAL(dest);
-    return true;
-}
-
-static bool itSameNative(int argCount, Value* args) {
-    ObjIterator* iter1 = AS_ITERATOR(args[0]);
-    ObjIterator* iter2 = AS_ITERATOR(args[1]);
-    args[-1] = BOOL_VAL(iter1->table == iter2->table && iter1->position == iter2->position);
     return true;
 }
 
@@ -760,6 +780,7 @@ static const Native allNatives[] = {
     {"reverse",     "L",    reverseNative},
 
     {"remove",      "IA",   removeNative},
+    {"equal",       "AA",   equalNative},
     {"type",        "A",    typeNative},
     {"clock",       "",     clockNative},
     {"sleep",       "N",    sleepNative},
@@ -770,7 +791,6 @@ static const Native allNatives[] = {
     {"valid",       "T",    validNative},
     {"next",        "T",    nextNative},
     {"it_clone",    "T",    itCloneNative},
-    {"it_same",     "TT",   itSameNative},
 
     {"peek",        "N",    peekNative},
     {"poke",        "NN",   pokeNative},

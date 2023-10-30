@@ -41,13 +41,6 @@ const char* valueType(Value value) {
     else                       return typeName(OBJ_TYPE(value));
 }
 
-bool valuesEqual(Value a, Value b) {
-    if (IS_REAL(a) && IS_REAL(b))
-        return AS_REAL(a) == AS_REAL(b);
-    else 
-        return a == b;
-}
-
 uint32_t hashValue(Value value) {
     if      (IS_STRING(value)) return AS_STRING(value)->hash;
     else if (IS_REAL(value))   return hashBytes((uint8_t*)&AS_REAL(value), sizeof(Real));

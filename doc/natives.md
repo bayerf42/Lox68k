@@ -32,6 +32,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | dbg_step    | bool                   | bool        | all          | trace each VM instruction executed, prints stack                                  |  
 | dec         | num                    | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int              | nil         | all          | deletes element at *int* from *list*                                              |
+| equal       | val, val               | bool        | all          | More lenient than ==, numbers compared numerically, iterators for same position   |  
 | error       | string                 | *no return* | all          | Aborts program execution with error message *string*                              |  
 | exec        | int, val?, val?, val?  | val         | all          | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
 | exp         | num                    | real        | all          | exponential                                                                       |  
@@ -42,8 +43,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | index       | val, list, int?        | int or nil  | all          | search *val* in *list*, returns index where found, optional search start *int*    |  
 | input       | string?                | string      | all          | input string from terminal with optional prompt                                   |
 | insert      | list, int, val         | nil         | all          | inserts *val* into *list* at position *int*                                       |
-| it_clone    | iterator               | iterator    | all          | clones *iterator*. Both iterators move independently                              |
-| it_same     | iterator, iterator     | bool        | all          | Tests if both *iterator*s point to the same entry.                                |
+| it_clone    | iterator               | iterator    | all          | clones *iterator*. Both iterators move independently, compare them with equal     |
 | keycode     | -                      | int or nil  | Kit          | code of key currently pressed or nil                                              |  
 | lcd_clear   | -                      | nil         | Kit          | clears LCD                                                                        |  
 | lcd_defchar | int, list *of 8 bytes* | nil         | Kit          | creates a user-defined char with code *int* for LCD with bit pattern from *list*  |  

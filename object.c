@@ -419,6 +419,9 @@ const char* formatReal(Real val, char* actBuffer) {
 
 #else
     sprintf(actBuffer, "%.15g", val);
+    // Make sure it doesn't look like an int
+    if (!strpbrk(actBuffer, ".eE"))
+        strcat(actBuffer, ".0");
 #endif
 
     return actBuffer;

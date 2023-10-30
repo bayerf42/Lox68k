@@ -2,7 +2,6 @@
 
 class Demo < Object {
     init(..args) { // allow 0 args to be clonable
-        super.init();
         case (length(args)) {
             when 0: {} // clone, fields already copied in superclass
             when 1: this.x = args[0];

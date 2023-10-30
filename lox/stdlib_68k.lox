@@ -92,7 +92,6 @@ fun _bh(h,fmt) {
  return res;
 }
 class Object {
- init() {}
  string()->"<"+class_name(class_of(this))+" instance: "+_bh(this,fun(it)->string(it@)+":"+string(it^))+">" 
  clone() {
   var res=class_of(this)();
@@ -103,7 +102,6 @@ class Object {
 }
 class Map<Object {
  init(..args) {
-  super.init();
   var len=length(args);
   if (bit_and(1,len)==1) error("Map init list must have even length.");
   for (var i=0;i<len;i=i+2)
@@ -113,7 +111,6 @@ class Map<Object {
 }
 class Set<Object {
  init(..args) {
-  super.init();
   for (var i=0;i<length(args);i=i+1)
    this[args[i]]=true;
  }

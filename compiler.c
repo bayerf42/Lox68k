@@ -442,12 +442,6 @@ static int identifierConstant(Token* name) {
     return makeConstant(OBJ_VAL(makeString(name->start, name->length)));
 }
 
-static bool identifiersEqual(Token* a, Token* b) {
-    if (a->length != b->length)
-        return false;
-    return fix_memcmp(a->start, b->start, a->length) == 0;
-}
-
 static void list(bool canAssign) {
     bool isVarArg = false;
     int  argCount = argumentList(&isVarArg, TOKEN_RIGHT_BRACKET);
@@ -457,6 +451,12 @@ static void list(bool canAssign) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Variable handling
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static bool identifiersEqual(Token* a, Token* b) {
+    if (a->length != b->length)
+        return false;
+    return fix_memcmp(a->start, b->start, a->length) == 0;
+}
 
 static int resolveLocal(Compiler* compiler, Token* name) {
     int    i;

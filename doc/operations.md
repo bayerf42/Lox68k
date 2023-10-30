@@ -3,7 +3,7 @@
 ## Types
 
 ### Any
-`= == != addr case print return string type when`
+`= == != addr case equal print return string type when`
 
 
 ### Bool
@@ -51,7 +51,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### Iterator
-`@ ^ globals it_clone it_same next slots valid`
+`@ ^ globals it_clone next slots valid`
 
 
 ## Topics

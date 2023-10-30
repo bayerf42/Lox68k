@@ -31,6 +31,9 @@ typedef int32_t  Int;
 #define INT_VAL(num)     ((Value)(((num)<<1) | 1))
 #define OBJ_VAL(obj)     ((Value)(obj))
 
+// Fast version, use native equal to compare reals and iterators
+#define valuesEqual(a,b) ((a) == (b))
+
 typedef struct {
     int16_t count;
     int16_t capacity;
@@ -51,8 +54,6 @@ typedef struct ObjReal     ObjReal;
 typedef struct ObjString   ObjString;
 typedef struct ObjUpvalue  ObjUpvalue;
 
-
-bool        valuesEqual(Value a, Value b);
 void        initValueArray(ValueArray* array);
 void        appendValueArray(ValueArray* array, Value value);
 void        freeValueArray(ValueArray* array);
