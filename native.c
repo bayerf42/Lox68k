@@ -250,11 +250,8 @@ static bool equalNative(int argCount, Value* args) {
             res = AS_REAL(a) == intToReal(AS_INT(b));
         else if (IS_REAL(b))
             res = AS_REAL(a) == AS_REAL(b);
-    } else if (IS_REAL(b)) {
-        if (IS_INT(a)) 
-            res = AS_REAL(b) == intToReal(AS_INT(a));  
-        else if (IS_REAL(a))
-            res = AS_REAL(b) == AS_REAL(b);
+    } else if (IS_REAL(b) && IS_INT(a)) { 
+        res = AS_REAL(b) == intToReal(AS_INT(a));  
     } else if (IS_ITERATOR(a) && IS_ITERATOR(b)) {
         ait = AS_ITERATOR(a);  
         bit = AS_ITERATOR(b);  
