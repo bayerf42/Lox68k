@@ -242,20 +242,24 @@ void printObject(Value value, bool compact, bool machine) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Lists 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static void limitIndex(int* place, int n) {
+    if (*place < 0) *place += n;
+    if (*place < 0) *place  = 0;
+    if (*place > n) *place  = n;
+}
+
 void insertIntoList(ObjList* list, Value value, int index) {
     int oldCapacity, i;
-    int count = list->arr.count;
+    int n = list->arr.count;
 
     if (list->arr.capacity < list->arr.count + 1) {
         oldCapacity        = list->arr.capacity;
         list->arr.capacity = GROW_CAPACITY(oldCapacity);
         list->arr.values   = GROW_ARRAY(Value, list->arr.values, oldCapacity, list->arr.capacity);
     }
-    if (index < 0)
-        index = (index < -count) ? 0 : index + count;
-    if (index > count)
-        index = count;
-    for (i = count; i >= index; i--)
+    limitIndex(&index, n);
+    for (i = n; i >= index; i--)
         list->arr.values[i + 1] = list->arr.values[i];
     list->arr.values[index] = value;
     ++list->arr.count;
@@ -273,15 +277,11 @@ Value indexFromList(ObjList* list, int index) {
     return list->arr.values[index];
 }
 
-#define LIMIT_SLICE(var) \
-    if (var < 0) var += n; \
-    if (var < 0) var  = 0; \
-    if (var > n) var  = n
 
 ObjList* sliceFromList(ObjList* list, int begin, int end) {
     int n = list->arr.count;
-    LIMIT_SLICE(begin);
-    LIMIT_SLICE(end);
+    limitIndex(&begin, n);
+    limitIndex(&end,   n);
     return makeList(end - begin, &list->arr.values[begin], end - begin, 1);
 }
 
@@ -329,8 +329,8 @@ bool isValidStringIndex(ObjString* string, int index) {
 
 ObjString* sliceFromString(ObjString* string, int begin, int end) {
     int n = string->length;
-    LIMIT_SLICE(begin);
-    LIMIT_SLICE(end);
+    limitIndex(&begin, n);
+    limitIndex(&end,   n);
     return makeString(string->chars + begin, (end > begin) ? end - begin : 0);
 }
 

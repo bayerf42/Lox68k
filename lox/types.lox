@@ -2,7 +2,6 @@
 
 class Spam < Object {
   init(x) {
-    super.init();
     this.value = x;
   }
 
