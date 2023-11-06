@@ -440,7 +440,7 @@ static InterpretResult run(void) {
             case OP_EQUAL:
                 bVal = pop();
                 aVal = pop();
-                push(BOOL_VAL(valuesEqual(aVal, bVal)));
+                pushUnchecked(BOOL_VAL(valuesEqual(aVal, bVal)));
                 break;
 
             case OP_LESS:
@@ -448,7 +448,7 @@ static InterpretResult run(void) {
                     if (IS_INT(peek(1))) {
                         bInt = AS_INT(pop());
                         aInt = AS_INT(pop());
-                        push(BOOL_VAL(aInt < bInt));
+                        pushUnchecked(BOOL_VAL(aInt < bInt));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
@@ -481,7 +481,7 @@ static InterpretResult run(void) {
                     if (IS_INT(peek(1))) {
                         bInt = AS_INT(pop());
                         aInt = AS_INT(pop());
-                        push(INT_VAL(aInt + bInt));
+                        pushUnchecked(INT_VAL(aInt + bInt));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
@@ -521,7 +521,7 @@ static InterpretResult run(void) {
                     if (IS_INT(peek(1))) {
                         bInt = AS_INT(pop());
                         aInt = AS_INT(pop());
-                        push(INT_VAL(aInt - bInt));
+                        pushUnchecked(INT_VAL(aInt - bInt));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
@@ -549,7 +549,7 @@ static InterpretResult run(void) {
                     if (IS_INT(peek(1))) {
                         bInt = AS_INT(pop());
                         aInt = AS_INT(pop());
-                        push(INT_VAL(aInt * bInt));
+                        pushUnchecked(INT_VAL(aInt * bInt));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
@@ -577,7 +577,7 @@ static InterpretResult run(void) {
                     if (IS_INT(peek(1))) {
                         bInt = AS_INT(pop());
                         aInt = AS_INT(pop());
-                        push(INT_VAL(aInt / bInt));
+                        pushUnchecked(INT_VAL(aInt / bInt));
                         break;
                     } else if (IS_REAL(peek(1))) {
                         aReal = AS_REAL(peek(1));
@@ -604,7 +604,7 @@ static InterpretResult run(void) {
                 if (IS_INT(peek(0)) && IS_INT(peek(1))) {
                     bInt = AS_INT(pop());
                     aInt = AS_INT(pop());
-                    push(INT_VAL(aInt % bInt));
+                    pushUnchecked(INT_VAL(aInt % bInt));
                 } else
                     goto typeErrorDiv;
                 break;
@@ -760,7 +760,7 @@ static InterpretResult run(void) {
                     return INTERPRET_OK;
                 }
                 vm.sp = frame->fp;
-                push(resVal);
+                pushUnchecked(resVal);
                 goto updateFrame;
 
             case OP_CLASS:
@@ -815,7 +815,7 @@ static InterpretResult run(void) {
                 for (i = 0; i < itemCount; i++)
                     vm.sp[i] = aLst->arr.values[i];
                 vm.sp += itemCount;
-                push(INT_VAL(itemCount + argCount));
+                pushUnchecked(INT_VAL(itemCount + argCount));
                 break;
 
             case OP_GET_INDEX:
@@ -968,7 +968,7 @@ InterpretResult interpret(const char* source) {
     if (function == NULL)
         return INTERPRET_COMPILE_ERROR;
 
-    push(OBJ_VAL(function));
+    pushUnchecked(OBJ_VAL(function));
     closure = makeClosure(function);
     dropNpush(1, OBJ_VAL(closure));
     

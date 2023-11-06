@@ -54,7 +54,7 @@ int addConstant(Chunk* chunk, Value value) {
         if (valuesEqual(chunk->constants.values[i], value))
             return i;
 
-    push(value);
+    pushUnchecked(value);
     appendValueArray(&chunk->constants, value);
     drop();
     return chunk->constants.count - 1;

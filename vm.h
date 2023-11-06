@@ -61,8 +61,9 @@ InterpretResult interpret(const char* source);
 void            push(Value value);
 void            runtimeError(const char* format, ...);
 
-#define drop()         --vm.sp
-#define pop()          (*(--vm.sp))
-#define peek(distance) (vm.sp[-1 - (distance)])
+#define drop()               --vm.sp
+#define pop()                (*(--vm.sp))
+#define peek(distance)       (vm.sp[-1 - (distance)])
+#define pushUnchecked(value) *vm.sp++ = (value)
 
 #endif

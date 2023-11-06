@@ -818,8 +818,8 @@ void defineAllNatives() {
     int           natCount = sizeof(allNatives) / sizeof(Native);
     const Native* currNat  = allNatives;
 
-    push(NIL_VAL);
-    push(NIL_VAL);
+    pushUnchecked(NIL_VAL);
+    pushUnchecked(NIL_VAL);
 
     while (natCount--) {
         vm.stack[0] = OBJ_VAL(makeString(currNat->name, strlen(currNat->name)));
