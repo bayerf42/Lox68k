@@ -281,22 +281,3 @@ void freeObjects(void) {
         object = next;
     }
 }
-
-void fix_memcpy(char* dest, const char* src, size_t size) {
-    // Library memcpy has an alignment bug,
-    // leading to address error exception...
-
-    while (size--)
-        *dest++ = *src++;
-}
-
-int fix_memcmp(const char* a, const char* b, size_t size) {
-    int delta;
-
-    while (size--) {
-        delta = *b++ - *a++;
-        if (delta)
-            return delta;
-    }
-    return 0;
-}

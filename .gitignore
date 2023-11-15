@@ -7,6 +7,9 @@
 # FFP glue, manually
 !ffp_glue.asm
 
+# Kit utilities, manually
+!kit_util.asm
+
 
 *.lst
 *.log

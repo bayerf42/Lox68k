@@ -31,6 +31,8 @@ typedef short          bool;
 typedef int32_t Real; // sic!
 #include "ffp_glue.h"
 
+// Replace broken string routines from stdlib
+#include "kit_util.h"
 
 // Code at the very beginning of a function to check for stack overflow:
 //
@@ -66,6 +68,7 @@ extern void ticker(void); // in cstart_lox_rom.asm
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <errno.h>
 #include <time.h>
 
@@ -80,6 +83,10 @@ typedef double Real;
 #define mul(x,y)       ((x)*(y))
 #define div(x,y)       ((x)/(y))
 #define less(x,y)      ((x)<(y))
+
+// use standard routines here
+#define fix_memcpy     memcpy
+#define fix_memcmp     memcmp
 
 // hide Kit's assembly helpers 
 #define CHECK_STACKOVERFLOW

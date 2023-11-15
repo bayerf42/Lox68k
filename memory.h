@@ -35,9 +35,6 @@ void  markValue(Value value);
 void  collectGarbage(bool checkReclaim);
 void  freeObjects(void);
 
-void  fix_memcpy(char* dest, const char* src, size_t size);
-int   fix_memcmp(const char* a, const char* b, size_t size);
-
 extern char input_line[INPUT_SIZE];
 
 #endif
