@@ -22,13 +22,12 @@ _fix_memcpy:
 _fix_memcmp:
        movea.l   (4,A7),A0
        movea.l   (8,A7),A1
-       clr.l     D0
        move.l    (12,A7),D1
-       beq.s     .done
-       subq.l    #1,d1
+       clr.b     D0
+       bra.s     .test
 .loop  move.b    (A0)+,D0
        sub.b     (A1)+,D0
-       dbne      D1,.loop
+.test  dbne      D1,.loop
        ext.w     D0
        ext.l     D0
 .done  rts 
