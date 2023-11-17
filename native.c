@@ -384,7 +384,7 @@ static bool parseRealNative(int argCount, Value* args) {
 
 static bool inputNative(int argCount, Value* args) {
     if (argCount > 0)
-        printf("%s ", AS_CSTRING(args[0]));
+        putstr(AS_CSTRING(args[0]));
     if (readLine())
         args[-1] = OBJ_VAL(makeString(input_line, strlen(input_line)));
     else

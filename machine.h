@@ -87,6 +87,7 @@ typedef double Real;
 // use standard routines here
 #define fix_memcpy     memcpy
 #define fix_memcmp     memcmp
+#define putstr(str)    fputs((str),stdout)
 
 // hide Kit's assembly helpers 
 #define CHECK_STACKOVERFLOW

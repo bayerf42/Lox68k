@@ -83,7 +83,7 @@ static void errorAt(Token* token, const char* message) {
     printf("[line %d] Error", token->line);
 
     if (token->type == TOKEN_EOF)
-        printf(" at end");
+        putstr(" at end");
     else if (token->type != TOKEN_ERROR)
         printf(" at '%.*s'", token->length, token->start);
 

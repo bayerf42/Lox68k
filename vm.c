@@ -20,13 +20,13 @@ static void resetStack(void) {
 static void indentCallTrace(void) {
     int depth = vm.frameCount;
     while (depth--)
-        printf("  ");
+        putstr("  ");
 }
 
 static void printArgList(int argCount, Value* args) {
     const char* separator = "";
     while (argCount--) {
-        printf(separator);
+        putstr(separator);
         separator = ", ";
         printValue(*args++, false, true);
     } 
@@ -42,7 +42,7 @@ void runtimeError(const char* format, ...) {
     va_start(args, format);
     vprintf(format, args);
     va_end(args);
-    printf("\n");
+    putstr("\n");
 
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame       = &vm.frames[i];
@@ -110,7 +110,7 @@ static bool call(ObjClosure* closure, int argCount) {
         indentCallTrace();
         printf("--> %s (", functionName(closure->function));
         printArgList(argCount, vm.sp - argCount);
-        printf(")\n");
+        putstr(")\n");
     }
 
     arity = closure->function->arity & ARITY_MASK;
@@ -172,7 +172,7 @@ static bool callValue(Value callee, int argCount) {
                     logNatRes = true;
                     printf("--- %s (", nativeName(native->function));
                     printArgList(argCount, vm.sp - argCount);
-                    printf(") -> ");
+                    putstr(") -> ");
                 }
 
                 if (!checkNativeSignature(native->signature, argCount, vm.sp - argCount) ||
@@ -182,7 +182,7 @@ static bool callValue(Value callee, int argCount) {
 
                 if (logNatRes) {
                     printValue(vm.sp[-1], false, true);
-                    printf("\n");
+                    putstr("\n");
                 } 
                 return true;
         }
@@ -319,12 +319,12 @@ static InterpretResult run(void) {
         if (vm.debug_trace_steps) {
             for (slot = vm.stack; slot < vm.sp; slot++) {
                 printValue(*slot, true, true);
-                printf(" | ");
+                putstr(" | ");
             }
-            printf("\n");
+            putstr("\n");
             disassembleInst(&frame->closure->function->chunk,
                             (int)(frame->ip - frame->closure->function->chunk.code));
-            printf("\n");
+            putstr("\n");
         }
 
         ++vm.stepsExecuted;
@@ -619,7 +619,7 @@ static InterpretResult run(void) {
 
             case OP_PRINTLN:
                 printValue(pop(), false, false);
-                printf("\n");
+                putstr("\n");
                 break;
 
             case OP_JUMP:
@@ -752,7 +752,7 @@ static InterpretResult run(void) {
                     indentCallTrace();
                     printf("<-- %s ", functionName(frame->closure->function));
                     printValue(resVal, false, true);
-                    printf("\n");
+                    putstr("\n");
                 }
 
                 if (vm.frameCount == 0) {

@@ -30,13 +30,13 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
 
     if (result == NULL) {
         if (vm.debug_log_gc & DBG_GC_GENERAL)
-            printf("GC -- malloc failed, now trying gc.\n");
+            putstr("GC -- malloc failed, now trying gc.\n");
 
         collectGarbage(true);
 
         result = nano_malloc(newSize);
         if (result == NULL) {
-            printf("Out of heap space, exiting.\n");
+            putstr("Out of heap space, exiting.\n");
             exit(1);
         }
     }
@@ -56,7 +56,7 @@ void markObject(Obj* object) {
     if (vm.debug_log_gc & DBG_GC_MARK) {
         printf("GC %05x mark ", (int32_t)object);
         printValue(OBJ_VAL(object), true, true);
-        printf("\n");
+        putstr("\n");
     }
 
     object->isMarked = true;
@@ -70,7 +70,7 @@ void markObject(Obj* object) {
 
         default:
             if (vm.grayCount + 1 > GRAY_MAX) {
-                printf("Gray stack size exceeded, exiting.\n");
+                putstr("Gray stack size exceeded, exiting.\n");
                 exit(1);
             }
             vm.grayStack[vm.grayCount++] = object;
@@ -94,7 +94,7 @@ static void blackenObject(Obj* object) {
     if (vm.debug_log_gc & DBG_GC_BLACK) {
         printf("GC %05x blak ", (int32_t)object);
         printValue(OBJ_VAL(object), true, true);
-        printf("\n");
+        putstr("\n");
     }
 
     switch (object->type) {
@@ -248,7 +248,7 @@ void collectGarbage(bool checkReclaim) {
     size_t before = vm.bytesAllocated;
 
     if (vm.debug_log_gc & DBG_GC_GENERAL)
-        printf("GC >>> begin\n");
+        putstr("GC >>> begin\n");
 
     markRoots();
     traceReferences();
@@ -256,12 +256,12 @@ void collectGarbage(bool checkReclaim) {
     sweep();
 
     if (checkReclaim && before == vm.bytesAllocated) {
-        printf("GC failed to reclaim enough space, exiting.\n");
+        putstr("GC failed to reclaim enough space, exiting.\n");
         exit(1);
     }
 
     if (vm.debug_log_gc & DBG_GC_GENERAL) {
-        printf("GC <<< ended\n");
+        putstr("GC <<< ended\n");
         printf("GC collected %d bytes (from %d to %d)\n",
                before - vm.bytesAllocated, before, vm.bytesAllocated);
     }

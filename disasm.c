@@ -12,7 +12,7 @@ void disassembleChunk(Chunk* pChunk, const char* name) {
     printf("== %s ==\n", name);
     for (offset = 0; offset < chunk->count;) {
         disassembleIntern();
-        printf("\n");
+        putstr("\n");
     }
 }
 
@@ -23,7 +23,7 @@ void disassembleInst(Chunk* pChunk, int pOffset) {
 }
 
 static void simpleInst(const char* name) {
-    printf("%s", name);
+    putstr(name);
     ++offset;
 }
 
@@ -74,7 +74,7 @@ static void disassembleIntern(void) {
 
     printf("%04d ", offset);
     if (offset > 0 && line == getLine(chunk, offset - 1))
-        printf("   | ");
+        putstr("   | ");
     else
         printf("%4d ", line);
 

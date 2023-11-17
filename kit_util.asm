@@ -31,3 +31,21 @@ _fix_memcmp:
        ext.w     D0
        ext.l     D0
 .done  rts 
+
+
+; int putstr(const char* str);
+       xdef      _putstr
+_putstr:
+       move.l    A2,-(A7)
+       movea.l   (8,A7),A2
+.next  move.b    (A2)+,D0
+       beq.s     .done
+       ext.w     D0
+       ext.l     D0
+       move.l    D0,-(A7)
+       jsr       _putch
+       addq.w    #4,A7
+       bra.s     .next
+.done  move.l    (A7)+,A2
+       clr.l     D0 
+       rts

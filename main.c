@@ -17,7 +17,7 @@ const char* loxLibSrc;
 
 static void repl(void) {
     for (;;) {
-        printf("> ");
+        putstr("> ");
         readLine();
         interpret(input_line);
     }
@@ -44,7 +44,7 @@ int main() {
     initVM();
     printf("Lox68k %s by Fred Bayer\n", VERSION);
     if (loxLibSrc) {
-        printf("Loading standard library.\n");
+        putstr("Loading standard library.\n");
         interpret(loxLibSrc);
     }
     repl();
@@ -92,9 +92,9 @@ static bool runFile(const char* path) {
 
 static void repl(void) {
     for (;;) {
-        printf("> ");
+        putstr("> ");
         if (!readLine()) {
-            printf("\n");
+            putstr("\n");
             break;
         }
 

@@ -26,9 +26,9 @@ void freeValueArray(ValueArray* array) {
 }
 
 void printValue(Value value, bool compact, bool machine) {
-    if      (IS_BOOL(value))   printf(AS_BOOL(value) ? "true" : "false");
-    else if (IS_NIL(value))    printf("nil");
-    else if (IS_EMPTY(value))  printf("<empty>");
+    if      (IS_BOOL(value))   putstr(AS_BOOL(value) ? "true" : "false");
+    else if (IS_NIL(value))    putstr("nil");
+    else if (IS_EMPTY(value))  putstr("<empty>");
     else if (IS_INT(value))    printf("%d", AS_INT(value));
     else                       printObject(value, compact, machine);
 }

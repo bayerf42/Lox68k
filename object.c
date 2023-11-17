@@ -171,7 +171,7 @@ const char* functionName(ObjFunction* function) {
 
 static void printFunction(const char* subType, ObjFunction* function) {
     if (function->name == NULL)
-        printf("<script>");
+        putstr("<script>");
     else
         printf("<%s %s>", subType, function->name->chars);
 }
@@ -182,13 +182,13 @@ static void printList(ObjList* list) {
 
     CHECK_STACKOVERFLOW
 
-    printf("[");
+    putstr("[");
     for (i = 0; i < list->arr.count; i++) {
-        printf(sep);
+        putstr(sep);
         printValue(list->arr.values[i], false, false);
         sep = ", ";
     }
-    printf("]");
+    putstr("]");
 }
 
 const char* typeName(ObjType type) {
@@ -208,13 +208,6 @@ const char* typeName(ObjType type) {
     }
 }
 
-static void fix_printf(const char* str) {
-    // printf("%s", str) has a bug in IDE68k library, inserting arbitrary spaces for strings
-    // longer than 127 characters, so do it manually (again)
-    while (*str)
-        putchar(*str++);
-}
-
 void printObject(Value value, bool compact, bool machine) {
     switch (OBJ_TYPE(value)) {
         case OBJ_BOUND:    printFunction("bound", AS_BOUND(value)->method->function); break;
@@ -228,13 +221,13 @@ void printObject(Value value, bool compact, bool machine) {
             else           printList(AS_LIST(value));
             break;
         case OBJ_NATIVE:   printf("<native %s>", nativeName(AS_NATIVE(value)->function)); break;
-        case OBJ_REAL:     printf("%s", formatReal(AS_REAL(value), buffer)); break;
+        case OBJ_REAL:     putstr(formatReal(AS_REAL(value), buffer)); break;
         case OBJ_STRING:
-            if (machine)   fix_printf("\"");
-            fix_printf(AS_CSTRING(value));
-            if (machine)   fix_printf("\"");
+            if (machine)   putstr("\"");
+            putstr(AS_CSTRING(value));
+            if (machine)   putstr("\"");
             break;
-        case OBJ_UPVALUE:  printf("<upvalue>"); break;
+        case OBJ_UPVALUE:  putstr("<upvalue>"); break;
     }
 }
 

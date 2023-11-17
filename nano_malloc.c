@@ -255,7 +255,7 @@ void nano_free (void* free_p)
     else if ((char *)p + p->size > (char *)p_to_free)
     {
         /* Report double free fault */
-        printf("Double free\n");
+        putstr("Double free\n");
         return;
     }
 #endif
