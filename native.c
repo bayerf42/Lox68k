@@ -857,10 +857,6 @@ void startTicker(void) {
     _word(0x027c); _word(0xf0ff);
 }
 
-void handleInterrupts(bool enable) {
-    // not needed
-}
-
 #else
 
 #include <signal.h>

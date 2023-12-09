@@ -15,14 +15,6 @@
 
 const char* loxLibSrc;
 
-static void repl(void) {
-    for (;;) {
-        putstr("> ");
-        readLine();
-        interpret(input_line);
-    }
-}
-
 int main() {
 
 #define MAGIC_VAL 0x1138
@@ -47,10 +39,14 @@ int main() {
         putstr("Loading standard library.\n");
         interpret(loxLibSrc);
     }
-    repl();
 
-    freeVM();
-    return 0;
+    // REPL
+    for (;;) {
+        putstr("> ");
+        readLine();
+        interpret(input_line);
+    }
+    return 0; // not reached
 }
 
 #else

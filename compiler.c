@@ -64,9 +64,9 @@ typedef struct ClassCompiler {
     bool                  hasSuperclass;
 } ClassCompiler;
 
-Parser         parser;
-Compiler*      currentComp;
-ClassCompiler* currentClass;
+static Parser         parser;
+static Compiler*      currentComp;
+static ClassCompiler* currentClass;
 
 static Chunk* currentChunk(void) {
     return &currentComp->target->chunk;

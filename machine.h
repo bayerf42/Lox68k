@@ -57,8 +57,9 @@ extern void _stackoverflow(void);
 extern void ticker(void); // in cstart_lox_rom.asm
 
 // Only on Kit: Check, if button REP is pressed
-#define INTERRUPTED()       (onKit && (*((char*)0x80000) & 0x40) == 0)
-#define RESET_INTERRUPTED() // nothing to do
+#define INTERRUPTED()          (onKit && (*((char*)0x80000) & 0x40) == 0)
+#define RESET_INTERRUPTED()    // nothing to do
+#define handleInterrupts(flag) // nothing to do
 
 #else
 

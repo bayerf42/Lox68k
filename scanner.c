@@ -16,7 +16,7 @@ typedef struct {
     int         line;
 } Scanner;
 
-Scanner scanner;
+static Scanner scanner;
 
 void initScanner(const char* source) {
     scanner.start   = source;

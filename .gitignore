@@ -16,6 +16,7 @@
 *.o
 *.bin
 *.hex
+*.ini
 
 wlox.exe
 llox
