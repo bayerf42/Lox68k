@@ -1,0 +1,38 @@
+// Place N queens on a chess board, so they don't attack each other, count number of solutions.
+
+fun queens(N) {
+
+  var board = [];
+  for (var x = 0; x < N; x = x+1) {
+    append(board, list(N, false));
+  }
+
+  fun queen_at(x, y) {
+    return y >= 0 and y < N and board[x][y];
+  }
+
+  fun solution(x0, y0) {
+    for (var x = 0; x < x0; x = x + 1) 
+      if (queen_at(x, y0) or queen_at(x, y0 - x0 + x) or queen_at(x, y0 + x0 - x))
+        return 0;
+
+    if (x0 >= 0) board[x0][y0] = true;
+    if (x0 == N - 1) return 1;
+
+    var count = 0;
+    for (var y = 0; y < N; y = y + 1)
+      count = count + solution(x0 + 1, y);
+
+    if (x0 >= 0) board[x0][y0] = false;
+    return count;
+  }
+
+  return solution(-1, 0);
+}
+
+fun all() {
+  for (var n=0; ; n = n + 1) {
+    var now = clock();
+    print n,,queens(n),,clock() - now;
+  }
+}
