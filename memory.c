@@ -116,6 +116,7 @@ static void blackenObject(Obj* object) {
 
         case OBJ_FUNCTION:
             markObject((Obj*)((ObjFunction*)object)->name);
+            markObject((Obj*)((ObjFunction*)object)->klass);
             markArray(&((ObjFunction*)object)->chunk.constants);
             break;
 

@@ -8,8 +8,8 @@
 #include "object.h"
 #include "vm.h"
 
-char buffer[48];      // general purpose: debugging, numbers, error messages
-char cvBuffer[32];    // for number conversion
+char        buffer[130];     // general purpose: debugging, name building, error messages
+static char cvBuffer[32];    // for number conversion
 
 bool isObjType(Value value, ObjType type) {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
@@ -65,6 +65,7 @@ ObjFunction* makeFunction() {
     function->arity        = 0;
     function->upvalueCount = 0;
     function->name         = NULL;
+    function->klass        = NULL;
     initChunk(&function->chunk);
     return function;
 }
@@ -166,14 +167,15 @@ ObjUpvalue* makeUpvalue(Value* slot) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const char* functionName(ObjFunction* function) {
-    return (function->name == NULL) ? "<script>" : function->name->chars;
-}
-
-static void printFunction(const char* subType, ObjFunction* function) {
     if (function->name == NULL)
-        putstr("<script>");
-    else
-        printf("<%s %s>", subType, function->name->chars);
+        return "#script";
+    else if (function->klass == NULL)
+        return function->name->chars;
+    else {
+        // Limit output length to avoid buffer overflow 
+        sprintf(buffer, "%.64s.%.64s", function->klass->name->chars, function->name->chars);
+        return buffer;
+    }
 }
 
 static void printList(ObjList* list) {
@@ -210,24 +212,27 @@ const char* typeName(ObjType type) {
 
 void printObject(Value value, bool compact, bool machine) {
     switch (OBJ_TYPE(value)) {
-        case OBJ_BOUND:    printFunction("bound", AS_BOUND(value)->method->function); break;
-        case OBJ_CLASS:    printf("<class %s>", AS_CLASS(value)->name->chars); break;
-        case OBJ_CLOSURE:  printFunction("closure", AS_CLOSURE(value)->function); break;
-        case OBJ_FUNCTION: printFunction("fun", AS_FUNCTION(value)); break;
+        case OBJ_BOUND:    printf("<bound %s>",
+                                  functionName(AS_BOUND(value)->method->function));         break;
+        case OBJ_CLASS:    printf("<class %s>",    AS_CLASS(value)->name->chars);           break;
+        case OBJ_CLOSURE:  printf("<closure %s>",
+                                  functionName(AS_CLOSURE(value)->function));               break;
+        case OBJ_FUNCTION: printf("<fun %s>",
+                                  functionName(AS_FUNCTION(value)));                        break;
         case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
-        case OBJ_ITERATOR: printf("<iterator %d>", AS_ITERATOR(value)->position); break;
+        case OBJ_ITERATOR: printf("<iterator %d>", AS_ITERATOR(value)->position);           break;
         case OBJ_LIST:
-            if (compact)   printf("<list %d>", AS_LIST(value)->arr.count);
+            if (compact)   printf("<list %d>",     AS_LIST(value)->arr.count);
             else           printList(AS_LIST(value));
             break;
-        case OBJ_NATIVE:   printf("<native %s>", nativeName(AS_NATIVE(value)->function)); break;
-        case OBJ_REAL:     putstr(formatReal(AS_REAL(value), buffer)); break;
+        case OBJ_NATIVE:   printf("<native %s>",   nativeName(AS_NATIVE(value)->function)); break;
+        case OBJ_REAL:     putstr(formatReal(AS_REAL(value)));                              break;
         case OBJ_STRING:
             if (machine)   putstr("\"");
             putstr(AS_CSTRING(value));
             if (machine)   putstr("\"");
             break;
-        case OBJ_UPVALUE:  putstr("<upvalue>"); break;
+        case OBJ_UPVALUE:  putstr("<upvalue>");                                             break;
     }
 }
 
@@ -356,7 +361,7 @@ ObjString* caseString(ObjString* a, bool toUpper) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Reals 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-const char* formatReal(Real val, char* actBuffer) {
+const char* formatReal(Real val) {
 #ifdef KIT68K
     int   expo, dp, off;
     char* estr;
@@ -365,9 +370,9 @@ const char* formatReal(Real val, char* actBuffer) {
     if (val==0)
         return "0.0";
 
-    realToStr(actBuffer, val);
-    expo = atoi(actBuffer + 11);
-    estr = actBuffer + 10;
+    realToStr(cvBuffer, val);
+    expo = atoi(cvBuffer + 11);
+    estr = cvBuffer + 10;
 
     // Fixed format returned from realToStr:
     // s.mmmmmmmmEsdd
@@ -377,29 +382,29 @@ const char* formatReal(Real val, char* actBuffer) {
     if (expo >= 1 && expo <= 7) {
         // shift DP to the right
         for (dp = 1; expo > 0; dp++, expo--) {
-            actBuffer[dp] = actBuffer[dp + 1];
-            actBuffer[dp + 1] = '.';
+            cvBuffer[dp] = cvBuffer[dp + 1];
+            cvBuffer[dp + 1] = '.';
         }
-        actBuffer[10] = '\0'; // cut off exponent
+        cvBuffer[10] = '\0'; // cut off exponent
         estr = NULL;
     } else if (expo <= 0 && expo >= -3) {
         // shift mantissa to the right
         for (off = 9; off > 1; off--)
-            actBuffer[off - expo + 1] = actBuffer[off];
-        actBuffer[11 - expo] = '\0'; // cut off exponent
+            cvBuffer[off - expo + 1] = cvBuffer[off];
+        cvBuffer[11 - expo] = '\0'; // cut off exponent
         estr = NULL;
         for (off = 2 - expo; off > 0; off--)
-            actBuffer[off] = '0';
-        actBuffer[2] = '.';
+            cvBuffer[off] = '0';
+        cvBuffer[2] = '.';
     } else {
         // exponential display, but 1 digit left to DP
-        actBuffer[1] = actBuffer[2];
-        actBuffer[2] = '.';
-        sprintf(actBuffer + 11, "%d", expo - 1);
+        cvBuffer[1] = cvBuffer[2];
+        cvBuffer[2] = '.';
+        sprintf(cvBuffer + 11, "%d", expo - 1);
     }
 
     // Squeeze out trailing zeros in mantissa
-    for (dest = estr ? estr : actBuffer + strlen(actBuffer);
+    for (dest = estr ? estr : cvBuffer + strlen(cvBuffer);
          dest[-1] == '0' && dest[-2] != '.';)
         *--dest = '\0';
     // Move exponent over squeezed zeros
@@ -407,17 +412,17 @@ const char* formatReal(Real val, char* actBuffer) {
         while ((*dest++ = *estr++) != 0)
             ;
 
-    if (actBuffer[0] == '+')
-        return actBuffer + 1;
+    if (cvBuffer[0] == '+')
+        return cvBuffer + 1;
 
 #else
-    sprintf(actBuffer, "%.15g", val);
+    sprintf(cvBuffer, "%.15g", val);
     // Make sure it doesn't look like an int
-    if (!strpbrk(actBuffer, ".eE"))
-        strcat(actBuffer, ".0");
+    if (!strpbrk(cvBuffer, ".eE"))
+        strcat(cvBuffer, ".0");
 #endif
 
-    return actBuffer;
+    return cvBuffer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

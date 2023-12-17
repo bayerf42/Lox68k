@@ -265,8 +265,11 @@ static void closeUpvalues(Value* last) {
 }
 
 static void defineMethod(ObjString* name) {
-    Value     method = peek(0);
-    ObjClass* klass  = AS_CLASS(peek(1));
+    Value       method = peek(0);
+    ObjClass*   klass  = AS_CLASS(peek(1));
+    ObjClosure* clos   = AS_CLOSURE(method);
+
+    clos->function->klass = klass;
     tableSet(&klass->methods, OBJ_VAL(name), method);
     drop();
 }

@@ -346,7 +346,7 @@ static bool decNative(int argCount, Value* args) {
     if (IS_INT(args[0]))
         res = formatInt(AS_INT(args[0]));
     else
-        res = formatReal(AS_REAL(args[0]), cvBuffer);
+        res = formatReal(AS_REAL(args[0]));
     args[-1] = OBJ_VAL(makeString(res, strlen(res)));
     return true;
 }
