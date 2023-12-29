@@ -28,13 +28,11 @@ You can start Lox68k with or without the standard library:
 | asin         | num                   | real        | inverse sine                                                                      |  
 | asinh        | num                   | real        | inverse hyperbolic sine                                                           |  
 | atanh        | num                   | real        | inverse hyperbolic tangent                                                        |  
-| class_name   | class                 | string      | name of *class*                                                                   |  
-| class_of     | instance              | class       | class of *instance*                                                               |  
+| class_of     | any                   | class/nil   | class of *any* if it's an instance, nil otherwise                                 |  
 | complement   | fun                   | fun         | boolean complement of *fun*                                                       |  
 | deg          | num                   | real        | convert from radians to degrees                                                   |  
 | filter       | fun, list             | list        | filter all items of *list* which satisfy predicate *fun*                          |  
 | fmod         | num, num              | real        | floating point modulo                                                             |  
-| fun_name     | fun                   | string      | name of closure *fun*                                                             |  
 | list_globals | -                     | nil         | prints all global variables                                                       |  
 | map          | fun, list             | list        | apply *fun* to every item in *list*, return list of results.                      |  
 | max          | num, num              | num         | maximum of arguments                                                              |  

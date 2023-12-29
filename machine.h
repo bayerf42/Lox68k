@@ -51,6 +51,8 @@ extern void _stackoverflow(void);
   _word(0x6c06); \
   _stackoverflow();
 
+#define STATIC_BREAKPOINT() _trap(1)
+
 // Using the 100 Hz IRQ as a timer
 #define clock()     (*((int32_t*)0x0268))
 #define IRQ2_VECTOR (*((int32_t*)0x0068))
@@ -92,7 +94,7 @@ typedef double Real;
 
 // hide Kit's assembly helpers 
 #define CHECK_STACKOVERFLOW
-#define _trap(n)
+#define STATIC_BREAKPOINT()
 
 // Set by SIGINT handler
 #define INTERRUPTED()       (vm.interrupted)

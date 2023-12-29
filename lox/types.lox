@@ -26,8 +26,9 @@ var all_types = [
 ]; 
 
 print all_types;
-print string(all_types);
+print map(string, all_types);
 print map(type, all_types);
+print map(name, all_types);
 print map(fun(obj) {
             var a=addr(obj);
             if (a) return peek(a+4); // type tag in heap

@@ -194,7 +194,7 @@ static void printList(ObjList* list) {
 }
 
 const char* typeName(ObjType type) {
-    switch(type) {
+    switch (type) {
         case OBJ_BOUND:    return "bound";
         case OBJ_CLASS:    return "class";
         case OBJ_CLOSURE:  return "closure";
@@ -212,27 +212,54 @@ const char* typeName(ObjType type) {
 
 void printObject(Value value, bool compact, bool machine) {
     switch (OBJ_TYPE(value)) {
-        case OBJ_BOUND:    printf("<bound %s>",
-                                  functionName(AS_BOUND(value)->method->function));         break;
-        case OBJ_CLASS:    printf("<class %s>",    AS_CLASS(value)->name->chars);           break;
-        case OBJ_CLOSURE:  printf("<closure %s>",
-                                  functionName(AS_CLOSURE(value)->function));               break;
-        case OBJ_FUNCTION: printf("<fun %s>",
-                                  functionName(AS_FUNCTION(value)));                        break;
-        case OBJ_INSTANCE: printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars); break;
-        case OBJ_ITERATOR: printf("<iterator %d>", AS_ITERATOR(value)->position);           break;
+        case OBJ_BOUND:
+            printf("<bound %s>", functionName(AS_BOUND(value)->method->function));
+            break;
+
+        case OBJ_CLASS:
+            printf("<class %s>", AS_CLASS(value)->name->chars);
+            break;
+
+        case OBJ_CLOSURE:
+            printf("<closure %s>", functionName(AS_CLOSURE(value)->function));
+            break;
+
+        case OBJ_FUNCTION:
+            printf("<fun %s>", functionName(AS_FUNCTION(value)));
+            break;
+
+        case OBJ_INSTANCE:
+            printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars);
+            break;
+
+        case OBJ_ITERATOR:
+            printf("<iterator %d>", AS_ITERATOR(value)->position);
+            break;
+
         case OBJ_LIST:
-            if (compact)   printf("<list %d>",     AS_LIST(value)->arr.count);
-            else           printList(AS_LIST(value));
+            if (compact)
+                printf("<list %d>", AS_LIST(value)->arr.count);
+            else
+                printList(AS_LIST(value));
             break;
-        case OBJ_NATIVE:   printf("<native %s>",   nativeName(AS_NATIVE(value)->function)); break;
-        case OBJ_REAL:     putstr(formatReal(AS_REAL(value)));                              break;
+
+        case OBJ_NATIVE:
+            printf("<native %s>", nativeName(AS_NATIVE(value)->function));
+            break;
+
+        case OBJ_REAL:
+            putstr(formatReal(AS_REAL(value)));
+            break;
+
         case OBJ_STRING:
-            if (machine)   putstr("\"");
+            if (machine) putstr("\"");
             putstr(AS_CSTRING(value));
-            if (machine)   putstr("\"");
+            if (machine) putstr("\"");
             break;
-        case OBJ_UPVALUE:  putstr("<upvalue>");                                             break;
+
+        case OBJ_UPVALUE:
+            putstr("<upvalue>");
+            break;
     }
 }
 

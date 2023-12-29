@@ -1160,7 +1160,7 @@ ObjFunction* compile(const char* source) {
     Compiler     compiler;
     ObjFunction* function;
 
-    _trap(1);
+    STATIC_BREAKPOINT();
 
     vm.totallyAllocated = 0;
     vm.numGCs = 0;

@@ -1,0 +1,40 @@
+// Simple inheritance
+class Shape < Object {
+  init(x,y) {
+    if (class_of(this) == Shape)
+      error("Abstract class");
+    this.x = x;
+    this.y = y;
+  }
+
+  area() -> nil
+  position() -> [this.x, this.y]
+}
+
+class Circle < Shape {
+  init(x,y,r) {
+    super.init(x,y);
+    this.r = r;
+  }
+
+  area() -> this.r * this.r * pi
+}
+
+class Rectangle < Shape {
+  init(x,y,w,h) {
+    super.init(x,y);
+    this.w = w;
+    this.h = h;
+  }
+
+  area() -> this.w * this.h
+}
+
+var r = Rectangle(10,20,30,40);
+var c = Circle(-10,-20,100);
+
+print string(r),, r.area();
+print string(c),, c.area();
+
+// Fail to instantiate abstract class
+var s = Shape(23,45);

@@ -1,8 +1,6 @@
 fun peekw(ad)->bit_or(bit_shift(peek(ad),8),peek(ad+1))
 fun peekl(ad)->bit_or(bit_shift(peekw(ad),16),peekw(ad+2))
-fun fun_name(clo)->heap(addr(heap(addr(clo)+8))+32)
-fun class_name(cls)->heap(addr(cls)+6)
-fun class_of(ins)->heap(addr(ins)+6)
+fun class_of(ins) {if (type(ins)=="instance") return heap(addr(ins)+6);}
 fun pokew(ad,v) {
  poke(ad+1,bit_and(v,$ff));
  poke(ad,bit_and(bit_shift(v,-8),$ff));
@@ -74,10 +72,7 @@ fun string(obj) {
    return res+"]";
   }
   when "instance":return obj.string();
-  when "closure":return "<closure "+fun_name(obj)+">";
-  when "native":return "<native>";
-  when "class":return "<class "+class_name(obj)+">";
-  when "bound":return "<bound>";
+  when "closure","native","class","bound":return "<"+type(obj)+" "+name(obj)+">";
   when "iterator":return "<iterator>";
   else return "<unknown>";
  }
@@ -92,7 +87,7 @@ fun _bh(h,fmt) {
  return res;
 }
 class Object {
- string()->"<"+class_name(class_of(this))+" instance: "+_bh(this,fun(it)->string(it@)+":"+string(it^))+">" 
+ string()->"<"+name(class_of(this))+" instance: "+_bh(this,fun(it)->string(it@)+":"+string(it^))+">" 
  clone() {
   var res=class_of(this)();
   for (var it=slots(this);valid(it);next(it))

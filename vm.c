@@ -299,13 +299,17 @@ static InterpretResult run(void) {
     int          argCount, itemCount;
     int          offset;
     int          upvalue;
-    CallFrame    *frame  = &vm.frames[vm.frameCount - 1];
-    Value        *consts = frame->closure->function->chunk.constants.values;
+    CallFrame    *frame;
+    Value        *consts;
 
     vm.hadStackoverflow = false;
     vm.stepsExecuted    = 0;
 
-    _trap(1);
+    STATIC_BREAKPOINT();
+
+updateFrame:
+    frame  = &vm.frames[vm.frameCount - 1];
+    consts = frame->closure->function->chunk.constants.values;
 
 nextInst:
     if (vm.hadStackoverflow) {
@@ -680,10 +684,7 @@ nextInst:
         cont_call:
             if (!callValue(peek(argCount), argCount))
                 goto errorExit;
-        updateFrame:
-            frame  = &vm.frames[vm.frameCount - 1];
-            consts = frame->closure->function->chunk.constants.values;
-            goto nextInst;
+            goto updateFrame;
 
         case OP_VCALL:
             argCount = READ_BYTE() + AS_INT(pop());
@@ -982,7 +983,7 @@ InterpretResult interpret(const char* source) {
     result = run();
     handleInterrupts(false);
 
-    _trap(1);
+    STATIC_BREAKPOINT();
 
     if (vm.debug_statistics) {
 #ifdef KIT68K

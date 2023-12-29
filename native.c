@@ -693,6 +693,40 @@ static bool typeNative(int argCount, Value* args) {
     return true;
 }
 
+static bool nameNative(int argCount, Value* args) {
+    Obj*        object;
+    const char* name = NULL;
+
+    args[-1] = NIL_VAL;
+    if (IS_OBJ(args[0])) {
+        object = AS_OBJ(args[0]);
+        switch (object->type) {
+            case OBJ_BOUND:
+                name = functionName(((ObjBound*)object)->method->function);
+                break;
+
+            case OBJ_CLASS:
+                name = ((ObjClass*)object)->name->chars;
+                break;
+
+            case OBJ_CLOSURE:
+                name = functionName(((ObjClosure*)object)->function);
+                break;
+
+            case OBJ_FUNCTION: // should never happen in fact
+                name = functionName((ObjFunction*)object);
+                break;
+
+            case OBJ_NATIVE:
+                name = nativeName(((ObjNative*)object)->function);
+                break;
+        }
+        if (name)
+            args[-1] = OBJ_VAL(makeString(name, strlen(name)));
+    }
+    return true;
+}
+
 static bool errorNative(int argCount, Value* args) {
     runtimeError("User error: %s", AS_CSTRING(args[0]));
     return false;
@@ -779,6 +813,7 @@ static const Native allNatives[] = {
     {"remove",      "IA",   removeNative},
     {"equal",       "AA",   equalNative},
     {"type",        "A",    typeNative},
+    {"name",        "A",    nameNative},
     {"clock",       "",     clockNative},
     {"sleep",       "N",    sleepNative},
     {"gc",          "",     gcNative},

@@ -3,7 +3,7 @@
 ## Types
 
 ### Any
-`= == != addr case equal print return string type when`
+`= == != addr case equal name print return string type when`
 
 
 ### Bool
@@ -73,7 +73,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 ## Some numbers
 * 18 keywords
-* 67 native functions
+* 68 native functions
 * 60 VM opcodes
 * 12 data types
 * about 6000 lines source code

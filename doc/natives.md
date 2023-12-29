@@ -10,7 +10,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | Name        | Parameters             | Returns     | Availability | Description                                                                       |
 |-------------|------------------------|-------------|--------------|-----------------------------------------------------------------------------------|
 | abs         | num                    | num         | all          | absolute value                                                                    |  
-| addr        | val                    | int or nil  | all          | address of an object in heap, nil for immediate values                            |  
+| addr        | val                    | int/nil     | all          | address of an object in heap, nil for immediate values                            |  
 | append      | list, val              | nil         | all          | appends *val* to end of *list*                                                    |
 | asc         | string, int?           | int         | all          | ASCII code of first character or at index *int*                                   |  
 | atan        | num                    | real        | all          | inverse tangent                                                                   |  
@@ -40,11 +40,11 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | globals     | -                      | iterator    | all          | iterator over all global variables                                                |  
 | heap        | int                    | any         | all          | Lox value stored at address *int* in heap                                         |
 | hex         | int                    | string      | all          | *int* as hexadecimal string                                                       |
-| index       | val, list, int?        | int or nil  | all          | search *val* in *list*, returns index where found, optional search start *int*    |  
+| index       | val, list, int?        | int/nil     | all          | search *val* in *list*, returns index where found, optional search start *int*    |  
 | input       | string?                | string      | all          | input string from terminal with optional prompt                                   |
 | insert      | list, int, val         | nil         | all          | inserts *val* into *list* at position *int*                                       |
 | it_clone    | iterator               | iterator    | all          | clones *iterator*. Both iterators move independently, compare them with equal     |
-| keycode     | -                      | int or nil  | Kit          | code of key currently pressed or nil                                              |  
+| keycode     | -                      | int/nil     | Kit          | code of key currently pressed or nil                                              |  
 | lcd_clear   | -                      | nil         | Kit          | clears LCD                                                                        |  
 | lcd_defchar | int, list *of 8 bytes* | nil         | Kit          | creates a user-defined char with code *int* for LCD with bit pattern from *list*  |  
 | lcd_goto    | int *col*, int *line*  | nil         | Kit          | set cursor position on LCD                                                        |  
@@ -53,9 +53,10 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | list        | int, val?              | list        | all          | creates a list with *int* elements, initialized to *val* or nil                   |
 | log         | num                    | real        | all          | natural logarithm                                                                 |  
 | lower       | string                 | string      | all          | lower case of string                                                              |  
+| name        | val                    | string/nil  | all          | name of class, closure, bound, or native, nil for other values                    |  
 | next        | iterator               | bool        | all          | advances *iterator* to next entry, returns true when valid                        |  
-| parse_int   | string                 | int or nil  | all          | parses *string* as integer                                                        |
-| parse_real  | string                 | real or nil | all          | parses *string* as real                                                           |
+| parse_int   | string                 | int/nil     | all          | parses *string* as integer                                                        |
+| parse_real  | string                 | real/nil    | all          | parses *string* as real                                                           |
 | peek        | int                    | int         | all          | reads byte from address *int*                                                     |  
 | poke        | int *addr*, int *byte* | nil         | all          | writes *byte* to *addr*                                                           |  
 | pow         | num, num               | real        | all          | power                                                                             |  
