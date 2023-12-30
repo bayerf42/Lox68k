@@ -45,7 +45,7 @@ static Token makeToken(TokenType type) {
     Token token;
     token.type   = type;
     token.start  = scanner.start;
-    token.length = (int16_t)(scanner.current - scanner.start);
+    token.length = scanner.current - scanner.start;
     token.line   = scanner.line;
     return token;
 }
@@ -54,7 +54,7 @@ static Token errorToken(const char* message) {
     Token token;
     token.type   = TOKEN_ERROR;
     token.start  = message;
-    token.length = (int16_t)strlen(message);
+    token.length = strlen(message);
     token.line   = scanner.line;
     return token;
 }
@@ -300,7 +300,9 @@ Token scanToken(void) {
         case '>': if (match('=')) token = TOKEN_GREATER_EQUAL; else token = TOKEN_GREATER; break;
         case '.': if (match('.')) token = TOKEN_DOT_DOT;       else token = TOKEN_DOT;     break;
         case '-': if (match('>')) token = TOKEN_ARROW;         else token = TOKEN_MINUS;   break;
-        default:  return errorToken("Invalid character.");
+        default:
+            sprintf(buffer, "Invalid character '%c'.", c);
+            return errorToken(buffer);
     }
     return makeToken(token);
 }

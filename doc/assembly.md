@@ -28,16 +28,16 @@ In a freshly started Lox, evaluate
 var str = "Inspect me!";
 print hex(addr(str));
 ```
-which prints `15fe8` in release 1.3 (may change in later versions). Now break into the Monitor
+which prints `1667e` in release 1.4 (may change in later versions). Now break into the Monitor
 by evaluating `trap();` and press **ADDR** and input the address you saw. Now press **HEX** to
 dump the memory containing the string object. You'll see
 ```
-00015FE8:00 01 60 28 09 00 00 0B CF 79 72 3A 49 6E 73 70  ..`(.....yr:Insp
-00015FF8:65 63 74 20 6D 65 21 00                          ect me!.        
+0001667e:00 01 66 BE 09 00 00 0B CF 79 72 3A 49 6E 73 70  ..f......yr:Insp
+0001668e:65 63 74 20 6D 65 21 00                          ect me!.        
 ```
 (Data after the string object has been omitted.) Have a look at `struct ObjString` in file
 `object.h` to see what those bytes mean:
-  * `00 01 60 28` is a pointer to the next object in the heap.
+  * `00 01 66 BE` is a pointer to the next object in the heap.
   * `09` is the type tag (`enum ObjType`), meaning `OBJ_STRING`.
   * `00` is the mark flag for garbage collection.
 
@@ -59,11 +59,11 @@ extensions, where you can load your machine code.
 Three `TRAP #1` [static breakpoints](https://github.com/bayerf42/Monitor/blob/main/doc/monitor_doc.md)
 are included and can be activated via **SHIFT** **±TRP1** before starting Lox68k.
 
- 1. `465bc` at the start of compiler
- 2. `4c418` at the start of the virtual machine
- 3. `4e00e` after virtual machine has returned
+ 1. `4687c` at the start of compiler
+ 2. `4bf38` at the start of the virtual machine
+ 3. `4d9a8` after virtual machine has returned
 
-The addresses above are immediately after the breakpoints and only valid for release 1.3 and
+The addresses above are immediately after the breakpoints and only valid for release 1.4 and
 certainly will change later. They're only a hint where you are when stepping thru the interpreter
 with traps enabled.
 
