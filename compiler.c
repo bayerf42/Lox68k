@@ -122,12 +122,15 @@ static void consume(TokenType type, const char* message) {
     errorAtCurrent(message);
 }
 
-static void consumeExp(TokenType type, const char* first, const char* second) {
-    if (parser.current.type == type) {
+static void consumeExp(TokenType expected, const char* context) {
+    if (parser.current.type == expected) {
         advance();
         return;
     }
-    sprintf(buffer, "Expect %s after %s.", first, second);
+    sprintf(buffer, "Expect '%c' %s %s.",
+            TOKEN_CHARS[expected],
+            expected == TOKEN_LEFT_BRACE || expected == TOKEN_LEFT_PAREN ? "before" : "after",
+            context);
     errorAtCurrent(buffer);
 }
 
@@ -349,7 +352,7 @@ static void dot(bool canAssign) {
     int  argCount;
     bool isVarArg = false;
 
-    consumeExp(TOKEN_IDENTIFIER, "property name", "'.'");
+    consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
     pname = identifierConstant(&parser.previous);
 
     if (canAssign && match(TOKEN_EQUAL)) {
@@ -367,7 +370,7 @@ static void slice(bool canAssign) {
         emitConstant(INT_VAL(INT32_MAX>>1));
     else {
         expression();
-        consumeExp(TOKEN_RIGHT_BRACKET, "']'", "slice");
+        consumeExp(TOKEN_RIGHT_BRACKET, "slice");
     }
     if (canAssign && match(TOKEN_EQUAL)) {
         error("Invalid assignment target.");
@@ -385,7 +388,7 @@ static void index_(bool canAssign) {
         if (match(TOKEN_COLON))
             slice(canAssign);
         else {
-            consumeExp(TOKEN_RIGHT_BRACKET, "']'", "index");
+            consumeExp(TOKEN_RIGHT_BRACKET, "index");
 
             if (canAssign && match(TOKEN_EQUAL)) {
                 expression();
@@ -419,7 +422,7 @@ static void literal(bool canAssign) {
 
 static void grouping(bool canAssign) {
     expression();
-    consumeExp(TOKEN_RIGHT_PAREN, "')'", "expression");
+    consumeExp(TOKEN_RIGHT_PAREN, "expression");
 }
 
 static void intNum(bool canAssign) {
@@ -589,7 +592,7 @@ static void super_(bool canAssign) {
     else if (!currentClass->hasSuperclass)
         error("Can't use 'super' in a class with no superclass.");
 
-    consumeExp(TOKEN_DOT, "'.'", "'super'");
+    consumeExp(TOKEN_DOT, "'super'");
     consume(TOKEN_IDENTIFIER, "Expect superclass method name.");
     mname = identifierConstant(&parser.previous);
 
@@ -770,10 +773,7 @@ static int argumentList(bool* isVarArg, TokenType terminator) {
             }
         } while (match(TOKEN_COMMA));
     }
-    if (terminator == TOKEN_RIGHT_PAREN)
-        consumeExp(terminator, "')'", "arguments");
-    else
-        consumeExp(terminator, "']'", "list");
+    consumeExp(terminator, "arguments");
     return argCount;
 }
 
@@ -789,7 +789,7 @@ static void expression(void) {
 static void block(void) {
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
         declaration();
-    consumeExp(TOKEN_RIGHT_BRACE, "'}'", "block");
+    consumeExp(TOKEN_RIGHT_BRACE, "block");
 }
 
 static void function(FunctionType type) {
@@ -803,8 +803,7 @@ static void function(FunctionType type) {
     initCompiler(&compiler, type);
 
     beginScope();
-    consumeExp(TOKEN_LEFT_PAREN, "'('",
-               parser.previous.type == TOKEN_FUN ? "'fun'" : "function name");
+    consumeExp(TOKEN_LEFT_PAREN, "parameters");
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
             if (restParm)
@@ -817,7 +816,7 @@ static void function(FunctionType type) {
             defineVariable(parameter);
         } while (match(TOKEN_COMMA));
     }
-    consumeExp(TOKEN_RIGHT_PAREN, "')'", "parameter");
+    consumeExp(TOKEN_RIGHT_PAREN, "parameters");
     currentComp->target->arity |= restParm;        
 
     if (match(TOKEN_ARROW)) {
@@ -827,7 +826,7 @@ static void function(FunctionType type) {
         emitByte(OP_RETURN);
         function = endCompiler(false);
     } else {
-        consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+        consumeExp(TOKEN_LEFT_BRACE, "function body");
         block();
         function = endCompiler(true);
     }
@@ -888,10 +887,10 @@ static void classDeclaration(void) {
     }
 
     namedVariable(className, false);
-    consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
+    consumeExp(TOKEN_LEFT_BRACE, "class body");
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
         method();
-    consumeExp(TOKEN_RIGHT_BRACE, "'}'", "class body");
+    consumeExp(TOKEN_RIGHT_BRACE, "class body");
     emitByte(OP_POP);
 
     if (classCompiler.hasSuperclass)
@@ -915,7 +914,7 @@ static void varDeclaration(void) {
         expression();
     else
         emitByte(OP_NIL);
-    consumeExp(TOKEN_SEMICOLON, "';'", "variable declaration");
+    consumeExp(TOKEN_SEMICOLON, "variable declaration");
     defineVariable(vname);
 }
 
@@ -925,7 +924,7 @@ static void varDeclaration(void) {
 
 static void expressionStatement(void) {
     expression();
-    consumeExp(TOKEN_SEMICOLON, "';'", "expression");
+    consumeExp(TOKEN_SEMICOLON, "expression");
     emitByte(OP_POP);
 }
 
@@ -936,7 +935,7 @@ static void forStatement(void) {
     int incrementStart;
 
     beginScope();
-    consumeExp(TOKEN_LEFT_PAREN, "'('", "'for'");
+    consumeExp(TOKEN_LEFT_PAREN, "'for' clauses");
     if (match(TOKEN_SEMICOLON))
         {}// no initializer
     else if (match(TOKEN_VAR))
@@ -948,7 +947,7 @@ static void forStatement(void) {
     exitJump  = -1;
     if (!match(TOKEN_SEMICOLON)) {
         expression();
-        consumeExp(TOKEN_SEMICOLON, "';'", "loop condition");
+        consumeExp(TOKEN_SEMICOLON, "loop condition");
         // jump out of the loop if condition is false.
         exitJump = emitJump(OP_JUMP_FALSE);
     }
@@ -958,7 +957,7 @@ static void forStatement(void) {
         incrementStart = currentChunk()->count;
         expression();
         emitByte(OP_POP);
-        consumeExp(TOKEN_RIGHT_PAREN, "')'", "for clauses");
+        consumeExp(TOKEN_RIGHT_PAREN, "'for' clauses");
 
         emitLoop(loopStart);
         loopStart = incrementStart;
@@ -977,9 +976,9 @@ static void forStatement(void) {
 static void ifStatement(void) {
     int thenJump, elseJump;
 
-    consumeExp(TOKEN_LEFT_PAREN, "'('", "'if'");
+    consumeExp(TOKEN_LEFT_PAREN, "condition");
     expression();
-    consumeExp(TOKEN_RIGHT_PAREN, "')'", "condition");
+    consumeExp(TOKEN_RIGHT_PAREN, "condition");
 
     thenJump = emitJump(OP_JUMP_FALSE);
     statement();
@@ -1005,10 +1004,10 @@ static void caseStatement(void) {
 
     CHECK_STACKOVERFLOW
 
-    consumeExp(TOKEN_LEFT_PAREN, "'('", "'case'");
+    consumeExp(TOKEN_LEFT_PAREN, "'case' expression");
     expression();
-    consumeExp(TOKEN_RIGHT_PAREN, "')'", "expression");
-    consume(TOKEN_LEFT_BRACE, "Expect '{' before branches.");
+    consumeExp(TOKEN_RIGHT_PAREN, "'case' expression");
+    consumeExp(TOKEN_LEFT_BRACE, "branches");
 
     beginScope();
     // reserve one stack slot for case test value
@@ -1044,7 +1043,7 @@ static void caseStatement(void) {
                             error("Too many 'when' labels.");
                     } 
                 } while (match(TOKEN_COMMA)); 
-                consumeExp(TOKEN_COLON, "':'", "expression");
+                consumeExp(TOKEN_COLON, "expression");
                 prevCaseSkip = emitJump(OP_JUMP_FALSE);
             } else {
                 state        = 2;
@@ -1061,7 +1060,7 @@ static void caseStatement(void) {
             emptyBranch = false;
         }
     }      
-    consumeExp(TOKEN_RIGHT_BRACE, "'}'", "branches");
+    consumeExp(TOKEN_RIGHT_BRACE, "branches");
     if (emptyBranch)
         error("Can't have empty branch.");
 
@@ -1091,7 +1090,7 @@ static void printStatement(void) {
                 return;
             expression();
         }
-        consumeExp(TOKEN_SEMICOLON, "';'", "expression");
+        consumeExp(TOKEN_SEMICOLON, "expression");
         emitByte(OP_PRINTLN);
     }
 }
@@ -1106,7 +1105,7 @@ static void returnStatement(void) {
         if (currentComp->type == TYPE_INITIALIZER)
             error("Can't return a value from an initializer.");
         expression();
-        consumeExp(TOKEN_SEMICOLON, "';'", "return value");
+        consumeExp(TOKEN_SEMICOLON, "return value");
         emitByte(OP_RETURN);
     }
 }
@@ -1115,9 +1114,9 @@ static void whileStatement(void) {
     int loopStart = currentChunk()->count;
     int exitJump;
 
-    consumeExp(TOKEN_LEFT_PAREN, "'('", "'while'");
+    consumeExp(TOKEN_LEFT_PAREN, "condition");
     expression();
-    consumeExp(TOKEN_RIGHT_PAREN, "')'", "condition");
+    consumeExp(TOKEN_RIGHT_PAREN, "condition");
 
     exitJump = emitJump(OP_JUMP_FALSE);
     statement();

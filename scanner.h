@@ -28,6 +28,9 @@ typedef enum {
     TOKEN_ERROR, TOKEN_EOF
 } TokenType;
 
+// For printing syntax errors in consumeExp()
+#define TOKEN_CHARS "(){}[],.-+;:"
+
 // The IDE68K compiler has a bug when returning structs by value, which are smaller
 // than 3 longs. In this case, very strange FMOVE instructions are generated, which
 // trap on the 68008 of course. So the Token struct must be at least 12 bytes long,
