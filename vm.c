@@ -812,7 +812,7 @@ nextInst:
             }
             aLst      = AS_LIST(aVal);
             itemCount = aLst->arr.count;
-            if (vm.sp + itemCount >= vm.stack + STACK_MAX) {
+            if (vm.sp + itemCount >= vm.stack + (STACK_MAX-1)) {
                 runtimeError("Lox value stack overflow.");
                 goto errorExit;
             }
