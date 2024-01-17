@@ -201,6 +201,19 @@ void markTable(Table* table) {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Hashtable iterators 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int firstIterator(Table* table) {
+    int i;
+    if (table->count > 0)
+        for (i = 0; i < table->capacity; i++)
+            if (!IS_EMPTY(table->entries[i].key))
+                return i;
+    return -1;
+}
+
 void nextIterator(ObjIterator* iter) {
     int16_t i;
     Table*  table = iter->table;

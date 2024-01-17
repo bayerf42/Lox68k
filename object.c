@@ -79,16 +79,9 @@ ObjInstance* makeInstance(ObjClass* klass) {
 
 ObjIterator* makeIterator(Table* table, ObjInstance* instance) {
     ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
-    int16_t      i;
     iter->table    = table;
-    iter->position = -1;
     iter->instance = instance;
-    if (table->count > 0)
-        for (i = 0; i < table->capacity; i++)
-            if (!IS_EMPTY(table->entries[i].key)) {
-                iter->position = i;
-                return iter;
-            }
+    iter->position = firstIterator(table);
     return iter;
 }
 
@@ -360,13 +353,9 @@ ObjString* sliceFromString(ObjString* string, int begin, int end) {
 }
 
 ObjString* concatStrings(ObjString* a, ObjString* b) {
-    int length = a->length + b->length;
-
     fix_memcpy(input_line, a->chars, a->length);
     fix_memcpy(input_line + a->length, b->chars, b->length);
-    input_line[length] = '\0';
-
-    return makeString(input_line, length);
+    return makeString(input_line, a->length + b->length);
 }
 
 ObjString* caseString(ObjString* a, bool toUpper) {
