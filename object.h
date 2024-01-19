@@ -87,7 +87,7 @@ struct ObjFunction {
     uint8_t      arity;        // lower 7 bits arity, highest bit rest parameter flag        
     uint8_t      upvalueCount;
     Chunk        chunk;
-    ObjString*   name;
+    Value        name;         // string for named functions, int for anonymous
     ObjClass*    klass;        // defining class for method, NULL for normal function
 };
 

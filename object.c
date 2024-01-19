@@ -64,7 +64,7 @@ ObjFunction* makeFunction() {
     ObjFunction* function  = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
     function->arity        = 0;
     function->upvalueCount = 0;
-    function->name         = NULL;
+    function->name         = OBJ_VAL(NULL);
     function->klass        = NULL;
     initChunk(&function->chunk);
     return function;
@@ -160,15 +160,16 @@ ObjUpvalue* makeUpvalue(Value* slot) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const char* functionName(ObjFunction* function) {
-    if (function->name == NULL)
+    if (IS_INT(function->name))
+        sprintf(buffer, "#%d", AS_INT(function->name));
+    else if (AS_OBJ(function->name) == NULL)
         return "#script";
     else if (function->klass == NULL)
-        return function->name->chars;
-    else {
+        return AS_CSTRING(function->name);
+    else
         // Limit output length to avoid buffer overflow 
-        sprintf(buffer, "%.64s.%.64s", function->klass->name->chars, function->name->chars);
-        return buffer;
-    }
+        sprintf(buffer, "%.64s.%.64s", function->klass->name->chars, AS_CSTRING(function->name));
+    return buffer;
 }
 
 static void printList(ObjList* list) {

@@ -4,14 +4,15 @@ Native functions are implemented in C and are always available, even when you st
 the [standard library](stdlib.md).
 
 Trailing `?` indicates optional parameter. `num` means any number type, `int` or `real`.
-`val` means a value of any type.
+
+Trailing `?` at return type means that the native may return `nil`.
 
 
 | Name        | Parameters             | Returns     | Availability | Description                                                                       |
 |-------------|------------------------|-------------|--------------|-----------------------------------------------------------------------------------|
 | abs         | num                    | num         | all          | absolute value                                                                    |  
-| addr        | val                    | int/nil     | all          | address of an object in heap, nil for immediate values                            |  
-| append      | list, val              | nil         | all          | appends *val* to end of *list*                                                    |
+| addr        | any                    | int?        | all          | address of an object in heap, nil for immediate values                            |  
+| append      | list, any              | nil         | all          | appends *any* to end of *list*                                                    |
 | asc         | string, int?           | int         | all          | ASCII code of first character or at index *int*                                   |  
 | atan        | num                    | real        | all          | inverse tangent                                                                   |  
 | bin         | int                    | string      | all          | *int* as binary string                                                            |
@@ -27,41 +28,41 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | dbg_call    | bool                   | bool        | all          | trace call/return Lox functions/methods, including arguments and return value     |  
 | dbg_code    | bool                   | bool        | all          | prints byte code after compiling                                                  |  
 | dbg_gc      | int                    | int         | all          | prints garbage collection diagnostics according to bit flags *int*, see `memory.h`|  
-| dbg_nat     | bool                   | bool        | all          | trace call/return Lox natives, including arguments and return value               |  
-| dbg_stat    | bool                   | bool        | all          | print statistics (steps, allocations) after execution                             |  
+| dbg_nat     | bool                   | bool        | all          | trace calling Lox natives, including arguments and return value                   |  
+| dbg_stat    | bool                   | bool        | all          | print statistics (time, steps, allocations, GCs) after execution                  |  
 | dbg_step    | bool                   | bool        | all          | trace each VM instruction executed, prints stack                                  |  
 | dec         | num                    | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int              | nil         | all          | deletes element at *int* from *list*                                              |
-| equal       | val, val               | bool        | all          | More lenient than ==, numbers compared numerically, iterators for same position   |  
+| equal       | any, any               | bool        | all          | More lenient than ==, numbers compared numerically, iterators for same position   |  
 | error       | string                 | *no return* | all          | Aborts program execution with error message *string*                              |  
-| exec        | int, val?, val?, val?  | val         | all          | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
+| exec        | int, any?, any?, any?  | any         | all          | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
 | exp         | num                    | real        | all          | exponential                                                                       |  
 | gc          | -                      | int         | all          | forces garbage collection, returns size of allocated memory                       |  
 | globals     | -                      | iterator    | all          | iterator over all global variables                                                |  
 | heap        | int                    | any         | all          | Lox value stored at address *int* in heap                                         |
 | hex         | int                    | string      | all          | *int* as hexadecimal string                                                       |
-| index       | val, list, int?        | int/nil     | all          | search *val* in *list*, returns index where found, optional search start *int*    |  
+| index       | any, list, int?        | int?        | all          | search *any* in *list*, returns index where found, optional search start *int*    |  
 | input       | string?                | string      | all          | input string from terminal with optional prompt                                   |
-| insert      | list, int, val         | nil         | all          | inserts *val* into *list* at position *int*                                       |
+| insert      | list, int, any         | nil         | all          | inserts *any* into *list* at position *int*                                       |
 | it_clone    | iterator               | iterator    | all          | clones *iterator*. Both iterators move independently, compare them with equal     |
-| keycode     | -                      | int/nil     | Kit          | code of key currently pressed or nil                                              |  
+| keycode     | -                      | int?        | Kit          | code of key currently pressed or nil                                              |  
 | lcd_clear   | -                      | nil         | Kit          | clears LCD                                                                        |  
 | lcd_defchar | int, list *of 8 bytes* | nil         | Kit          | creates a user-defined char with code *int* for LCD with bit pattern from *list*  |  
 | lcd_goto    | int *col*, int *line*  | nil         | Kit          | set cursor position on LCD                                                        |  
 | lcd_puts    | string                 | nil         | Kit          | writes *string* to LCD                                                            |  
 | length      | list or string         | int         | all          | length of *list* or *string*                                                      |
-| list        | int, val?              | list        | all          | creates a list with *int* elements, initialized to *val* or nil                   |
+| list        | int, any?              | list        | all          | creates a list with *int* elements, initialized to *any* or nil                   |
 | log         | num                    | real        | all          | natural logarithm                                                                 |  
 | lower       | string                 | string      | all          | lower case of string                                                              |  
-| name        | val                    | string/nil  | all          | name of class, closure, bound, or native, nil for other values                    |  
+| name        | any                    | string?     | all          | name of class, closure, bound, or native, nil for other values                    |  
 | next        | iterator               | bool        | all          | advances *iterator* to next entry, returns true when valid                        |  
-| parse_int   | string                 | int/nil     | all          | parses *string* as integer                                                        |
-| parse_real  | string                 | real/nil    | all          | parses *string* as real                                                           |
+| parse_int   | string                 | int?        | all          | parses *string* as integer                                                        |
+| parse_real  | string                 | real?       | all          | parses *string* as real                                                           |
 | peek        | int                    | int         | all          | reads byte from address *int*                                                     |  
 | poke        | int *addr*, int *byte* | nil         | all          | writes *byte* to *addr*                                                           |  
 | pow         | num, num               | real        | all          | power                                                                             |  
 | random      | -                      | int         | all          | a pseudo-random positive integer                                                  |
-| remove      | instance, val          | bool        | all          | removes a field name/dictionary key from an instance, true if it existed before   |
+| remove      | instance, any          | bool        | all          | removes a field name/dictionary key from an instance, true if it existed before   |
 | reverse     | list                   | list        | all          | creates a list initialized by *list* in reverse order                             |
 | seed_rand   | int                    | int         | all          | set seed for random number generator, returns current state                       |
 | sin         | num                    | real        | all          | sine                                                                              |  
@@ -74,7 +75,7 @@ Trailing `?` indicates optional parameter. `num` means any number type, `int` or
 | tanh        | num                    | real        | all          | hyperbolic tangent                                                                |  
 | trap        | -                      | nil         | Kit, Emu     | breaks to monitor, now you can inspect Lox internals, can be continued with **GO**|  
 | trunc       | num                    | int         | all          | truncate real to integer                                                          |  
-| type        | val                    | string      | all          | type (as string) of *val*                                                         |  
+| type        | any                    | string      | all          | type (as string) of *any*                                                         |  
 | upper       | string                 | string      | all          | upper case of string                                                              |  
 | valid       | iterator               | bool        | all          | does *iterator* address a valid entry?                                            |  
 

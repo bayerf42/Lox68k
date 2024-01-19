@@ -247,11 +247,11 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     currentComp          = compiler;
 
     if (type != TYPE_SCRIPT) {
-        if (parser.previous.type == TOKEN_FUN) {
-            sprintf(buffer, "#%d", vm.lambdaCount++);
-            currentComp->target->name = makeString(buffer, strlen(buffer));
-        } else
-            currentComp->target->name = makeString(parser.previous.start, parser.previous.length);
+        if (parser.previous.type == TOKEN_FUN)
+            currentComp->target->name = INT_VAL(vm.lambdaCount++);
+        else
+            currentComp->target->name =
+                OBJ_VAL(makeString(parser.previous.start, parser.previous.length));
     }
 
     local = &currentComp->locals[currentComp->localCount++];

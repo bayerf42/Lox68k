@@ -28,7 +28,7 @@ You can start Lox68k with or without the standard library:
 | asin         | num                   | real        | inverse sine                                                                      |  
 | asinh        | num                   | real        | inverse hyperbolic sine                                                           |  
 | atanh        | num                   | real        | inverse hyperbolic tangent                                                        |  
-| class_of     | any                   | class/nil   | class of *any* if it's an instance, nil otherwise                                 |  
+| class_of     | any                   | class?      | class of *any* if it's an instance, nil otherwise                                 |  
 | complement   | fun                   | fun         | boolean complement of *fun*                                                       |  
 | deg          | num                   | real        | convert from radians to degrees                                                   |  
 | filter       | fun, list             | list        | filter all items of *list* which satisfy predicate *fun*                          |  
@@ -64,5 +64,4 @@ You can start Lox68k with or without the standard library:
 
 
 Trailing `?` indicates optional parameter. `num` means any number type, `int` or `real`.
-`val` means a value of any type.
 
