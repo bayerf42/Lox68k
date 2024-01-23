@@ -8,7 +8,7 @@
 
 #define GC_HEAP_GROW_FACTOR 2
 
-char input_line[INPUT_SIZE];
+char big_buffer[INPUT_SIZE];
 
 void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     void* result;

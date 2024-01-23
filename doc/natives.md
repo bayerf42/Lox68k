@@ -45,6 +45,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | input       | string?                | string      | all          | input string from terminal with optional prompt                                   |
 | insert      | list, int, any         | nil         | all          | inserts *any* into *list* at position *int*                                       |
 | it_clone    | iterator               | iterator    | all          | clones *iterator*. Both iterators move independently, compare them with equal     |
+| join        | list, sep?, beg?, end? | string      | all          | joins all strings in *list*, separated by *sep*, prefix *beg*, suffix *end*       |
 | keycode     | -                      | int?        | Kit          | code of key currently pressed or nil                                              |  
 | lcd_clear   | -                      | nil         | Kit          | clears LCD                                                                        |  
 | lcd_defchar | int, list *of 8 bytes* | nil         | Kit          | creates a user-defined char with code *int* for LCD with bit pattern from *list*  |  

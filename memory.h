@@ -35,6 +35,6 @@ void  markValue(Value value);
 void  collectGarbage(bool checkReclaim);
 void  freeObjects(void);
 
-extern char input_line[INPUT_SIZE];
+extern char big_buffer[INPUT_SIZE];
 
 #endif

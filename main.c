@@ -44,7 +44,7 @@ int main() {
     for (;;) {
         putstr("> ");
         readLine();
-        interpret(input_line);
+        interpret(big_buffer);
     }
     return 0; // not reached
 }
@@ -94,10 +94,10 @@ static void repl(void) {
             break;
         }
 
-        if (input_line[0] == '&')
-            runFile(input_line + 1);
+        if (big_buffer[0] == '&')
+            runFile(big_buffer + 1);
         else
-            interpret(input_line);
+            interpret(big_buffer);
     }
 }
 

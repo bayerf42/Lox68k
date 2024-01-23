@@ -272,7 +272,45 @@ static bool upperNative(int argCount, Value* args) {
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+#define APPEND(str) { \
+    len = strlen(str); if (dest - big_buffer + len >= (INPUT_SIZE-1)) goto ErrExit; \
+    strcpy(dest, (str)); \
+    dest += len; }
+
+static bool joinNative(int argCount, Value* args) {
+    ObjList*    list   = AS_LIST(args[0]);
+    const char* sepa   = (argCount > 1) ? AS_CSTRING(args[1]) : "";
+    const char* first  = (argCount > 2) ? AS_CSTRING(args[2]) : "";
+    const char* last   = (argCount > 3) ? AS_CSTRING(args[3]) : "";
+
+    const char* joiner = "";
+    const char* curr;
+    char*       dest   = big_buffer;
+    Value       item;
+    int         i, len;
+
+    APPEND(first);
+    for (i = 0; i < list->arr.count; i++) {
+        APPEND(joiner);
+        joiner = sepa;
+        item   = list->arr.values[i];
+        if (!IS_STRING(item)) {
+            runtimeError("String expected in list at %d.", i);
+            return false;
+        }
+        curr = AS_CSTRING(item);
+        APPEND(curr);
+    }
+    APPEND(last);
+    args[-1] = OBJ_VAL(makeString(big_buffer, dest - big_buffer));
+    return true;
+
+ErrExit:
+    runtimeError("Stringbuffer overflow.");
+    return false;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
 // Iterators
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -386,7 +424,7 @@ static bool inputNative(int argCount, Value* args) {
     if (argCount > 0)
         putstr(AS_CSTRING(args[0]));
     if (readLine())
-        args[-1] = OBJ_VAL(makeString(input_line, strlen(input_line)));
+        args[-1] = OBJ_VAL(makeString(big_buffer, strlen(big_buffer)));
     else
         args[-1] = NIL_VAL;
     return true;
@@ -747,11 +785,11 @@ static bool clockNative(int argCount, Value* args) {
 
 char* readLine() {
 #ifdef KIT68K
-    return gets(input_line);
+    return gets(big_buffer);
 #else
-    char* res = fgets(input_line, sizeof(input_line), stdin);
+    char* res = fgets(big_buffer, sizeof(big_buffer), stdin);
     if (res)
-        input_line[strcspn(input_line, "\n")] = 0;
+        big_buffer[strcspn(big_buffer, "\n")] = 0;
     return res;      
 #endif
 }
@@ -801,6 +839,7 @@ static const Native allNatives[] = {
 
     {"lower",       "S",    lowerNative},
     {"upper",       "S",    upperNative},
+    {"join",        "Lsss", joinNative},
 
     {"length",      "Q",    lengthNative},
     {"list",        "Na",   listNative},

@@ -23,11 +23,11 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### String
-`+ < <= > >= [] [:] asc bin chr dec hex input length lower parse_int parse_real upper`
+`+ < <= > >= [] [:] asc bin chr dec hex input join length lower parse_int parse_real upper`
 
 
 ### List
-`+ [] [:] .. append delete filter index insert length list map reduce reverse`
+`+ [] [:] .. append delete filter index insert join length list map reduce reverse`
 
 
 ### Class
@@ -73,7 +73,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 ## Some numbers
 * 18 keywords
-* 68 native functions
+* 69 native functions
 * 60 VM opcodes
 * 12 data types
 * about 6000 lines source code

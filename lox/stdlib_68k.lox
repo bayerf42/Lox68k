@@ -61,16 +61,7 @@ fun string(obj) {
  case(type(obj)) {
   when "int","real":return dec(obj);
   when "string":return obj;
-  when "list": {
-   var sep="";
-   var res="["; 
-   var len=length(obj);
-   for (var i=0;i<len;i=i+1) {	
-    res=res+(sep+string(obj[i]));
-    sep=", ";
-   }
-   return res+"]";
-  }
+  when "list":return join(map(string,obj),", ","[","]");
   when "instance":return obj.string();
   when "closure","native","class","bound":return "<"+type(obj)+" "+name(obj)+">";
   when "iterator":return "<iterator>";
@@ -78,16 +69,13 @@ fun string(obj) {
  }
 }
 fun _bh(h,fmt) {
- var sep="";
- var res="";
- for (var it=slots(h);valid(it);next(it)) {
-  res=res+(sep+fmt(it));
-  sep=", ";
- }
+ var res=[];
+ for (var it=slots(h);valid(it);next(it))
+  append(res,fmt(it));
  return res;
 }
 class Object {
- string()->"<"+name(class_of(this))+" instance: "+_bh(this,fun(it)->string(it@)+":"+string(it^))+">" 
+ string()->join(_bh(this,fun(it)->string(it@)+":"+string(it^)),", ","<"+name(class_of(this))+" instance: ",">") 
  clone() {
   var res=class_of(this)();
   for (var it=slots(this);valid(it);next(it))
@@ -102,14 +90,14 @@ class Map<Object {
   for (var i=0;i<len;i=i+2)
    this[args[i]]=args[i+1];
  }
- string()->"{"+_bh(this,fun(it)->string(it@)+":"+string(it^))+"}"
+ string()->join(_bh(this,fun(it)->string(it@)+":"+string(it^)),", ","{","}")
 }
 class Set<Object {
  init(..args) {
   for (var i=0;i<length(args);i=i+1)
    this[args[i]]=true;
  }
- string()->"{"+_bh(this,fun(it)->string(it@))+"}"
+ string()->join(_bh(this,fun(it)->string(it@)),", ","{","}")
  union(that) {
   for (var it=slots(that);valid(it);next(it))
    this[it@]=true;

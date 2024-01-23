@@ -172,7 +172,7 @@ const char* functionName(ObjFunction* function) {
     return buffer;
 }
 
-static void printList(ObjList* list) {
+static void printList(ObjList* list, bool machine) {
     int i;
     const char* sep = "";
 
@@ -181,7 +181,7 @@ static void printList(ObjList* list) {
     putstr("[");
     for (i = 0; i < list->arr.count; i++) {
         putstr(sep);
-        printValue(list->arr.values[i], false, false);
+        printValue(list->arr.values[i], false, machine);
         sep = ", ";
     }
     putstr("]");
@@ -234,7 +234,7 @@ void printObject(Value value, bool compact, bool machine) {
             if (compact)
                 printf("<list %d>", AS_LIST(value)->arr.count);
             else
-                printList(AS_LIST(value));
+                printList(AS_LIST(value), machine);
             break;
 
         case OBJ_NATIVE:
@@ -354,25 +354,25 @@ ObjString* sliceFromString(ObjString* string, int begin, int end) {
 }
 
 ObjString* concatStrings(ObjString* a, ObjString* b) {
-    fix_memcpy(input_line, a->chars, a->length);
-    fix_memcpy(input_line + a->length, b->chars, b->length);
-    return makeString(input_line, a->length + b->length);
+    fix_memcpy(big_buffer, a->chars, a->length);
+    fix_memcpy(big_buffer + a->length, b->chars, b->length);
+    return makeString(big_buffer, a->length + b->length);
 }
 
 ObjString* caseString(ObjString* a, bool toUpper) {
     int   length = a->length;
     char* cp;
-    fix_memcpy(input_line, a->chars, length);
-    input_line[length] = '\0';
+    fix_memcpy(big_buffer, a->chars, length);
+    big_buffer[length] = '\0';
 
     if (toUpper)
-        for (cp=input_line; *cp; ++cp)
+        for (cp=big_buffer; *cp; ++cp)
             *cp = toupper(*cp);
     else
-        for (cp=input_line; *cp; ++cp)
+        for (cp=big_buffer; *cp; ++cp)
             *cp = tolower(*cp);
 
-    return makeString(input_line, length);
+    return makeString(big_buffer, length);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
