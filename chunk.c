@@ -61,13 +61,13 @@ int addConstant(Chunk* chunk, Value value) {
 }
 
 int getLine(Chunk* chunk, int offset) {
-    int start = 0;
-    int end   = chunk->lineCount - 1;
+    int beg = 0;
+    int end = chunk->lineCount - 1;
     int mid;
     LineStart* line;
 
     for (;;) {
-        mid  = (start + end) >> 1;
+        mid  = (beg + end) >> 1;
         line = &chunk->lines[mid];
         if (offset < line->offset)
             end = mid - 1;
@@ -75,7 +75,7 @@ int getLine(Chunk* chunk, int offset) {
                  offset < chunk->lines[mid + 1].offset)
             return line->line;
         else
-            start = mid + 1;
+            beg = mid + 1;
     }
     return -1; // not reached
 }

@@ -31,7 +31,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### Class
-`() < class_name Map Object Set super`
+`() < Map Object Set super`
 
 
 ### Instance
@@ -39,7 +39,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### Closure
-`() -> complement fun_name`
+`() -> complement`
 
 
 ### Native
@@ -77,7 +77,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 * 60 VM opcodes
 * 12 data types
 * about 6000 lines source code
-* 48 k bytes code size on 68008 kit
+* 49 k bytes code size on 68008 kit
 * Performance
   * 7k ops on 68008 kit
   * 60M ops on Raspberry 4 Linux
