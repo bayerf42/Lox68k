@@ -42,6 +42,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | heap        | int                    | any         | all          | Lox value stored at address *int* in heap                                         |
 | hex         | int                    | string      | all          | *int* as hexadecimal string                                                       |
 | index       | any, list, int?        | int?        | all          | search *any* in *list*, returns index where found, optional search start *int*    |  
+| index       | string, string, int?   | int?        | all          | search 1st *string* in 2nd *string*, returns index, optional search start *int*   |  
 | input       | string?                | string      | all          | input string from terminal with optional prompt                                   |
 | insert      | list, int, any         | nil         | all          | inserts *any* into *list* at position *int*                                       |
 | it_clone    | iterator               | iterator    | all          | clones *iterator*. Both iterators move independently, compare them with equal     |

@@ -649,6 +649,9 @@ static void lambda(bool canAssign) {
 }
 
 const ParseRule rules[] = {
+    // Keep same order as TokenType enum values in scanner.h
+    // since C89 doesn't support array init by index values.
+
     /* [TOKEN_LEFT_PAREN]    = */ {grouping, call,   PREC_POSTFIX},
     /* [TOKEN_RIGHT_PAREN]   = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_LEFT_BRACE]    = */ {NULL,     NULL,   PREC_NONE},

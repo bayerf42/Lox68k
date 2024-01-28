@@ -208,28 +208,56 @@ static bool deleteNative(int argCount, Value* args) {
 }
 
 static bool indexNative(int argCount, Value* args) {
-    ObjList* list  = AS_LIST(args[1]);
-    Value    item  = args[0];
-    int      start = (argCount == 2) ? 0 : AS_INT(args[2]);
-    int      i;
+    ObjList*   list;
+    ObjString* haystack;
+    ObjString* needle;
+    int        start = (argCount == 2) ? 0 : AS_INT(args[2]);
+    int        i, delta;
 
     RESULT = NIL_VAL;
-    if (list->arr.count == 0)
-        return true;
-
-    if (!isValidListIndex(list, start)) {
-        runtimeError("%s out of range.", "Start index");
-        return false;
-    }
-
-    if (start < 0)
-        start += list->arr.count;
-
-    for (i = start; i < list->arr.count; i++) {
-        if (valuesEqual(item, list->arr.values[i])) {
-            RESULT = INT_VAL(i);
-            break;
+    if (IS_LIST(args[1])) {
+        list  = AS_LIST(args[1]);
+        if (list->arr.count == 0 && start == 0)
+            return true;
+        if (!isValidListIndex(list, start)) {
+            runtimeError("%s out of range.", "Start index");
+            return false;
         }
+        if (start < 0) start += list->arr.count;
+
+        for (i = start; i < list->arr.count; i++) {
+            if (valuesEqual(args[0], list->arr.values[i])) {
+                RESULT = INT_VAL(i);
+                break;
+            }
+        }
+    } else {
+        haystack = AS_STRING(args[1]);
+        if (!IS_STRING(args[0])) {
+            runtimeError("Type mismatch at argument %d, expected %s but got %s.",
+                         1, "a string", valueType(args[0]));
+            return false;
+        }
+        needle = AS_STRING(args[0]);
+        if (haystack->length == 0 && start == 0) {
+            if (needle->length == 0)
+                RESULT = INT_VAL(0);
+            return true;
+        }
+        if (!isValidStringIndex(haystack, start)) {
+            runtimeError("%s out of range.", "Start index");
+            return false;
+        }
+        if (start < 0) start += haystack->length;
+
+        // strstr is broken in IDE68K C library, wrote our own...
+        delta = haystack->length - needle->length;
+        for (i = start; i <= delta; i++) {
+            if (!fix_memcmp(haystack->chars + i, needle->chars, needle->length)) {
+                RESULT = INT_VAL(i);
+                break;
+            }
+        } 
     }
     return true;
 }
@@ -830,7 +858,7 @@ static const Native allNatives[] = {
     {"append",      "LA",   appendNative},
     {"insert",      "LNA",  insertNative},
     {"delete",      "LN",   deleteNative},
-    {"index",       "ALn",  indexNative},
+    {"index",       "AQn",  indexNative},
     {"remove",      "IA",   removeNative},
     {"equal",       "AA",   equalNative},
 

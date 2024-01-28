@@ -2,7 +2,6 @@
 ;;; Some assembler utilities for Kit, replacing broken C library
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
        section code
 
 ; void fix_memcpy(char* dest, const char* src, size_t size);
@@ -15,7 +14,6 @@ _fix_memcpy:
 .loop  move.b    (A1)+,(A0)+
 .test  dbra      D1,.loop
        rts
-
 
 ; int fix_memcmp(const char* a, const char* b, size_t size);
        xdef      _fix_memcmp
@@ -30,8 +28,7 @@ _fix_memcmp:
 .test  dbne      D1,.loop
        ext.w     D0
        ext.l     D0
-.done  rts 
-
+       rts 
 
 ; int putstr(const char* str);
        xdef      _putstr
