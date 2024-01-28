@@ -354,6 +354,8 @@ ObjString* sliceFromString(ObjString* string, int begin, int end) {
 }
 
 ObjString* concatStrings(ObjString* a, ObjString* b) {
+    if (a->length + b->length >= INPUT_SIZE)
+        return NULL;
     fix_memcpy(big_buffer, a->chars, a->length);
     fix_memcpy(big_buffer + a->length, b->chars, b->length);
     return makeString(big_buffer, a->length + b->length);

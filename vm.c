@@ -509,6 +509,10 @@ nextInst:
                 bStr = AS_STRING(peek(0));
                 aStr = AS_STRING(peek(1));
                 resStr = concatStrings(aStr, bStr);
+                if (!resStr) {
+                    runtimeError("Stringbuffer overflow.");
+                    goto errorExit;
+                }
                 dropNpush(2, OBJ_VAL(resStr));
             } else if (IS_LIST(peek(0)) && IS_LIST(peek(1))) {
                 bLst = AS_LIST(peek(0));
