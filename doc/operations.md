@@ -72,12 +72,12 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 `dbg_call dbg_code dbg_gc dbg_nat dbg_stat dbg_step`
 
 ## Some numbers
-* 18 keywords
+* 19 keywords
 * 69 native functions
 * 60 VM opcodes
 * 12 data types
 * about 6000 lines source code
-* 49 k bytes code size on 68008 kit
+* 50 k bytes code size on 68008 kit
 * Performance
   * 7k ops on 68008 kit
   * 60M ops on Raspberry 4 Linux

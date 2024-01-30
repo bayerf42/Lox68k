@@ -18,6 +18,7 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * postfix `^` to read/write value part of a hashtable iterator entry
 * function body `{ return expr;}` can be abbreviated by `-> expr`.
 * `case` statement for multiway branch
+* `break` statement in loops
 
 
 ``` ebnf
@@ -31,7 +32,8 @@ declaration    → class_decl
 class_decl     → "class" IDENTIFIER ( "<" IDENTIFIER )?
                  "{" ( IDENTIFIER function )* "}" ;
 fun_decl       → "fun" IDENTIFIER function ;
-var_decl       → "var" IDENTIFIER ( "=" expression )? ";" ;
+var_decl       → "var" sing_var_decl ( "," sing_var_decl )* ";" ;
+sing_var_decl  → IDENTIFIER ( "=" expression )? ;
 
 statement      → expr_stmt
                | for_stmt
@@ -40,6 +42,7 @@ statement      → expr_stmt
                | return_stmt
                | while_stmt
                | case_stmt
+               | break_stmt
                | block ;
 
 expr_stmt      → expression ";" ;
@@ -53,6 +56,7 @@ while_stmt     → "while" "(" expression ")" statement ;
 case_stmt      → "case" "(" expression ")" "{" when_branch* else_branch? "}" ;
 when_branch    → "when" expression ( "," expression )* ":" statement+ ;
 else_branch    → "else" statement+ ;
+break_stmt     → "break" ";" ;
 block          → "{" declaration* "}" ;
 
 expression     → assignment ;
