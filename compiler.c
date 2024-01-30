@@ -49,6 +49,13 @@ typedef enum {
     TYPE_SCRIPT
 } FunctionType;
 
+typedef struct LoopInfo {
+    struct LoopInfo* enclosing;
+    int8_t           scopeDepth;
+    int8_t           breakCount;
+    int16_t          breaks[MAX_BREAKS];
+} LoopInfo;
+
 typedef struct Compiler {
     struct Compiler* enclosing;
     ObjFunction*     target;
@@ -57,6 +64,7 @@ typedef struct Compiler {
     Upvalue          upvalues[MAX_UPVALUES];
     int8_t           scopeDepth;
     uint8_t          localCount;
+    LoopInfo*        currentLoop;
 } Compiler;
 
 typedef struct ClassCompiler {
@@ -238,13 +246,14 @@ static void patchJump(int offset) {
 
 static void initCompiler(Compiler* compiler, FunctionType type) {
     Local* local;
-    compiler->enclosing  = currentComp;
-    compiler->target     = NULL;
-    compiler->type       = type;
-    compiler->localCount = 0;
-    compiler->scopeDepth = 0;
-    compiler->target     = makeFunction();
-    currentComp          = compiler;
+    compiler->enclosing   = currentComp;
+    compiler->target      = NULL;
+    compiler->type        = type;
+    compiler->localCount  = 0;
+    compiler->scopeDepth  = 0;
+    compiler->target      = makeFunction();
+    compiler->currentLoop = NULL;
+    currentComp           = compiler;
 
     if (type != TYPE_SCRIPT) {
         if (parser.previous.type == TOKEN_FUN)
@@ -287,7 +296,7 @@ static void endScope(void) {
     currentComp->scopeDepth--;
 
     while (currentComp->localCount > 0 &&
-            currentComp->locals[currentComp->localCount - 1].depth > currentComp->scopeDepth) {
+           currentComp->locals[currentComp->localCount - 1].depth > currentComp->scopeDepth) {
         if (currentComp->locals[currentComp->localCount - 1].isCaptured)
             emitByte(OP_CLOSE_UPVALUE);
         else
@@ -684,6 +693,7 @@ const ParseRule rules[] = {
     /* [TOKEN_INT]           = */ {intNum,   NULL,   PREC_NONE},
     /* [TOKEN_REAL]          = */ {realNum,  NULL,   PREC_NONE},
     /* [TOKEN_AND]           = */ {NULL,     and_,   PREC_AND},
+    /* [TOKEN_BREAK]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_CASE]          = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_CLASS]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_ELSE]          = */ {NULL,     NULL,   PREC_NONE},
@@ -934,13 +944,31 @@ static void expressionStatement(void) {
     emitByte(OP_POP);
 }
 
+static void initBreaks(LoopInfo* loop) {
+    loop->enclosing          = currentComp->currentLoop;
+    loop->scopeDepth         = currentComp->scopeDepth;
+    loop->breakCount         = 0;
+    currentComp->currentLoop = loop;
+}
+
+static void patchBreaks(LoopInfo* loop) {
+    while (loop->breakCount)
+        patchJump(loop->breaks[--loop->breakCount]);
+    currentComp->currentLoop = loop->enclosing;
+}
+
 static void forStatement(void) {
-    int loopStart;
-    int exitJump;
-    int bodyJump;
-    int incrementStart;
+    int      loopStart;
+    int      exitJump;
+    int      bodyJump;
+    int      incrementStart;
+    LoopInfo loopInfo;
+
+    CHECK_STACKOVERFLOW
 
     beginScope();
+    initBreaks(&loopInfo);
+
     consumeExp(TOKEN_LEFT_PAREN, "'for' clauses");
     if (match(TOKEN_SEMICOLON))
         {}// no initializer
@@ -976,6 +1004,7 @@ static void forStatement(void) {
     if (exitJump != -1)
         patchJump(exitJump);
 
+    patchBreaks(&loopInfo);
     endScope();
 }
 
@@ -1005,7 +1034,7 @@ static void caseStatement(void) {
     int       prevCaseSkip = -1;
     bool      emptyBranch  = false;
     int16_t   caseEnds[MAX_BRANCHES];
-    int16_t   whenLabels[MAX_BRANCHES];
+    int16_t   whenLabels[MAX_LABELS];
     TokenType caseType;
 
     CHECK_STACKOVERFLOW
@@ -1030,8 +1059,9 @@ static void caseStatement(void) {
                 error("Can't have another branch after 'else'.");
             if (state == 1) {
                 // at end of previous case, jump over the others.
-                caseEnds[caseCount] = emitJump(OP_JUMP);
-                if (++caseCount >= MAX_BRANCHES)
+                if (caseCount < MAX_BRANCHES)
+                    caseEnds[caseCount++] = emitJump(OP_JUMP);
+                else
                     error("Too many case branches.");
                 // patch its condition to jump to the next (= this case).
                 patchJump(prevCaseSkip);
@@ -1044,9 +1074,10 @@ static void caseStatement(void) {
                     emitByte(OP_EQUAL);
                     if (check(TOKEN_COMMA)) {
                         // jump over other label tests to statement
-                        whenLabels[labelCount] = emitJump(OP_JUMP_TRUE);
-                        if (++labelCount >= MAX_BRANCHES)
-                            error("Too many 'when' labels.");
+                        if (labelCount < MAX_LABELS)
+                            whenLabels[labelCount++] = emitJump(OP_JUMP_TRUE);
+                        else
+                            errorAtCurrent("Too many 'when' labels.");
                     } 
                 } while (match(TOKEN_COMMA)); 
                 consumeExp(TOKEN_COLON, "expression");
@@ -1117,18 +1148,43 @@ static void returnStatement(void) {
 }
 
 static void whileStatement(void) {
-    int loopStart = currentChunk()->count;
-    int exitJump;
+    int      loopStart = currentChunk()->count;
+    int      exitJump;
+    LoopInfo loopInfo;
+
+    CHECK_STACKOVERFLOW
 
     consumeExp(TOKEN_LEFT_PAREN, "condition");
     expression();
     consumeExp(TOKEN_RIGHT_PAREN, "condition");
 
+    initBreaks(&loopInfo);
     exitJump = emitJump(OP_JUMP_FALSE);
     statement();
     emitLoop(loopStart);
 
     patchJump(exitJump);
+    patchBreaks(&loopInfo);
+}
+
+static void breakStatement(void) {
+    LoopInfo* loop = currentComp->currentLoop;
+    int i;
+
+    if (loop) {
+        consumeExp(TOKEN_SEMICOLON, "'break'");
+
+        // discard all variables upto loop broken 
+        i = currentComp->localCount - 1;
+        for (; i >= 0 && currentComp->locals[i].depth > loop->scopeDepth; i--)
+            emitByte(currentComp->locals[i].isCaptured ? OP_CLOSE_UPVALUE : OP_POP);
+
+        if (loop->breakCount < MAX_BREAKS)
+            loop->breaks[loop->breakCount++] = emitJump(OP_JUMP);
+        else
+            error("Too many 'break's in loop.");
+    } else
+        error("Not in a loop.");
 }
 
 static void declaration(void) {
@@ -1148,6 +1204,7 @@ static void statement(void) {
     else if (match(TOKEN_RETURN)) returnStatement();
     else if (match(TOKEN_WHILE))  whileStatement();
     else if (match(TOKEN_CASE))   caseStatement();
+    else if (match(TOKEN_BREAK))  breakStatement();
     else if (match(TOKEN_LEFT_BRACE)) {
         beginScope();
         block();

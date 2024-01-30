@@ -110,9 +110,10 @@ static void skipWhitespace(void) {
 static TokenType checkKeyword(int args) {
     // Compressed keyword postfixes in single string
     const char* const rest =
-              "ileturndasslsefarintuperisue";
-    //         0123456789012345678901234567
+              "ileturndasslsefarintupereakisue";
+    //         0123456789012345678901234567890
     // And           ##
+    // Break                          ####
     // CAse                ##
     // CLass           ###
     // Else               ###               
@@ -125,8 +126,8 @@ static TokenType checkKeyword(int args) {
     // Print                   ####
     // Return    #####
     // Super                       ####             
-    // THis                            ##
-    // TRue                              ##
+    // THis                               ##
+    // TRue                                 ##
     // Var                    ##
     // WHEn          #
     // WHIle    ##
@@ -153,6 +154,7 @@ static TokenType identifierType(void) {
         // bisect on first char to reduce number of sequential comparisons
         if (c <= 'n') {
             if      (c == 'a')                 args = WRAP(1, 2,  6, TOKEN_AND);
+            else if (c == 'b')                 args = WRAP(1, 4, 23, TOKEN_BREAK);
             else if (c == 'c') {
                 if (id_length > 1) {
                     c = scanner.start[1];
@@ -179,8 +181,8 @@ static TokenType identifierType(void) {
             else if (c == 't') {
                 if (id_length > 1) {
                     c = scanner.start[1];
-                    if      (c == 'h')         args = WRAP(2, 2, 24, TOKEN_THIS);
-                    else if (c == 'r')         args = WRAP(2, 2, 26, TOKEN_TRUE);
+                    if      (c == 'h')         args = WRAP(2, 2, 27, TOKEN_THIS);
+                    else if (c == 'r')         args = WRAP(2, 2, 29, TOKEN_TRUE);
                 }
             }
             else if (c == 'v')                 args = WRAP(1, 2, 15, TOKEN_VAR);

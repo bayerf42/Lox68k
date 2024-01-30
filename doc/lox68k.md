@@ -82,6 +82,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * Function body `{ return expr;}` can be abbreviated by `-> expr`. 
 * A [standard library](stdlib.md) written in Lox68k.
 * `case` statement for multiway branch.
+* `break` statement to leave loops early.
 
 ### Omissions
 
