@@ -31,7 +31,8 @@ declaration    → class_decl
 class_decl     → "class" IDENTIFIER ( "<" IDENTIFIER )?
                  "{" ( IDENTIFIER function )* "}" ;
 fun_decl       → "fun" IDENTIFIER function ;
-var_decl       → "var" IDENTIFIER ( "=" expression )? ";" ;
+var_decl       → "var" sing_var_decl ( "," sing_var_decl )* ";" ;
+sing_var_decl  → IDENTIFIER ( "=" expression )? ;
 
 statement      → expr_stmt
                | for_stmt

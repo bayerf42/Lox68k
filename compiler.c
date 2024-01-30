@@ -911,14 +911,17 @@ static void funDeclaration(void) {
 }
 
 static void varDeclaration(void) {
-    int vname = parseVariable("Expect variable name.");
+    int vname;
 
-    if (match(TOKEN_EQUAL))
-        expression();
-    else
-        emitByte(OP_NIL);
-    consumeExp(TOKEN_SEMICOLON, "variable declaration");
-    defineVariable(vname);
+    do {
+        vname = parseVariable("Expect variable name.");
+        if (match(TOKEN_EQUAL))
+            expression();
+        else
+            emitByte(OP_NIL);
+        defineVariable(vname);
+    } while (match(TOKEN_COMMA));
+    consumeExp(TOKEN_SEMICOLON, "variable declarations");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
