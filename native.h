@@ -5,7 +5,7 @@
 
 void        defineAllNatives(void);
 const char* nativeName(NativeFn native);
-bool        checkNativeSignature(const char* signature, int argCount, Value* args);
+bool        checkNativeSignature(ObjNative* native, int argCount, Value* args);
 void        handleInterrupts(bool enable);
 void        startTicker(void);
 char*       readLine(void);

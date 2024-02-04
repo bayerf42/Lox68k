@@ -89,10 +89,10 @@ void push(Value value) {
     vm.sp[-1] = (value); \
 }
 
-#define CHECK_ARITH_ERROR              \
-if (errno != 0) {                      \
-    runtimeError("Arithmetic error."); \
-    goto errorExit;                    \
+#define CHECK_ARITH_ERROR(op)                   \
+if (errno != 0) {                               \
+    runtimeError("'%s' arithmetic error.", op); \
+    goto errorExit;                             \
 }
 
 static bool call(ObjClosure* closure, int argCount) {
@@ -116,7 +116,8 @@ static bool call(ObjClosure* closure, int argCount) {
     arity = closure->function->arity & ARITY_MASK;
     if (closure->function->arity & REST_PARM_MASK) {
         if (argCount < arity - 1) {
-            runtimeError("Expected %s%d arguments but got %d.", "at least ", arity - 1, argCount);
+            runtimeError("'%s' expected %s%d arguments but got %d.",
+                         functionName(closure->function), "at least ", arity - 1, argCount);
             return false;
         }
         itemCount = argCount - arity + 1;
@@ -124,7 +125,8 @@ static bool call(ObjClosure* closure, int argCount) {
         dropNpush(itemCount, OBJ_VAL(args));
     }
     else if (argCount != arity) {
-        runtimeError("Expected %s%d arguments but got %d.", "", arity, argCount);
+        runtimeError("'%s' expected %s%d arguments but got %d.",
+                     functionName(closure->function), "", arity, argCount);
         return false;
     }
 
@@ -155,7 +157,8 @@ static bool callValue(Value callee, int argCount) {
                 if (tableGet(&klass->methods, OBJ_VAL(vm.initString), &initializer))
                     return call(AS_CLOSURE(initializer), argCount);
                 else if (argCount != 0) {
-                    runtimeError("Expected %s%d arguments but got %d.", "", 0, argCount);
+                    runtimeError("'%s' expected %s%d arguments but got %d.",
+                                 AS_CSTRING(klass->name), "", 0, argCount);
                     return false;
                 }
                 return true;
@@ -175,7 +178,7 @@ static bool callValue(Value callee, int argCount) {
                     putstr(") -> ");
                 }
 
-                if (!checkNativeSignature(native->signature, argCount, vm.sp - argCount) ||
+                if (!checkNativeSignature(native, argCount, vm.sp - argCount) ||
                     !(*native->function)(argCount, vm.sp - argCount))
                     return false;
                 vm.sp -= argCount;
@@ -504,13 +507,13 @@ nextInst:
                 else goto typeErrorAdd;
             addReals: 
                 dropNpush(2, makeReal(add(aReal,bReal)));
-                CHECK_ARITH_ERROR
+                CHECK_ARITH_ERROR("+")
             } else if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
                 bStr = AS_STRING(peek(0));
                 aStr = AS_STRING(peek(1));
                 resStr = concatStrings(aStr, bStr);
                 if (!resStr) {
-                    runtimeError("Stringbuffer overflow.");
+                    runtimeError("'%s' stringbuffer overflow.", "+");
                     goto errorExit;
                 }
                 dropNpush(2, OBJ_VAL(resStr));
@@ -552,7 +555,7 @@ nextInst:
                 goto errorExit;
             }
             dropNpush(2, makeReal(sub(aReal,bReal)));
-            CHECK_ARITH_ERROR
+            CHECK_ARITH_ERROR("-")
             goto nextInst;
 
         case OP_MUL:
@@ -580,7 +583,7 @@ nextInst:
                 goto errorExit;
             }
             dropNpush(2, makeReal(mul(aReal,bReal)));
-            CHECK_ARITH_ERROR
+            CHECK_ARITH_ERROR("*")
             goto nextInst;
 
         case OP_DIV:
@@ -608,7 +611,7 @@ nextInst:
                 goto errorExit;
             }
             dropNpush(2, makeReal(div(aReal,bReal)));
-            CHECK_ARITH_ERROR
+            CHECK_ARITH_ERROR("/")
             goto nextInst;
 
         case OP_MOD:

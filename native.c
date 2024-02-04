@@ -30,11 +30,12 @@ static const char* matchesType(Value value, int type) {
     }
 }
 
-bool checkNativeSignature(const char* signature, int argCount, Value* args) {
-    int maxParmCount = 0;
-    int minParmCount = 0;
-    int i = sizeof(Signature);
-    const char* currParm = signature + sizeof(Signature);
+bool checkNativeSignature(ObjNative* native, int argCount, Value* args) {
+    int maxParmCount      = 0;
+    int minParmCount      = 0;
+    int i                 = sizeof(Signature);
+    const char* signature = native->signature;
+    const char* currParm  = signature + sizeof(Signature);
     const char* expected;
 
     // Trailing lower-case letters in signature indicate optional arguments.
@@ -47,18 +48,19 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
 
     if (minParmCount > argCount || argCount > maxParmCount) {
         if (minParmCount == maxParmCount)
-            runtimeError("Expected %d arguments but got %d.", maxParmCount, argCount);
+            runtimeError("'%s' expected %d arguments but got %d.",
+                         nativeName(native->function), maxParmCount, argCount);
         else
-            runtimeError("Expected %d to %d arguments but got %d.",
-                         minParmCount, maxParmCount, argCount);
+            runtimeError("'%s' expected %d to %d arguments but got %d.",
+                         nativeName(native->function), minParmCount, maxParmCount, argCount);
         return false;
     }
 
     for (i = 0; i < argCount; i++) {
         expected = matchesType(args[i], signature[i] & ~LOWER_CASE_MASK);
         if (expected != NULL) {
-            runtimeError("Type mismatch at argument %d, expected %s but got %s.",
-                         i + 1, expected, valueType(args[i]));
+            runtimeError("'%s' type mismatch at argument %d, expected %s but got %s.",
+                         nativeName(native->function), i + 1, expected, valueType(args[i]));
             return false;
         }
     }
@@ -71,11 +73,13 @@ bool checkNativeSignature(const char* signature, int argCount, Value* args) {
 
 #define RESULT args[-1]
 
-#define CHECK_ARITH_ERROR \
-    if (errno != 0) {                      \
-        runtimeError("Arithmetic error."); \
-        return false;                      \
+#define CHECK_ARITH_ERROR(op) \
+    if (errno != 0) {                               \
+        runtimeError("'%s' arithmetic error.", op); \
+        return false;                               \
     }
+
+#define TRANS_NATIVE(fun) return transcendentalNative(argCount, args, fun, #fun);
 
 static bool absNative(int argCount, Value* args) {
     if (IS_INT(args[0]))
@@ -90,66 +94,66 @@ static bool truncNative(int argCount, Value* args) {
         RESULT = args[0];
     else
         RESULT = INT_VAL(realToInt(AS_REAL(args[0])));
-    CHECK_ARITH_ERROR
+    CHECK_ARITH_ERROR("trunc")
     return true;
 }
 
 typedef Real (*RealFun)(Real);
 
-static bool transcendentalNative(int argCount, Value* args, RealFun fn) {
+static bool transcendentalNative(int argCount, Value* args, RealFun fn, const char* op) {
     if (IS_INT(args[0]))
         RESULT = makeReal((*fn)(intToReal(AS_INT(args[0]))));
     else
         RESULT = makeReal((*fn)(AS_REAL(args[0])));
-    CHECK_ARITH_ERROR
+    CHECK_ARITH_ERROR(op)
     return true;
 }
 
 static bool sqrtNative(int argCount, Value* args) {
-    return transcendentalNative(argCount, args, sqrt);
+    TRANS_NATIVE(sqrt)
 }
 
 static bool sinNative(int argCount, Value* args) {
-    return transcendentalNative(argCount, args, sin);
+    TRANS_NATIVE(sin)
 }
 
 static bool cosNative(int argCount, Value* args) {
-    return transcendentalNative(argCount, args, cos);
+    TRANS_NATIVE(cos)
 }
 
 static bool tanNative(int argCount, Value* args) {
-    return transcendentalNative(argCount, args, tan);
+    TRANS_NATIVE(tan)
 }
 
 static bool sinhNative(int argCount, Value* args) {
-    return transcendentalNative(argCount, args, sinh);
+    TRANS_NATIVE(sinh)
 }
 
 static bool coshNative(int argCount, Value* args) {
-    return transcendentalNative(argCount, args, cosh);
+    TRANS_NATIVE(cosh)
 }
 
 static bool tanhNative(int argCount, Value* args) {
-    return transcendentalNative(argCount, args, tanh);
+    TRANS_NATIVE(tanh)
 }
 
 static bool expNative(int argCount, Value* args) {
-    return transcendentalNative(argCount, args, exp);
+    TRANS_NATIVE(exp)
 }
 
 static bool logNative(int argCount, Value* args) {
-    return transcendentalNative(argCount, args, log);
+    TRANS_NATIVE(log)
 }
 
 static bool atanNative(int argCount, Value* args) {
-    return transcendentalNative(argCount, args, atan);
+    TRANS_NATIVE(atan)
 }
 
 static bool powNative(int argCount, Value* args) {
     Real x = (IS_INT(args[0])) ? intToReal(AS_INT(args[0])) : AS_REAL(args[0]);
     Real y = (IS_INT(args[1])) ? intToReal(AS_INT(args[1])) : AS_REAL(args[1]);
     RESULT = makeReal(pow(x,y));
-    CHECK_ARITH_ERROR
+    CHECK_ARITH_ERROR("pow")
     return true;
 }
 
@@ -199,7 +203,7 @@ static bool deleteNative(int argCount, Value* args) {
     ObjList* list  = AS_LIST(args[0]);
     int      index = AS_INT(args[1]);
     if (!isValidListIndex(list, index)) {
-        runtimeError("%s out of range.", "List index");
+        runtimeError("'%s' %s out of range.", "delete", "index");
         return false;
     }
     deleteFromList(list, index);
@@ -220,7 +224,7 @@ static bool indexNative(int argCount, Value* args) {
         if (list->arr.count == 0 && start == 0)
             return true;
         if (!isValidListIndex(list, start)) {
-            runtimeError("%s out of range.", "Start index");
+            runtimeError("'%s' %s out of range.", "index", "start index");
             return false;
         }
         if (start < 0) start += list->arr.count;
@@ -234,8 +238,8 @@ static bool indexNative(int argCount, Value* args) {
     } else {
         haystack = AS_STRING(args[1]);
         if (!IS_STRING(args[0])) {
-            runtimeError("Type mismatch at argument %d, expected %s but got %s.",
-                         1, "a string", valueType(args[0]));
+            runtimeError("'%s' type mismatch at argument %d, expected %s but got %s.",
+                         "index", 1, "a string", valueType(args[0]));
             return false;
         }
         needle = AS_STRING(args[0]);
@@ -245,7 +249,7 @@ static bool indexNative(int argCount, Value* args) {
             return true;
         }
         if (!isValidStringIndex(haystack, start)) {
-            runtimeError("%s out of range.", "Start index");
+            runtimeError("'%s' %s out of range.", "index", "start index");
             return false;
         }
         if (start < 0) start += haystack->length;
@@ -325,7 +329,7 @@ static bool joinNative(int argCount, Value* args) {
         joiner = sepa;
         item   = list->arr.values[i];
         if (!IS_STRING(item)) {
-            runtimeError("String expected in list at %d.", i);
+            runtimeError("'%s' string expected in list at %d.", "join", i);
             return false;
         }
         curr = AS_CSTRING(item);
@@ -336,7 +340,7 @@ static bool joinNative(int argCount, Value* args) {
     return true;
 
 ErrExit:
-    runtimeError("Stringbuffer overflow.");
+    runtimeError("'%s' stringbuffer overflow.", "join");
     return false;
 }
 
@@ -386,7 +390,7 @@ static bool ascNative(int argCount, Value* args) {
     int        index = (argCount == 1) ? 0 : AS_INT(args[1]);
 
     if (!isValidStringIndex(string, index)) {
-        runtimeError("%s out of range.", "String index");
+        runtimeError("'%s' %s out of range.", "asc", "index");
         return false;
     }
     if (index < 0)
@@ -401,7 +405,7 @@ static bool chrNative(int argCount, Value* args) {
     char codepoint;
 
     if (code < 0 || code > 255) {
-        runtimeError("%s out of range.", "Char code");
+        runtimeError("'%s' %s out of range.", "chr", "code");
         return false;
     }
     codepoint = (char)code;
@@ -566,7 +570,7 @@ static bool pokeNative(int argCount, Value* args) {
     int32_t address = AS_INT(args[0]);
     Int     byte    = AS_INT(args[1]);
     if (byte < 0 || byte > 255) {
-        runtimeError("%s out of range.", "Byte value");
+        runtimeError("'%s' %s out of range.", "poke", "byte");
         return false;
     }
     *((uint8_t*)address) = byte;
@@ -642,23 +646,23 @@ static bool lcdDefcharNative(int argCount, Value* args) {
     int      i;
 
     if (udc < 0 || udc > 7) {
-        runtimeError("%s out of range.", "UDC number");
+        runtimeError("'%s' %s out of range.", "lcd_defchar", "UDC number");
         return false;
     }
     if (pattern->arr.count != 8) {
-        runtimeError("UDC bitmap must be 8 bytes.");
+        runtimeError("'%s' UDC bitmap must be 8 bytes.", "lcd_defchar");
         return false;
     }
     for (i = 0; i < 8; i++) {
         if (IS_INT(pattern->arr.values[i])) {
             byte = AS_INT(pattern->arr.values[i]);
             if (byte < 0 || byte > 255) {
-                runtimeError("%s out of range.", "Byte value");
+                runtimeError("'%s' %s out of range.", "lcd_defchar", "byte");
                 return false;
             }
             bitmap[i] = (char)byte;
         } else {
-            runtimeError("Integer expected in UDC bitmap at %d.", i);
+            runtimeError("'%s' integer expected in UDC bitmap at %d.", "lcd_defchar", i);
             return false;
         }
     }
