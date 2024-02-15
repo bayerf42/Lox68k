@@ -1,3 +1,5 @@
+// Variant 1
+
 class Notes < Object {
     // Hash table with note periods for sound() native
     init() {
@@ -78,3 +80,5 @@ class Notes < Object {
         // intonation gets worse with higher notes, stop here
     }
 }
+
+var freq = Notes();

@@ -36,7 +36,13 @@
 // Object types 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef bool (*NativeFn)(int argCount, Value* args);
-typedef char Signature[4];
+
+typedef struct {
+    const char* name;
+    const char* signature;
+    NativeFn    function;
+} Native;
+
 typedef enum {
     OBJ_BOUND,
     OBJ_CLASS,
@@ -111,8 +117,7 @@ struct ObjList {
 
 struct ObjNative {
     OBJ_HEADER
-    Signature    signature;
-    NativeFn     function;
+    const Native* native;
 };
 
 struct ObjReal {
@@ -145,7 +150,7 @@ ObjFunction* makeFunction(void);
 ObjInstance* makeInstance(ObjClass* klass);
 ObjIterator* makeIterator(Table* table, ObjInstance* instance);
 ObjList*     makeList(int len, Value* items, int numCopy, int stride);
-ObjNative*   makeNative(const char* signature, NativeFn function);
+ObjNative*   makeNative(const Native* native);
 Value        makeReal(Real val);
 ObjString*   makeString(const char* chars, int length);
 ObjUpvalue*  makeUpvalue(Value* slot);

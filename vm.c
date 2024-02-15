@@ -173,13 +173,13 @@ static bool callValue(Value callee, int argCount) {
                     if (vm.debug_trace_calls)
                         indentCallTrace();
                     logNatRes = true;
-                    printf("--- %s (", nativeName(native->function));
+                    printf("--- %s (", native->native->name);
                     printArgList(argCount, vm.sp - argCount);
                     putstr(") -> ");
                 }
 
                 if (!checkNativeSignature(native, argCount, vm.sp - argCount) ||
-                    !(*native->function)(argCount, vm.sp - argCount))
+                    !(*native->native->function)(argCount, vm.sp - argCount))
                     return false;
                 vm.sp -= argCount;
 

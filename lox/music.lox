@@ -1,13 +1,8 @@
 // (Kit only) play some music on buzzer.
 //
-// Load notes.lox before
-
-var freq = Notes();
-
-
+// Load notes.lox or notesmap.lox before
 
 fun popcorn(dur) {
-//  var dur = 200;
 
   fun stacc(note) {
     sound(freq[note], dur / 4); // index instance freq with a (variable) string

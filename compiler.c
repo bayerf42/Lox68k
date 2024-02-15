@@ -657,7 +657,7 @@ static void lambda(bool canAssign) {
     function(TYPE_FUNCTION);
 }
 
-const ParseRule rules[] = {
+static const ParseRule rules[] = {
     // Keep same order as TokenType enum values in scanner.h
     // since C89 doesn't support array init by index values.
 

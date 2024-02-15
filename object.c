@@ -107,16 +107,10 @@ ObjList* makeList(int len, Value* items, int numCopy, int stride) {
     return list;
 }
 
-ObjNative* makeNative(const char* signature, NativeFn function) {
-    ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
-    char* dest        = native->signature;
-    int   maxChars    = sizeof(Signature);
-
-    *((uint32_t*)native->signature) = 0;
-    while (maxChars-- && (*dest++ = *signature++) != 0)
-        ;    
-    native->function = function;
-    return native;
+ObjNative* makeNative(const Native* native) {
+    ObjNative* res = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+    res->native = native;
+    return res;
 }
 
 Value makeReal(Real val) {
@@ -238,7 +232,7 @@ void printObject(Value value, bool compact, bool machine) {
             break;
 
         case OBJ_NATIVE:
-            printf("<native %s>", nativeName(AS_NATIVE(value)->function));
+            printf("<native %s>", AS_NATIVE(value)->native->name);
             break;
 
         case OBJ_REAL:

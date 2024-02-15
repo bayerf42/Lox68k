@@ -3,12 +3,11 @@
 
 #include "object.h"
 
-void        defineAllNatives(void);
-const char* nativeName(NativeFn native);
-bool        checkNativeSignature(ObjNative* native, int argCount, Value* args);
-void        handleInterrupts(bool enable);
-void        startTicker(void);
-char*       readLine(void);
+void  defineAllNatives(void);
+bool  checkNativeSignature(ObjNative* native, int argCount, Value* args);
+void  handleInterrupts(bool enable);
+void  startTicker(void);
+char* readLine(void);
 
 extern uint32_t rand32;
 extern bool     onKit;

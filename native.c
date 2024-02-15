@@ -33,26 +33,26 @@ static const char* matchesType(Value value, int type) {
 bool checkNativeSignature(ObjNative* native, int argCount, Value* args) {
     int maxParmCount      = 0;
     int minParmCount      = 0;
-    int i                 = sizeof(Signature);
-    const char* signature = native->signature;
-    const char* currParm  = signature + sizeof(Signature);
+    int i;
+    const char* signature = native->native->signature;
+    const char* currParm  = signature;
     const char* expected;
 
     // Trailing lower-case letters in signature indicate optional arguments.
-    while (i--)
-        if (*--currParm) {
-            ++maxParmCount;
-            if (!(*currParm & LOWER_CASE_MASK))
-                ++minParmCount;
-        }
+    while (*currParm) {
+        ++maxParmCount;
+        if (!(*currParm & LOWER_CASE_MASK))
+            ++minParmCount;
+        ++currParm;
+    }
 
     if (minParmCount > argCount || argCount > maxParmCount) {
         if (minParmCount == maxParmCount)
             runtimeError("'%s' expected %d arguments but got %d.",
-                         nativeName(native->function), maxParmCount, argCount);
+                         native->native->name, maxParmCount, argCount);
         else
             runtimeError("'%s' expected %d to %d arguments but got %d.",
-                         nativeName(native->function), minParmCount, maxParmCount, argCount);
+                         native->native->name, minParmCount, maxParmCount, argCount);
         return false;
     }
 
@@ -60,7 +60,7 @@ bool checkNativeSignature(ObjNative* native, int argCount, Value* args) {
         expected = matchesType(args[i], signature[i] & ~LOWER_CASE_MASK);
         if (expected != NULL) {
             runtimeError("'%s' type mismatch at argument %d, expected %s but got %s.",
-                         nativeName(native->function), i + 1, expected, valueType(args[i]));
+                         native->native->name, i + 1, expected, valueType(args[i]));
             return false;
         }
     }
@@ -790,7 +790,7 @@ static bool nameNative(int argCount, Value* args) {
                 break;
 
             case OBJ_NATIVE:
-                name = nativeName(((ObjNative*)object)->function);
+                name = ((ObjNative*)object)->native->name;
                 break;
         }
         if (name)
@@ -832,14 +832,6 @@ char* readLine() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Setup everyting
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef struct {
-    const char* name;
-    const char* signature;
-    NativeFn    function;
-} Native;
-
-// Keep in same order as natives are defined in this source file
-// Also for GCC compiler option -fno-toplevel-reorder must be specified
 
 static const Native allNatives[] = {
     {"abs",         "R",    absNative},
@@ -933,7 +925,7 @@ void defineAllNatives() {
 
     while (natCount--) {
         vm.stack[0] = OBJ_VAL(makeString(currNat->name, strlen(currNat->name)));
-        vm.stack[1] = OBJ_VAL(makeNative(currNat->signature, currNat->function));
+        vm.stack[1] = OBJ_VAL(makeNative(currNat));
         tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
         currNat++;
     }
@@ -942,25 +934,6 @@ void defineAllNatives() {
     drop();
 }
 
-const char* nativeName(NativeFn native) {
-    int beg = 0;
-    int end = sizeof(allNatives) / sizeof(Native) - 1;
-    int mid;
-    const Native* currNat;
-
-    // Order is officially undefined for function pointers, but actually works.
-    while (beg <= end) {
-        mid = (beg + end) >> 1;
-        currNat = &allNatives[mid];
-        if (native < currNat->function)
-            end = mid - 1;
-        else if (native > currNat->function)
-            beg = mid + 1;
-        else
-            return currNat->name;
-    }
-    return "?";
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Interrupting computations and ticker handling

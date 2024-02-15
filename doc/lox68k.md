@@ -200,11 +200,10 @@ Works exactly as the Windows version, but compiled with `GCC` on Linux.
 
 To build it, execute
 ```sh
-gcc -O3 -std=gnu89 -m32 -lm -flto -fno-toplevel-reorder -o llox *.c
+gcc -O3 -std=gnu89 -m32 -lm -flto -o llox *.c
 ```
 
 Be sure to compile it for 32 bit architecture, Lox68k assumes 32 bit `int`, `long` and pointers.
-`-fno-toplevel-reorder` is needed to support binary search for native functions when printing.
 
 ## The terminal emulator
 You can interact with Lox68K running on the Kit with any terminal program, e.g., the one included
