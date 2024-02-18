@@ -30,11 +30,11 @@ static const char* matchesType(Value value, int type) {
     }
 }
 
-bool checkNativeSignature(ObjNative* native, int argCount, Value* args) {
+bool checkNativeSignature(const Native* native, int argCount, Value* args) {
     int maxParmCount      = 0;
     int minParmCount      = 0;
     int i;
-    const char* signature = native->native->signature;
+    const char* signature = native->signature;
     const char* currParm  = signature;
     const char* expected;
 
@@ -49,10 +49,10 @@ bool checkNativeSignature(ObjNative* native, int argCount, Value* args) {
     if (minParmCount > argCount || argCount > maxParmCount) {
         if (minParmCount == maxParmCount)
             runtimeError("'%s' expected %d arguments but got %d.",
-                         native->native->name, maxParmCount, argCount);
+                         native->name, maxParmCount, argCount);
         else
             runtimeError("'%s' expected %d to %d arguments but got %d.",
-                         native->native->name, minParmCount, maxParmCount, argCount);
+                         native->name, minParmCount, maxParmCount, argCount);
         return false;
     }
 
@@ -60,7 +60,7 @@ bool checkNativeSignature(ObjNative* native, int argCount, Value* args) {
         expected = matchesType(args[i], signature[i] & ~LOWER_CASE_MASK);
         if (expected != NULL) {
             runtimeError("'%s' type mismatch at argument %d, expected %s but got %s.",
-                         native->native->name, i + 1, expected, valueType(args[i]));
+                         native->name, i + 1, expected, valueType(args[i]));
             return false;
         }
     }

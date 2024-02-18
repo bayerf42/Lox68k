@@ -138,11 +138,11 @@ static bool call(ObjClosure* closure, int argCount) {
 }
 
 static bool callValue(Value callee, int argCount) {
-    ObjNative* native;
-    ObjClass*  klass;
-    ObjBound*  bound;
-    Value      initializer = NIL_VAL;
-    bool       logNatRes   = false;
+    const Native* native;
+    ObjClass*     klass;
+    ObjBound*     bound;
+    Value         initializer = NIL_VAL;
+    bool          logNatRes   = false;
 
     if (IS_OBJ(callee)) {
         switch (OBJ_TYPE(callee)) {
@@ -167,19 +167,19 @@ static bool callValue(Value callee, int argCount) {
                 return call(AS_CLOSURE(callee), argCount);
 
             case OBJ_NATIVE:
-                native = AS_NATIVE(callee);
+                native = AS_NATIVE(callee)->native;
 
                 if (vm.debug_trace_natives) {
                     if (vm.debug_trace_calls)
                         indentCallTrace();
                     logNatRes = true;
-                    printf("--- %s (", native->native->name);
+                    printf("--- %s (", native->name);
                     printArgList(argCount, vm.sp - argCount);
                     putstr(") -> ");
                 }
 
                 if (!checkNativeSignature(native, argCount, vm.sp - argCount) ||
-                    !(*native->native->function)(argCount, vm.sp - argCount))
+                    !(*native->function)(argCount, vm.sp - argCount))
                     return false;
                 vm.sp -= argCount;
 

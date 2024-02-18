@@ -4,7 +4,7 @@
 #include "object.h"
 
 void  defineAllNatives(void);
-bool  checkNativeSignature(ObjNative* native, int argCount, Value* args);
+bool  checkNativeSignature(const Native* native, int argCount, Value* args);
 void  handleInterrupts(bool enable);
 void  startTicker(void);
 char* readLine(void);
