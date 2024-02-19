@@ -31,11 +31,11 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### Class
-`() < Map Object Set super`
+`() < instance Map Object parent Set super`
 
 
 ### Instance
-`[] . class_of clone init remove slots super this`
+`[] . class_of clone init instance remove slots super this`
 
 
 ### Closure
@@ -73,7 +73,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 ## Some numbers
 * 19 keywords
-* 69 native functions
+* 70 native functions
 * 60 VM opcodes
 * 12 data types
 * about 6000 lines source code

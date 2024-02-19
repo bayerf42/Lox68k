@@ -20,6 +20,7 @@ static const char* matchesType(Value value, int type) {
         case 'A': return                                      NULL;  // any value
         case 'B': return IS_BOOL(value)                     ? NULL : "a bool";
         case 'I': return IS_INSTANCE(value)                 ? NULL : "an instance";
+        case 'K': return IS_CLASS(value)                    ? NULL : "a class";
         case 'L': return IS_LIST(value)                     ? NULL : "a list";
         case 'N': return IS_INT(value)                      ? NULL : "an int";
         case 'Q': return IS_STRING(value) || IS_LIST(value) ? NULL : "a sequence";
@@ -799,6 +800,13 @@ static bool nameNative(int argCount, Value* args) {
     return true;
 }
 
+static bool parentNative(int argCount, Value* args) {
+    ObjClass* parent = AS_CLASS(args[0])->superClass;
+    RESULT = parent ? OBJ_VAL(parent) : NIL_VAL;
+    return true;
+}
+
+
 static bool errorNative(int argCount, Value* args) {
     runtimeError("User error: %s", AS_CSTRING(args[0]));
     return false;
@@ -912,6 +920,7 @@ static const Native allNatives[] = {
     {"gc",          "",     gcNative},
     {"type",        "A",    typeNative},
     {"name",        "A",    nameNative},
+    {"parent",      "K",    parentNative},
     {"error",       "S",    errorNative},
     {"clock",       "",     clockNative},
 };

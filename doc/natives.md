@@ -58,6 +58,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | lower       | string                 | string      | all          | lower case of string                                                              |  
 | name        | any                    | string?     | all          | name of class, closure, bound, or native, nil for other values                    |  
 | next        | iterator               | bool        | all          | advances *iterator* to next entry, returns true when valid                        |  
+| parent      | class                  | class?      | all          | retrieve super class of *class* or nil                                            |
 | parse_int   | string                 | int?        | all          | parses *string* as integer                                                        |
 | parse_real  | string                 | real?       | all          | parses *string* as real                                                           |
 | peek        | int                    | int         | all          | reads byte from address *int*                                                     |  

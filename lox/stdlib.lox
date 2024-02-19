@@ -4,7 +4,10 @@ fun peekl(ad)        -> bit_or(bit_shift(peekw(ad + 2), 16), peekw(ad))
 fun class_of(ins) {
   if (type(ins)=="instance") return heap(addr(ins) + 8);
 }
-
+fun instance(ins,cls) {
+  for (var c = class_of(ins); c; c = parent(c))
+    if (c == cls) return true;
+}  
 fun pokew(ad,v) {
   poke(ad, bit_and(v,$ff));
   poke(ad+1, bit_and(bit_shift(v, -8), $ff));

@@ -33,6 +33,7 @@ You can start Lox68k with or without the standard library:
 | deg          | num                   | real        | convert from radians to degrees                                                   |  
 | filter       | fun, list             | list        | filter all items of *list* which satisfy predicate *fun*                          |  
 | fmod         | num, num              | real        | floating point modulo                                                             |  
+| instance     | any, class            | bool        | true, if *any* is an instance of *class*                                          |  
 | list_globals | -                     | nil         | prints all global variables                                                       |  
 | map          | fun, list             | list        | apply *fun* to every item in *list*, return list of results.                      |  
 | max          | num, num              | num         | maximum of arguments                                                              |  

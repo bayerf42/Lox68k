@@ -78,6 +78,7 @@ struct ObjBound {
 struct ObjClass {
     OBJ_HEADER
     ObjString*   name;
+    ObjClass*    superClass;   // NULL when no superclass
     Table        methods;
 };
 

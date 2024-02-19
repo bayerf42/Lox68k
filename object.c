@@ -42,8 +42,9 @@ ObjBound* makeBound(Value receiver, ObjClosure* method) {
 }
 
 ObjClass* makeClass(ObjString* name) {
-    ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
-    klass->name     = name;
+    ObjClass* klass   = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    klass->name       = name;
+    klass->superClass = OBJ_VAL(NULL);
     initTable(&klass->methods);
     return klass;
 }

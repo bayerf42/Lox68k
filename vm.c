@@ -480,7 +480,7 @@ nextInst:
                 dropNpush(2, BOOL_VAL(strcmp(aStr->chars, bStr->chars) < 0));
             } else {
             typeErrorLess:
-                runtimeError("Can't %s types %s and %s.", "compare",
+                runtimeError("Can't %s types %s and %s.", "order",
                              valueType(peek(1)), valueType(peek(0)));
                 goto errorExit;
             }
@@ -788,6 +788,7 @@ nextInst:
                 goto errorExit;
             }
             subclass = AS_CLASS(peek(0));
+            subclass->superClass = AS_CLASS(aVal);
             tableAddAll(&AS_CLASS(aVal)->methods, &subclass->methods);
             drop();
             goto nextInst;
