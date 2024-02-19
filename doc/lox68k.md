@@ -83,6 +83,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * A [standard library](stdlib.md) written in Lox68k.
 * `case` statement for multiway branch.
 * `break` statement to leave loops early.
+* superclass in class declaration may be any expression evaluating to a class
 
 ### Omissions
 

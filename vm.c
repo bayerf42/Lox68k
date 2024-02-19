@@ -784,12 +784,17 @@ nextInst:
         case OP_INHERIT:
             aVal = peek(1);
             if (!IS_CLASS(aVal)) {
-                runtimeError("Superclass must be a class.");
+                runtimeError("Can't %s type %s.", "inherit from", valueType(aVal));
                 goto errorExit;
             }
-            subclass = AS_CLASS(peek(0));
-            subclass->superClass = AS_CLASS(aVal);
-            tableAddAll(&AS_CLASS(aVal)->methods, &subclass->methods);
+            superclass = AS_CLASS(aVal);
+            subclass   = AS_CLASS(peek(0));
+            if (superclass == subclass) {
+                runtimeError("Can't %s itself.", "inherit from");
+                goto errorExit;
+            }
+            subclass->superClass = aVal;
+            tableAddAll(&superclass->methods, &subclass->methods);
             drop();
             goto nextInst;
 

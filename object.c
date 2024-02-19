@@ -44,7 +44,7 @@ ObjBound* makeBound(Value receiver, ObjClosure* method) {
 ObjClass* makeClass(ObjString* name) {
     ObjClass* klass   = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
     klass->name       = name;
-    klass->superClass = OBJ_VAL(NULL);
+    klass->superClass = NIL_VAL;
     initTable(&klass->methods);
     return klass;
 }
@@ -65,7 +65,7 @@ ObjFunction* makeFunction() {
     ObjFunction* function  = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
     function->arity        = 0;
     function->upvalueCount = 0;
-    function->name         = OBJ_VAL(NULL);
+    function->name         = NIL_VAL;
     function->klass        = NULL;
     initChunk(&function->chunk);
     return function;
@@ -155,10 +155,10 @@ ObjUpvalue* makeUpvalue(Value* slot) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const char* functionName(ObjFunction* function) {
-    if (IS_INT(function->name))
-        sprintf(buffer, "#%d", AS_INT(function->name));
-    else if (AS_OBJ(function->name) == NULL)
+    if (IS_NIL(function->name))
         return "#script";
+    else if (IS_INT(function->name))
+        sprintf(buffer, "#%d", AS_INT(function->name));
     else if (function->klass == NULL)
         return AS_CSTRING(function->name);
     else

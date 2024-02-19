@@ -19,6 +19,7 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * function body `{ return expr;}` can be abbreviated by `-> expr`.
 * `case` statement for multiway branch
 * `break` statement in loops
+* superclass can be any expression
 
 
 ``` ebnf
@@ -29,7 +30,7 @@ declaration    → class_decl
                | var_decl
                | statement ;
 
-class_decl     → "class" IDENTIFIER ( "<" IDENTIFIER )?
+class_decl     → "class" IDENTIFIER ( "<" expression )?
                  "{" ( IDENTIFIER function )* "}" ;
 fun_decl       → "fun" IDENTIFIER function ;
 var_decl       → "var" sing_var_decl ( "," sing_var_decl )* ";" ;

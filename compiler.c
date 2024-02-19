@@ -883,12 +883,8 @@ static void classDeclaration(void) {
     currentClass = &classCompiler;
 
     if (match(TOKEN_LESS)) {
-        // should we allow an expression here?
-        consume(TOKEN_IDENTIFIER, "Expect superclass name.");
-        variable(false);
-
-        if (identifiersEqual(&className, &parser.previous))
-            error("A class can't inherit from itself.");
+        // superclass can be any expression!
+        expression(); 
 
         beginScope();
         addLocal(syntheticToken("super"));

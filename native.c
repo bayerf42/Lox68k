@@ -801,8 +801,7 @@ static bool nameNative(int argCount, Value* args) {
 }
 
 static bool parentNative(int argCount, Value* args) {
-    ObjClass* parent = AS_CLASS(args[0])->superClass;
-    RESULT = parent ? OBJ_VAL(parent) : NIL_VAL;
+    RESULT = AS_CLASS(args[0])->superClass;
     return true;
 }
 
