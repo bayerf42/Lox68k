@@ -6,8 +6,6 @@
 #include "vm.h"
 #include "nano_malloc.h"
 
-#define GC_HEAP_GROW_FACTOR 2
-
 char big_buffer[INPUT_SIZE];
 
 void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
