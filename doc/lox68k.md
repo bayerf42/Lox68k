@@ -84,6 +84,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * `case` statement for multiway branch.
 * `break` statement to leave loops early.
 * superclass in class declaration may be any expression evaluating to a class
+* `handle` expression to establish a dynamic exception handler
 
 ### Omissions
 

@@ -492,3 +492,7 @@ Value parseInt(const char* start, bool checkLen) {
         return INT_VAL(number);
 }
 
+void putstrn(int len, const char* str) {
+    while (*str && len--)
+        putchar(*str++);
+}

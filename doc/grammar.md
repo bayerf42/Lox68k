@@ -20,6 +20,7 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * `case` statement for multiway branch
 * `break` statement in loops
 * superclass can be any expression
+* `handle` expression to establish a dynamic exception handler
 
 
 ``` ebnf
@@ -79,7 +80,8 @@ slice          → expression ":" expression | expression ":" | ":" expression |
 primary        → "true" | "false" | "nil" | "this"
                | NUMBER | STRING | IDENTIFIER | "(" expression ")"
                | "[" arguments "]" | "super" "." IDENTIFIER
-               | "fun" function ;
+               | "fun" function
+               | "handle" expression ":" expression ;
 
 function       → "(" parameters ")" (block | "->" expression) ;
 parameters     → ( rest_parameter | IDENTIFIER ( "," IDENTIFIER )* ( "," rest_parameter )? )? ;

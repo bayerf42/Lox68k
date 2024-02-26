@@ -43,10 +43,11 @@ typedef struct {
 } Local;
 
 typedef enum {
-    TYPE_FUNCTION,
-    TYPE_INITIALIZER,
+    TYPE_FUN,
+    TYPE_INIT,
     TYPE_METHOD,
-    TYPE_SCRIPT
+    TYPE_SCRIPT,
+    TYPE_LAMBDA
 } FunctionType;
 
 typedef struct LoopInfo {
@@ -92,8 +93,12 @@ static void errorAt(Token* token, const char* message) {
 
     if (token->type == TOKEN_EOF)
         putstr(" at end");
-    else if (token->type != TOKEN_ERROR)
-        printf(" at '%.*s'", token->length, token->start);
+    else if (token->type != TOKEN_ERROR) {
+        // IDE68K's printf("%.*s") is broken
+        putstr(" at '");
+        putstrn(token->length, token->start);
+        putstr("'");
+    }     
 
     printf(": %s\n", message);
     parser.hadError = true;
@@ -209,7 +214,7 @@ static int emitJump(int instruction) {
 }
 
 static void emitReturn(void) {
-    if (currentComp->type == TYPE_INITIALIZER)
+    if (currentComp->type == TYPE_INIT)
         emit3Bytes(OP_GET_LOCAL, 0, OP_RETURN);
     else
         emitByte(OP_RETURN_NIL);
@@ -256,7 +261,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     currentComp           = compiler;
 
     if (type != TYPE_SCRIPT) {
-        if (parser.previous.type == TOKEN_FUN)
+        if (type == TYPE_LAMBDA)
             currentComp->target->name = INT_VAL(vm.lambdaCount++);
         else
             currentComp->target->name =
@@ -266,7 +271,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     local = &currentComp->locals[currentComp->localCount++];
     local->depth = 0;
     local->isCaptured = false;
-    if (type != TYPE_FUNCTION) {
+    if (type == TYPE_METHOD || type == TYPE_INIT) {
         local->name.start  = "this";
         local->name.length = 4;
     } else {
@@ -654,8 +659,31 @@ static void unary(bool canAssign) {
 }
 
 static void lambda(bool canAssign) {
-    function(TYPE_FUNCTION);
+    function(TYPE_LAMBDA);
 }
+
+static void handler(bool canAssign) {
+    Compiler     compiler;
+    ObjFunction* function;
+    int          i;
+
+    // Build a thunk from expression
+    initCompiler(&compiler, TYPE_LAMBDA);
+    beginScope();
+    currentComp->target->arity = 0;        
+    expression();
+    emitByte(OP_RETURN);
+    function = endCompiler(false);
+
+    emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
+    for (i = 0; i < function->upvalueCount; i++) 
+        emitByte(compiler.upvalues[i]);
+    consumeExp(TOKEN_COLON, "expression");
+
+    expression();
+    emitByte(OP_HCALL);
+}
+
 
 static const ParseRule rules[] = {
     // Keep same order as TokenType enum values in scanner.h
@@ -700,6 +728,7 @@ static const ParseRule rules[] = {
     /* [TOKEN_FALSE]         = */ {literal,  NULL,   PREC_NONE},
     /* [TOKEN_FOR]           = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_FUN]           = */ {lambda,   NULL,   PREC_NONE},
+    /* [TOKEN_HANDLE]        = */ {handler,  NULL,   PREC_NONE},
     /* [TOKEN_IF]            = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_NIL]           = */ {literal,  NULL,   PREC_NONE},
     /* [TOKEN_OR]            = */ {NULL,     or_,    PREC_OR},
@@ -833,7 +862,7 @@ static void function(FunctionType type) {
     currentComp->target->arity |= restParm;        
 
     if (match(TOKEN_ARROW)) {
-        if (type == TYPE_INITIALIZER)
+        if (type == TYPE_INIT)
             error("Can't return a value from an initializer.");
         expression();
         emitByte(OP_RETURN);
@@ -856,7 +885,7 @@ static void method(void) {
     consume(TOKEN_IDENTIFIER, "Expect method name.");
     mname = identifierConstant(&parser.previous);
     if (parser.previous.length == 4 && fix_memcmp(parser.previous.start, "init", 4) == 0)
-        type = TYPE_INITIALIZER;
+        type = TYPE_INIT;
     function(type);
     emit2Bytes(OP_METHOD, mname);
 }
@@ -912,7 +941,7 @@ static void funDeclaration(void) {
     int fname = parseVariable("Expect function name.");
 
     markInitialized();
-    function(TYPE_FUNCTION);
+    function(TYPE_FUN);
     defineVariable(fname);
 }
 
@@ -1135,7 +1164,7 @@ static void returnStatement(void) {
     if (match(TOKEN_SEMICOLON))
         emitReturn();
     else {
-        if (currentComp->type == TYPE_INITIALIZER)
+        if (currentComp->type == TYPE_INIT)
             error("Can't return a value from an initializer.");
         expression();
         consumeExp(TOKEN_SEMICOLON, "return value");
@@ -1182,6 +1211,7 @@ static void breakStatement(void) {
     } else
         error("Not in a loop.");
 }
+
 
 static void declaration(void) {
     if      (match(TOKEN_CLASS))  classDeclaration();

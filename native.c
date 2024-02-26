@@ -807,7 +807,7 @@ static bool parentNative(int argCount, Value* args) {
 
 
 static bool errorNative(int argCount, Value* args) {
-    runtimeError("User error: %s", AS_CSTRING(args[0]));
+    runtimeError(AS_CSTRING(args[0]));
     return false;
 }
 

@@ -17,6 +17,16 @@ static void resetStack(void) {
     vm.openUpvalues = NULL;
 }
 
+static void closeUpvalues(Value* last) {
+    ObjUpvalue* upvalue;
+    while (vm.openUpvalues != NULL && vm.openUpvalues->location >= last) {
+        upvalue           = vm.openUpvalues;
+        upvalue->closed   = *upvalue->location;
+        upvalue->location = &upvalue->closed;
+        vm.openUpvalues   = upvalue->nextUpvalue;
+    }
+}
+
 static void indentCallTrace(void) {
     int depth = vm.frameCount;
     while (depth--)
@@ -32,6 +42,15 @@ static void printArgList(int argCount, Value* args) {
     } 
 }
 
+static void printStack(void) {
+    Value*  slot;
+    for (slot = vm.stack; slot < vm.sp; slot++) {
+        printValue(*slot, true, true);
+        putstr(" | ");
+    }
+    putstr("\n");
+}
+
 void runtimeError(const char* format, ...) {
     va_list      args;
     size_t       instruction;
@@ -40,8 +59,34 @@ void runtimeError(const char* format, ...) {
     ObjFunction* function;
 
     va_start(args, format);
-    vprintf(format, args);
+    vsprintf(big_buffer, format, args);
     va_end(args);
+
+    if (vm.log_native_result) {
+        printf("??? %s\n", big_buffer);
+        vm.log_native_result = false;
+    }
+
+    // search for handler in frames
+    for (i = vm.frameCount - 1; i >= 0; i--) {
+        frame = &vm.frames[i];
+        if (frame->handler) {
+            if (vm.debug_trace_calls) {
+                indentCallTrace();
+                printf("<== %s\n", big_buffer);
+            }
+            closeUpvalues(frame->fp);
+            vm.sp         = frame->fp;
+            vm.frameCount = i;
+            pushUnchecked(OBJ_VAL(frame->handler));
+            pushUnchecked(OBJ_VAL(makeString(big_buffer, strlen(big_buffer))));
+            vm.handleException = true; 
+            return;
+        }
+    }
+
+    // No handler found, report error with backtrace. 
+    putstr(big_buffer);
     putstr("\n");
 
     for (i = vm.frameCount - 1; i >= 0; i--) {
@@ -92,7 +137,7 @@ void push(Value value) {
 #define CHECK_ARITH_ERROR(op)                   \
 if (errno != 0) {                               \
     runtimeError("'%s' arithmetic error.", op); \
-    goto errorExit;                             \
+    goto handleError;                             \
 }
 
 static bool call(ObjClosure* closure, int argCount) {
@@ -100,10 +145,17 @@ static bool call(ObjClosure* closure, int argCount) {
     ObjList*    args;
     int         itemCount;
     int         arity;
+    ObjClosure* handler = NULL;
 
     if (vm.frameCount == FRAMES_MAX) {
         runtimeError("Lox call stack overflow.");
         return false;
+    }
+
+    if (argCount == -1) {
+        // call thunk with active exception handler
+        argCount = 0;
+        handler  = AS_CLOSURE(pop());
     }
 
     if (vm.debug_trace_calls) {
@@ -132,6 +184,7 @@ static bool call(ObjClosure* closure, int argCount) {
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
+    frame->handler = handler;
     frame->ip      = closure->function->chunk.code;
     frame->fp      = vm.sp - arity - 1;
     return true;
@@ -142,7 +195,6 @@ static bool callValue(Value callee, int argCount) {
     ObjClass*     klass;
     ObjBound*     bound;
     Value         initializer = NIL_VAL;
-    bool          logNatRes   = false;
 
     if (IS_OBJ(callee)) {
         switch (OBJ_TYPE(callee)) {
@@ -172,10 +224,10 @@ static bool callValue(Value callee, int argCount) {
                 if (vm.debug_trace_natives) {
                     if (vm.debug_trace_calls)
                         indentCallTrace();
-                    logNatRes = true;
                     printf("--- %s (", native->name);
                     printArgList(argCount, vm.sp - argCount);
                     putstr(") -> ");
+                    vm.log_native_result = true;
                 }
 
                 if (!checkNativeSignature(native, argCount, vm.sp - argCount) ||
@@ -183,9 +235,10 @@ static bool callValue(Value callee, int argCount) {
                     return false;
                 vm.sp -= argCount;
 
-                if (logNatRes) {
+                if (vm.log_native_result) {
                     printValue(vm.sp[-1], false, true);
                     putstr("\n");
+                    vm.log_native_result = false;
                 } 
                 return true;
         }
@@ -257,16 +310,6 @@ static ObjUpvalue* captureUpvalue(Value* local) {
     return createdUpvalue;
 }
 
-static void closeUpvalues(Value* last) {
-    ObjUpvalue* upvalue;
-    while (vm.openUpvalues != NULL && vm.openUpvalues->location >= last) {
-        upvalue           = vm.openUpvalues;
-        upvalue->closed   = *upvalue->location;
-        upvalue->location = &upvalue->closed;
-        vm.openUpvalues   = upvalue->nextUpvalue;
-    }
-}
-
 static void defineMethod(ObjString* name) {
     Value       method = peek(0);
     ObjClass*   klass  = AS_CLASS(peek(1));
@@ -305,8 +348,10 @@ static InterpretResult run(void) {
     CallFrame    *frame;
     Value        *consts;
 
-    vm.hadStackoverflow = false;
-    vm.stepsExecuted    = 0;
+    vm.hadStackoverflow  = false;
+    vm.handleException   = false;
+    vm.log_native_result = false;
+    vm.stepsExecuted     = 0;
 
     STATIC_BREAKPOINT();
 
@@ -317,7 +362,7 @@ updateFrame:
 nextInst:
     if (vm.hadStackoverflow) {
         runtimeError("Lox value stack overflow.");
-        goto errorExit;
+        goto handleError;
     }
 
     if (INTERRUPTED()) {
@@ -327,11 +372,7 @@ nextInst:
     }
 
     if (vm.debug_trace_steps) {
-        for (slot = vm.stack; slot < vm.sp; slot++) {
-            printValue(*slot, true, true);
-            putstr(" | ");
-        }
-        putstr("\n");
+        printStack();
         disassembleInst(&frame->closure->function->chunk,
                         (int)(frame->ip - frame->closure->function->chunk.code));
         putstr("\n");
@@ -376,7 +417,7 @@ nextInst:
             constant = consts[index];
             if (!tableGet(&vm.globals, constant, &aVal)) {
                 runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
-                goto errorExit;
+                goto handleError;
             }
             push(aVal);
             goto nextInst;
@@ -394,7 +435,7 @@ nextInst:
             if (tableSet(&vm.globals, constant, peek(0))) {
                 tableDelete(&vm.globals, constant);
                 runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
-                goto errorExit;
+                goto handleError;
             }
             goto nextInst;
 
@@ -411,7 +452,7 @@ nextInst:
         case OP_GET_PROPERTY:
             if (!IS_INSTANCE(peek(0))) {
                 runtimeError("Only instances have properties.");
-                goto errorExit;
+                goto handleError;
             }
             instance = AS_INSTANCE(peek(0));
             index    = READ_BYTE();
@@ -422,13 +463,13 @@ nextInst:
             }
             aStr = AS_STRING(constant);
             if (!bindMethod(instance->klass, aStr))
-                goto errorExit;
+                goto handleError;
             goto nextInst;
 
         case OP_SET_PROPERTY:
             if (!IS_INSTANCE(peek(1))) {
                 runtimeError("Only instances have properties.");
-                goto errorExit;
+                goto handleError;
             }
             instance = AS_INSTANCE(peek(1));
             index    = READ_BYTE();
@@ -444,7 +485,7 @@ nextInst:
             aStr       = AS_STRING(constant);
             superclass = AS_CLASS(pop());
             if (!bindMethod(superclass, aStr))
-                goto errorExit;
+                goto handleError;
             goto nextInst;
 
         case OP_EQUAL:
@@ -482,7 +523,7 @@ nextInst:
             typeErrorLess:
                 runtimeError("Can't %s types %s and %s.", "order",
                              valueType(peek(1)), valueType(peek(0)));
-                goto errorExit;
+                goto handleError;
             }
             goto nextInst;
 
@@ -514,7 +555,7 @@ nextInst:
                 resStr = concatStrings(aStr, bStr);
                 if (!resStr) {
                     runtimeError("'%s' stringbuffer overflow.", "+");
-                    goto errorExit;
+                    goto handleError;
                 }
                 dropNpush(2, OBJ_VAL(resStr));
             } else if (IS_LIST(peek(0)) && IS_LIST(peek(1))) {
@@ -526,7 +567,7 @@ nextInst:
             typeErrorAdd:
                 runtimeError("Can't %s types %s and %s.", "add",
                              valueType(peek(1)), valueType(peek(0)));
-                goto errorExit;
+                goto handleError;
             }
             goto nextInst;
 
@@ -552,7 +593,7 @@ nextInst:
             typeErrorSub:
                 runtimeError("Can't %s types %s and %s.", "subtract",
                              valueType(peek(1)), valueType(peek(0)));
-                goto errorExit;
+                goto handleError;
             }
             dropNpush(2, makeReal(sub(aReal,bReal)));
             CHECK_ARITH_ERROR("-")
@@ -580,7 +621,7 @@ nextInst:
             typeErrorMul:
                 runtimeError("Can't %s types %s and %s.", "multiply",
                              valueType(peek(1)), valueType(peek(0)));
-                goto errorExit;
+                goto handleError;
             }
             dropNpush(2, makeReal(mul(aReal,bReal)));
             CHECK_ARITH_ERROR("*")
@@ -608,7 +649,7 @@ nextInst:
             typeErrorDiv:
                 runtimeError("Can't %s types %s and %s.", "divide",
                              valueType(peek(1)), valueType(peek(0)));
-                goto errorExit;
+                goto handleError;
             }
             dropNpush(2, makeReal(div(aReal,bReal)));
             CHECK_ARITH_ERROR("/")
@@ -690,12 +731,17 @@ nextInst:
             argCount = READ_BYTE();
         cont_call:
             if (!callValue(peek(argCount), argCount))
-                goto errorExit;
+                goto handleError;
             goto updateFrame;
 
         case OP_VCALL:
             argCount = READ_BYTE() + AS_INT(pop());
             goto cont_call;
+
+        case OP_HCALL:
+            if (!call(AS_CLOSURE(peek(1)), -1))
+                goto handleError;
+            goto updateFrame;
 
         case OP_INVOKE:
             index    = READ_BYTE();
@@ -704,7 +750,7 @@ nextInst:
             constant = consts[index];
             aStr = AS_STRING(constant);
             if (!invoke(aStr, argCount))
-                goto errorExit;
+                goto handleError;
             goto updateFrame;
 
         case OP_VINVOKE:
@@ -720,7 +766,7 @@ nextInst:
             constant = consts[index];
             aStr     = AS_STRING(constant);
             if (!invokeFromClass(superclass, aStr, argCount))
-                goto errorExit;
+                goto handleError;
             goto updateFrame;
 
         case OP_VSUPER_INVOKE:
@@ -785,13 +831,13 @@ nextInst:
             aVal = peek(1);
             if (!IS_CLASS(aVal)) {
                 runtimeError("Can't %s type %s.", "inherit from", valueType(aVal));
-                goto errorExit;
+                goto handleError;
             }
             superclass = AS_CLASS(aVal);
             subclass   = AS_CLASS(peek(0));
             if (superclass == subclass) {
                 runtimeError("Can't %s itself.", "inherit from");
-                goto errorExit;
+                goto handleError;
             }
             subclass->superClass = aVal;
             tableAddAll(&superclass->methods, &subclass->methods);
@@ -821,13 +867,13 @@ nextInst:
             argCount = AS_INT(pop());
             if (!IS_LIST(aVal)) {
                 runtimeError("Can't %s type %s.", "unpack", valueType(aVal));
-                goto errorExit;
+                goto handleError;
             }
             aLst      = AS_LIST(aVal);
             itemCount = aLst->arr.count;
             if (vm.sp + itemCount >= vm.stack + (STACK_MAX-1)) {
                 runtimeError("Lox value stack overflow.");
-                goto errorExit;
+                goto handleError;
             }
             for (i = 0; i < itemCount; i++)
                 vm.sp[i] = aLst->arr.values[i];
@@ -843,12 +889,12 @@ nextInst:
                 bLst = AS_LIST(bVal);
                 if (!IS_INT(aVal)) {
                     runtimeError("%s is not an integer.", "List index");
-                    goto errorExit;
+                    goto handleError;
                 }
                 index = AS_INT(aVal);
                 if (!isValidListIndex(bLst, index)) {
                     runtimeError("%s out of range.", "List index");
-                    goto errorExit;
+                    goto handleError;
                 }
                 resVal = indexFromList(bLst, index);
                 dropNpush(2, resVal);
@@ -857,12 +903,12 @@ nextInst:
                 bStr = AS_STRING(bVal);
                 if (!IS_INT(aVal)) {
                     runtimeError("%s is not an integer.", "String index");
-                    goto errorExit;
+                    goto handleError;
                 }
                 index = AS_INT(aVal);
                 if (!isValidStringIndex(bStr, index)) {
                     runtimeError("%s out of range.", "String index");
-                    goto errorExit;
+                    goto handleError;
                 }
                 resVal = OBJ_VAL(indexFromString(bStr, index));
                 dropNpush(2, resVal);
@@ -875,7 +921,7 @@ nextInst:
                 goto nextInst;
             } else {
                 runtimeError("Can't %s type %s.", "index into", valueType(bVal));
-                goto errorExit;
+                goto handleError;
             }
 
         case OP_SET_INDEX:
@@ -887,12 +933,12 @@ nextInst:
                 bLst = AS_LIST(bVal);
                 if (!IS_INT(aVal)) {
                     runtimeError("%s is not an integer.", "List index");
-                    goto errorExit;
+                    goto handleError;
                 }
                 index = AS_INT(aVal);
                 if (!isValidListIndex(bLst, index)) {
                     runtimeError("%s out of range.", "List index");
-                    goto errorExit;
+                    goto handleError;
                 }
                 storeToList(bLst, index, cVal);
                 dropNpush(3, cVal);
@@ -904,7 +950,7 @@ nextInst:
                 goto nextInst;
             } else {
                 runtimeError("Can't %s type %s.", "store into", valueType(bVal));
-                goto errorExit;
+                goto handleError;
             }
 
         case OP_GET_SLICE:
@@ -914,12 +960,12 @@ nextInst:
 
             if (!IS_INT(bVal)) {
                 runtimeError("%s is not an integer.", "Slice begin");
-                goto errorExit;
+                goto handleError;
             }
             begin = AS_INT(bVal);
             if (!IS_INT(aVal)) {
                 runtimeError("%s is not an integer.", "Slice end");
-                goto errorExit;
+                goto handleError;
             }
             end = AS_INT(aVal);
             if (IS_LIST(cVal)) {
@@ -934,7 +980,7 @@ nextInst:
                 goto nextInst;
             } else {
                 runtimeError("Can't %s type %s.", "slice into", valueType(cVal));
-                goto errorExit;
+                goto handleError;
             }
 
         case OP_GET_ITVAL:
@@ -942,12 +988,12 @@ nextInst:
             aVal = peek(0); // iterator
             if (!IS_ITERATOR(aVal)) {
                 runtimeError("Can't %s type %s.", "deref", valueType(aVal));
-                goto errorExit;
+                goto handleError;
             }
             aIt = AS_ITERATOR(aVal);
             if (!isValidIterator(aIt)) {
                 runtimeError("Invalid iterator.");
-                goto errorExit;
+                goto handleError;
             }
             resVal = getIterator(aIt, instruction==OP_GET_ITKEY);
             dropNpush(1, resVal);
@@ -958,12 +1004,12 @@ nextInst:
             aVal = peek(1); // iterator
             if (!IS_ITERATOR(aVal)) {
                 runtimeError("Can't %s type %s.", "deref", valueType(aVal));
-                goto errorExit;
+                goto handleError;
             }
             aIt = AS_ITERATOR(aVal);
             if (!isValidIterator(aIt)) {
                 runtimeError("Invalid iterator.");
-                goto errorExit;
+                goto handleError;
             }
             setIterator(aIt, bVal);
             dropNpush(2, bVal);
@@ -972,7 +1018,19 @@ nextInst:
         default:
             runtimeError("Invalid byte code $%02x.", instruction);
     }
-errorExit:
+
+handleError:
+    if (vm.handleException) {
+        // handler and arguments have already been pushed in runtimeError()
+        if (vm.debug_trace_steps) {
+            putstr("....    | Exception, pushing handler\n");
+            printStack();
+            putstr("....    | Calling handler\n");
+        }
+        vm.handleException = false;
+        argCount           = 1;
+        goto cont_call;
+    }
     return INTERPRET_RUNTIME_ERROR;
 }
 

@@ -204,8 +204,10 @@ static void markRoots(void) {
     for (slot = vm.stack; slot < vm.sp; slot++)
         markValue(*slot);
 
-    for (i = 0; i < vm.frameCount; i++, frame++)
+    for (i = 0; i < vm.frameCount; i++, frame++) {
         markObject((Obj*)frame->closure);
+        markObject((Obj*)frame->handler);
+    }
 
     for (upvalue = vm.openUpvalues; upvalue != NULL; upvalue = upvalue->nextUpvalue)
         markObject((Obj*)upvalue);

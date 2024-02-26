@@ -110,27 +110,29 @@ static void skipWhitespace(void) {
 static TokenType checkKeyword(int args) {
     // Compressed keyword postfixes in single string
     const char* const rest =
-              "ileturndasslsefarintupereakisue";
-    //         0123456789012345678901234567890
-    // And           ##
-    // Break                          ####
-    // CAse                ##
-    // CLass           ###
-    // Else               ###               
-    // FAlse              ###               
-    // FOr          #
-    // FUn           #
-    // If                    #
-    // Nil     ##
-    // Or           #
-    // Print                   ####
-    // Return    #####
-    // Super                       ####             
-    // THis                               ##
-    // TRue                                 ##
-    // Var                    ##
-    // WHEn          #
-    // WHIle    ##
+              "andleturnassilsefarintupereakisue";
+    //         012345678901234567890123456789012
+    // And      ##
+    // Break                            ####
+    // CAse                  ##
+    // CLass            ###
+    // Else                 ###               
+    // FAlse                ###               
+    // FOr            #
+    // FUn      #
+    // Handle  #
+    // If                      #
+    // Nil                 ##
+    // Or             #
+    // Print                     ####
+    // Return      #####
+    // Super                         ####             
+    // THis                                 ##
+    // TRue                                   ##
+    // Var                      ##
+    // WHEn     #
+    // WHIle      ##
+    //         012345678901234567890123456789012
     const char  *src, *key;
     int         len = UNWRAP(args, ARG_LENGTH);
     if (scanner.current - scanner.start == UNWRAP(args, ARG_START) + len) {
@@ -153,46 +155,47 @@ static TokenType identifierType(void) {
         // Use a hard-coded trie to recognize keywords
         // bisect on first char to reduce number of sequential comparisons
         if (c <= 'n') {
-            if      (c == 'a')                 args = WRAP(1, 2,  6, TOKEN_AND);
-            else if (c == 'b')                 args = WRAP(1, 4, 23, TOKEN_BREAK);
+            if      (c == 'a')                 args = WRAP(1, 2,  1, TOKEN_AND);
+            else if (c == 'b')                 args = WRAP(1, 4, 25, TOKEN_BREAK);
             else if (c == 'c') {
                 if (id_length > 1) {
                     c = scanner.start[1];
-                    if      (c == 'a')         args = WRAP(2, 2, 12, TOKEN_CASE);
-                    else if (c == 'l')         args = WRAP(2, 3,  8, TOKEN_CLASS);
+                    if      (c == 'a')         args = WRAP(2, 2, 14, TOKEN_CASE);
+                    else if (c == 'l')         args = WRAP(2, 3,  9, TOKEN_CLASS);
                 }
             }
-            else if (c == 'e')                 args = WRAP(1, 3, 11, TOKEN_ELSE);
+            else if (c == 'e')                 args = WRAP(1, 3, 13, TOKEN_ELSE);
             else if (c == 'f') {
                 if (id_length > 1) {
                     c = scanner.start[1];
-                    if      (c == 'a')         args = WRAP(2, 3, 11, TOKEN_FALSE);
-                    else if (c == 'o')         args = WRAP(2, 1,  5, TOKEN_FOR);
-                    else if (c == 'u')         args = WRAP(2, 1,  6, TOKEN_FUN);
+                    if      (c == 'a')         args = WRAP(2, 3, 13, TOKEN_FALSE);
+                    else if (c == 'o')         args = WRAP(2, 1,  7, TOKEN_FOR);
+                    else if (c == 'u')         args = WRAP(2, 1,  1, TOKEN_FUN);
                 }
             }
-            else if (c == 'i')                 args = WRAP(1, 1, 14, TOKEN_IF);
-            else if (c == 'n')                 args = WRAP(1, 2,  0, TOKEN_NIL);
+            else if (c == 'h')                 args = WRAP(1, 5,  0, TOKEN_HANDLE);
+            else if (c == 'i')                 args = WRAP(1, 1, 16, TOKEN_IF);
+            else if (c == 'n')                 args = WRAP(1, 2, 12, TOKEN_NIL);
         } else {  // c >  'n' 
-            if      (c == 'o')                 args = WRAP(1, 1,  5, TOKEN_OR);
-            else if (c == 'p')                 args = WRAP(1, 4, 16, TOKEN_PRINT);
-            else if (c == 'r')                 args = WRAP(1, 5,  2, TOKEN_RETURN);
-            else if (c == 's')                 args = WRAP(1, 4, 20, TOKEN_SUPER);
+            if      (c == 'o')                 args = WRAP(1, 1,  7, TOKEN_OR);
+            else if (c == 'p')                 args = WRAP(1, 4, 18, TOKEN_PRINT);
+            else if (c == 'r')                 args = WRAP(1, 5,  4, TOKEN_RETURN);
+            else if (c == 's')                 args = WRAP(1, 4, 22, TOKEN_SUPER);
             else if (c == 't') {
                 if (id_length > 1) {
                     c = scanner.start[1];
-                    if      (c == 'h')         args = WRAP(2, 2, 27, TOKEN_THIS);
-                    else if (c == 'r')         args = WRAP(2, 2, 29, TOKEN_TRUE);
+                    if      (c == 'h')         args = WRAP(2, 2, 29, TOKEN_THIS);
+                    else if (c == 'r')         args = WRAP(2, 2, 31, TOKEN_TRUE);
                 }
             }
-            else if (c == 'v')                 args = WRAP(1, 2, 15, TOKEN_VAR);
+            else if (c == 'v')                 args = WRAP(1, 2, 17, TOKEN_VAR);
             else if (c == 'w') {
                 if (id_length > 1 &&
                     scanner.start[1] == 'h' &&
                     id_length > 2) {
                     c = scanner.start[2];
-                    if      (c == 'e')         args = WRAP(3, 1,  6, TOKEN_WHEN);
-                    else if (c == 'i')         args = WRAP(3, 2,  1, TOKEN_WHILE);
+                    if      (c == 'e')         args = WRAP(3, 1,  1, TOKEN_WHEN);
+                    else if (c == 'i')         args = WRAP(3, 2,  3, TOKEN_WHILE);
                 }
             }
         }

@@ -5,9 +5,10 @@
 #include "value.h"
 
 typedef struct {
-    uint8_t*    ip;  // keep first to allow fast addressing without offset  
-    Value*      fp;
-    ObjClosure* closure;
+    uint8_t*    ip;      // instruction pointer, keep first to allow fast addressing without offset  
+    Value*      fp;      // frame pointer into value stack
+    ObjClosure* closure; // active closure 
+    ObjClosure* handler; // exception handler
 } CallFrame;
 
 typedef struct {
@@ -21,7 +22,9 @@ typedef struct {
     ObjUpvalue* openUpvalues;
     int         lambdaCount;
 
+    bool        handleException;
     bool        hadStackoverflow;
+    bool        log_native_result;
     size_t      bytesAllocated;
     Obj*        objects;
     int         grayCount;

@@ -39,7 +39,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### Closure
-`() -> complement`
+`() -> complement handle`
 
 
 ### Native
@@ -63,7 +63,10 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 `input keycode list_globals print sound`
 
 ### System
-`clock error gc globals sleep`
+`clock gc globals sleep`
+
+### Exceptions
+`error handle`
 
 ### LCD control
 `lcd_clear lcd_defchar lcd_goto lcd_puts`
@@ -72,7 +75,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 `dbg_call dbg_code dbg_gc dbg_nat dbg_stat dbg_step`
 
 ## Some numbers
-* 19 keywords
+* 20 keywords
 * 70 native functions
 * 60 VM opcodes
 * 12 data types

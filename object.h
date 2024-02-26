@@ -180,6 +180,7 @@ const char*  formatHex(Int val);
 const char*  formatBin(Int val);
 const char*  functionName(ObjFunction* function);
 Value        parseInt(const char* start, bool checkLen);
+void         putstrn(int len, const char* str);
 
 extern char  buffer[];
 
