@@ -1,0 +1,17 @@
+
+fun rec(n, v) {
+  fun sub(n) {
+    if (n == 0)
+      error(v);
+    else
+      sub(n-1);
+  }
+  return sub(n);
+}
+
+
+fun const(c) -> fun (_) -> c
+
+fun t1(n) {
+  print handle(rec(n, "t1 error"), const("t1 handled"));
+}

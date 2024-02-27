@@ -58,32 +58,35 @@ void runtimeError(const char* format, ...) {
     CallFrame*   frame;
     ObjFunction* function;
 
-    va_start(args, format);
-    vsprintf(big_buffer, format, args);
-    va_end(args);
+    if (format) {
+        va_start(args, format);
+        vsprintf(big_buffer, format, args);
+        va_end(args);
 
-    if (vm.log_native_result) {
-        printf("??? %s\n", big_buffer);
-        vm.log_native_result = false;
-    }
-
-    // search for handler in frames
-    for (i = vm.frameCount - 1; i >= 0; i--) {
-        frame = &vm.frames[i];
-        if (frame->handler) {
-            if (vm.debug_trace_calls) {
-                indentCallTrace();
-                printf("<== %s\n", big_buffer);
-            }
-            closeUpvalues(frame->fp);
-            vm.sp         = frame->fp;
-            vm.frameCount = i;
-            pushUnchecked(OBJ_VAL(frame->handler));
-            pushUnchecked(OBJ_VAL(makeString(big_buffer, strlen(big_buffer))));
-            vm.handleException = true; 
-            return;
+        if (vm.log_native_result) {
+            printf("??? %s\n", big_buffer);
+            vm.log_native_result = false;
         }
-    }
+
+        // search for handler in frames
+        for (i = vm.frameCount - 1; i >= 0; i--) {
+            frame = &vm.frames[i];
+            if (frame->handler) {
+                if (vm.debug_trace_calls) {
+                    indentCallTrace();
+                    printf("<== %s\n", big_buffer);
+                }
+                closeUpvalues(frame->fp);
+                vm.sp         = frame->fp;
+                vm.frameCount = i;
+                pushUnchecked(OBJ_VAL(frame->handler));
+                pushUnchecked(OBJ_VAL(makeString(big_buffer, strlen(big_buffer))));
+                vm.handleException = true; 
+                return;
+            }
+        }
+    } else
+        strcpy(big_buffer, "Interrupted.");
 
     // No handler found, report error with backtrace. 
     putstr(big_buffer);
@@ -366,7 +369,7 @@ nextInst:
 
     if (INTERRUPTED()) {
         (void)READ_BYTE();
-        runtimeError("Interrupted.");
+        runtimeError(NULL);
         return INTERPRET_INTERRUPTED;
     }
 
