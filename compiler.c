@@ -667,6 +667,8 @@ static void handler(bool canAssign) {
     ObjFunction* function;
     int          i;
 
+    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'handle'.");
+
     // Build a thunk from expression
     initCompiler(&compiler, TYPE_LAMBDA);
     beginScope();
@@ -678,9 +680,10 @@ static void handler(bool canAssign) {
     emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
     for (i = 0; i < function->upvalueCount; i++) 
         emitByte(compiler.upvalues[i]);
-    consumeExp(TOKEN_COLON, "expression");
+    consumeExp(TOKEN_COMMA, "expression");
 
     expression();
+    consumeExp(TOKEN_RIGHT_PAREN, "handler");
     emitByte(OP_HCALL);
 }
 

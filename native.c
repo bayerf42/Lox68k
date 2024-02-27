@@ -805,7 +805,6 @@ static bool parentNative(int argCount, Value* args) {
     return true;
 }
 
-
 static bool errorNative(int argCount, Value* args) {
     runtimeError(AS_CSTRING(args[0]));
     return false;

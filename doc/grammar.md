@@ -81,7 +81,7 @@ primary        → "true" | "false" | "nil" | "this"
                | NUMBER | STRING | IDENTIFIER | "(" expression ")"
                | "[" arguments "]" | "super" "." IDENTIFIER
                | "fun" function
-               | "handle" expression ":" expression ;
+               | "handle" "(" expression "," expression ")" ;
 
 function       → "(" parameters ")" (block | "->" expression) ;
 parameters     → ( rest_parameter | IDENTIFIER ( "," IDENTIFIER )* ( "," rest_parameter )? )? ;

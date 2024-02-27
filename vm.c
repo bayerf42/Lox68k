@@ -324,10 +324,9 @@ static void defineMethod(ObjString* name) {
 #define READ_USHORT() (frame->ip += 2, (frame->ip[-2] << 8) | frame->ip[-1])
 
 static InterpretResult run(void) {
-    Value*  slot;
-    int     instruction;
-    int     index, begin, end, i;
-    Value   constant;
+    int   instruction;
+    int   index, begin, end, i;
+    Value constant;
 
     // The IDE68K ancient C compiler generates wrong code for local vars in case branches.
     // Thus, we declare all needed variables at function start..
