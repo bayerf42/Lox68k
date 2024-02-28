@@ -806,7 +806,7 @@ static bool parentNative(int argCount, Value* args) {
 }
 
 static bool errorNative(int argCount, Value* args) {
-    runtimeError(AS_CSTRING(args[0]));
+    userError(args[0]);
     return false;
 }
 
@@ -919,7 +919,7 @@ static const Native allNatives[] = {
     {"type",        "A",    typeNative},
     {"name",        "A",    nameNative},
     {"parent",      "K",    parentNative},
-    {"error",       "S",    errorNative},
+    {"error",       "A",    errorNative},
     {"clock",       "",     clockNative},
 };
 

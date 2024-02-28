@@ -63,6 +63,7 @@ void            freeVM(void);
 InterpretResult interpret(const char* source);
 void            push(Value value);
 void            runtimeError(const char* format, ...);
+void            userError(Value exception);
 
 #define drop()               --vm.sp
 #define pop()                (*(--vm.sp))

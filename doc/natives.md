@@ -34,7 +34,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | dec         | num                    | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int              | nil         | all          | deletes element at *int* from *list*                                              |
 | equal       | any, any               | bool        | all          | More lenient than ==, numbers compared numerically, iterators for same position   |  
-| error       | string                 | *no return* | all          | Aborts program execution with error message *string*                              |  
+| error       | any                    | *no return* | all          | Throws an error with exception *any*. Can be caught with `handle` expression.     |  
 | exec        | int, any?, any?, any?  | any         | all          | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
 | exp         | num                    | real        | all          | exponential                                                                       |  
 | gc          | -                      | int         | all          | forces garbage collection, returns size of allocated memory                       |  

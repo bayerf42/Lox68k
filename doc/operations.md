@@ -3,7 +3,7 @@
 ## Types
 
 ### Any
-`= == != addr case equal name print return string type when`
+`= == != addr case equal error id name print return string type when`
 
 
 ### Bool
@@ -77,10 +77,10 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 ## Some numbers
 * 20 keywords
 * 70 native functions
-* 60 VM opcodes
+* 61 VM opcodes
 * 12 data types
 * about 6000 lines source code
-* 50 k bytes code size on 68008 kit
+* 52 k bytes code size on 68008 kit
 * Performance
   * 7k ops on 68008 kit
   * 60M ops on Raspberry 4 Linux

@@ -17,15 +17,7 @@ static void resetStack(void) {
     vm.openUpvalues = NULL;
 }
 
-static void closeUpvalues(Value* last) {
-    ObjUpvalue* upvalue;
-    while (vm.openUpvalues != NULL && vm.openUpvalues->location >= last) {
-        upvalue           = vm.openUpvalues;
-        upvalue->closed   = *upvalue->location;
-        upvalue->location = &upvalue->closed;
-        vm.openUpvalues   = upvalue->nextUpvalue;
-    }
-}
+static void closeUpvalues(Value* last);
 
 static void indentCallTrace(void) {
     int depth = vm.frameCount;
@@ -51,46 +43,11 @@ static void printStack(void) {
     putstr("\n");
 }
 
-void runtimeError(const char* format, ...) {
-    va_list      args;
-    size_t       instruction;
+static void printBacktrace(void) {
     int          i;
+    size_t       instruction;
     CallFrame*   frame;
     ObjFunction* function;
-
-    if (format) {
-        va_start(args, format);
-        vsprintf(big_buffer, format, args);
-        va_end(args);
-
-        if (vm.log_native_result) {
-            printf("??? %s\n", big_buffer);
-            vm.log_native_result = false;
-        }
-
-        // search for handler in frames
-        for (i = vm.frameCount - 1; i >= 0; i--) {
-            frame = &vm.frames[i];
-            if (frame->handler) {
-                if (vm.debug_trace_calls) {
-                    indentCallTrace();
-                    printf("<== %s\n", big_buffer);
-                }
-                closeUpvalues(frame->fp);
-                vm.sp         = frame->fp;
-                vm.frameCount = i;
-                pushUnchecked(OBJ_VAL(frame->handler));
-                pushUnchecked(OBJ_VAL(makeString(big_buffer, strlen(big_buffer))));
-                vm.handleException = true; 
-                return;
-            }
-        }
-    } else
-        strcpy(big_buffer, "Interrupted.");
-
-    // No handler found, report error with backtrace. 
-    putstr(big_buffer);
-    putstr("\n");
 
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame       = &vm.frames[i];
@@ -99,6 +56,78 @@ void runtimeError(const char* format, ...) {
         printf("[line %d] in %s\n", getLine(&function->chunk, instruction), functionName(function));
     }
     resetStack();
+}
+
+void runtimeError(const char* format, ...) {
+    va_list      args;
+    int          i;
+    CallFrame*   frame;
+
+    va_start(args, format);
+    vsprintf(big_buffer, format, args);
+    va_end(args);
+
+    if (vm.log_native_result) {
+        printf("/!\\ \"%s\"\n", big_buffer);
+        vm.log_native_result = false;
+    }
+
+    // search for handler in frames
+    for (i = vm.frameCount - 1; i >= 0; i--) {
+        frame = &vm.frames[i];
+        if (frame->handler) {
+            if (vm.debug_trace_calls) {
+                indentCallTrace();
+                printf("<== \"%s\"\n", big_buffer);
+            }
+            closeUpvalues(frame->fp);
+            vm.sp         = frame->fp;
+            vm.frameCount = i;
+            pushUnchecked(OBJ_VAL(frame->handler));
+            pushUnchecked(OBJ_VAL(makeString(big_buffer, strlen(big_buffer))));
+            vm.handleException = true; 
+            return;
+        }
+    }
+    putstr(big_buffer);
+    putstr("\n");
+    printBacktrace();
+}
+
+void userError(Value exception) {
+    int          i;
+    CallFrame*   frame;
+
+    if (vm.log_native_result) {
+        putstr("/!\\ ");
+        printValue(exception, true, true);
+        putstr("\n");
+        vm.log_native_result = false;
+    }
+
+    // search for handler in frames
+    for (i = vm.frameCount - 1; i >= 0; i--) {
+        frame = &vm.frames[i];
+        if (frame->handler) {
+            if (vm.debug_trace_calls) {
+                indentCallTrace();
+                putstr("<== ");
+                printValue(exception, true, true);
+                putstr("\n");
+            }
+            closeUpvalues(frame->fp);
+            vm.sp         = frame->fp;
+            vm.frameCount = i;
+            pushUnchecked(OBJ_VAL(frame->handler));
+            pushUnchecked(exception);
+            vm.handleException = true; 
+            return;
+        }
+    }
+    putstr("User error: ");
+    printValue(exception, false, false);
+    putstr("\n");
+    printBacktrace();
 }
 
 void initVM(void) {
@@ -313,6 +342,16 @@ static ObjUpvalue* captureUpvalue(Value* local) {
     return createdUpvalue;
 }
 
+static void closeUpvalues(Value* last) {
+    ObjUpvalue* upvalue;
+    while (vm.openUpvalues != NULL && vm.openUpvalues->location >= last) {
+        upvalue           = vm.openUpvalues;
+        upvalue->closed   = *upvalue->location;
+        upvalue->location = &upvalue->closed;
+        vm.openUpvalues   = upvalue->nextUpvalue;
+    }
+}
+
 static void defineMethod(ObjString* name) {
     Value       method = peek(0);
     ObjClass*   klass  = AS_CLASS(peek(1));
@@ -369,7 +408,8 @@ nextInst:
 
     if (INTERRUPTED()) {
         (void)READ_BYTE();
-        runtimeError(NULL);
+        putstr("Interrupted.\n");
+        printBacktrace();
         return INTERPRET_INTERRUPTED;
     }
 
@@ -1025,9 +1065,8 @@ handleError:
     if (vm.handleException) {
         // handler and arguments have already been pushed in runtimeError()
         if (vm.debug_trace_steps) {
-            putstr("....    | Exception, pushing handler\n");
             printStack();
-            putstr("....    | Calling handler\n");
+            putstr("....    |  /!\\ Handling exception\n");
         }
         vm.handleException = false;
         argCount           = 1;

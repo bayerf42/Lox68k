@@ -44,6 +44,7 @@ fun filter(fn,lst) {
  return res;
 }
 fun complement(fn)->fun(x)->!fn(x)
+fun id(x)->x
 fun reduce(fn,lst) {
  var len=length(lst);
  if (len==0) return nil;
