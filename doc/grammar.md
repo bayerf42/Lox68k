@@ -22,6 +22,7 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * superclass can be any expression
 * `handle` expression to establish a dynamic exception handler
 
+View this grammar as a [railroad diagram](grammar.html).
 
 ``` ebnf
 program        → declaration* EOF ;

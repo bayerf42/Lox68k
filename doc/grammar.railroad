@@ -1,0 +1,72 @@
+/* Source for Lox68k railroad syntax diagram. */
+/* Use https://rr.red-dove.com/ui to generate Railroad diagram from this file */
+/* Open 'Edit grammar' tab, paste this file and select 'View Diagram' tab. */
+/* Disable 'factoring' in options, it leads to confusing diagrams. */
+
+script         ::= declaration* EOF
+
+declaration    ::= class_decl
+                 | fun_decl
+                 | var_decl
+                 | statement
+
+class_decl     ::= "class" IDENTIFIER ("<" expression)? "{" (IDENTIFIER function)* "}"
+fun_decl       ::= "fun" IDENTIFIER function
+var_decl       ::= "var" (IDENTIFIER ("=" expression)?) ("," (IDENTIFIER ("=" expression)?))* ";"
+
+statement      ::= expr_stmt
+                 | if_stmt
+                 | print_stmt
+                 | return_stmt
+                 | break_stmt
+                 | while_stmt
+                 | case_stmt
+                 | for_stmt
+                 | block
+
+expr_stmt      ::= expression ";"
+for_stmt       ::= "for" "(" (var_decl | expr_stmt | ";") expression? ";" expression? ")" statement
+if_stmt        ::= "if" "(" expression ")" statement ("else" statement)?
+print_stmt     ::= ("print" | "?") print_list ";"
+return_stmt    ::= "return" expression? ";"
+while_stmt     ::= "while" "(" expression ")" statement
+case_stmt      ::= "case" "(" expression ")" "{" ("when" expression ("," expression)* ":" statement+)*
+                   ("else" statement+)? "}"
+break_stmt     ::= "break" ";"
+block          ::= "{" declaration* "}"
+
+expression     ::= assignment
+assignment     ::= postfix "=" assignment | logic_or
+logic_or       ::= logic_and ("or" logic_and)*
+logic_and      ::= equality ("and" equality)*
+equality       ::= comparison (( "!=" | "==") comparison)*
+comparison     ::= term (( ">" | ">=" | "<" | "<=") term)*
+term           ::= factor (( "-" | "+") factor)*
+factor         ::= unary (( "/" | "*" | "\") unary)*
+unary          ::= ("!" | "-") unary | postfix
+postfix        ::= primary ("(" arguments ")" | "." IDENTIFIER | "[" (expression | slice) "]" | "@" | "^")*
+slice          ::= expression? ":" expression?
+primary        ::= literal
+                 | IDENTIFIER 
+                 | "(" expression ")"
+                 | "[" arguments "]"
+                 | "this"
+                 | "super" "." IDENTIFIER
+                 | "fun" function
+                 | "handle" "(" expression "," expression ")"
+literal        ::= "nil" | "true" | "false" | NUMBER | STRING
+function       ::= "(" parameters ")" (block | "->" expression)
+parameters     ::= (".." IDENTIFIER | IDENTIFIER ("," IDENTIFIER)* ("," ".." IDENTIFIER)?)?
+arguments      ::= ((".."? expression) ("," (".."? expression))*)?
+print_list     ::= (expression (("," ","?) expression)* ("," ","?)?)?
+
+NUMBER         ::= DIGIT+ ("." DIGIT+)? (("e" | "E") ("+" | "-")? DIGIT+)?
+                 | "$" HEXDIGIT+
+                 | "%" BINDIGIT+
+
+STRING         ::= '"' [^"]* '"'
+IDENTIFIER     ::= ALPHA ( ALPHA | DIGIT )*
+HEXDIGIT       ::= DIGIT | [a-f] | [A-F]
+ALPHA          ::= [A-Z] | [a-z] | "_"
+DIGIT          ::= [0-9]
+BINDIGIT       ::= [0-1]
