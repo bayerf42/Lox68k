@@ -59,9 +59,9 @@ static void printBacktrace(void) {
 }
 
 void runtimeError(const char* format, ...) {
-    va_list      args;
-    int          i;
-    CallFrame*   frame;
+    va_list    args;
+    int        i;
+    CallFrame* frame;
 
     va_start(args, format);
     vsprintf(big_buffer, format, args);
@@ -89,14 +89,15 @@ void runtimeError(const char* format, ...) {
             return;
         }
     }
+    putstr("Runtime error: ");
     putstr(big_buffer);
     putstr("\n");
     printBacktrace();
 }
 
 void userError(Value exception) {
-    int          i;
-    CallFrame*   frame;
+    int        i;
+    CallFrame* frame;
 
     if (vm.log_native_result) {
         putstr("/!\\ ");
@@ -124,7 +125,7 @@ void userError(Value exception) {
             return;
         }
     }
-    putstr("User error: ");
+    putstr("Runtime error: ");
     printValue(exception, false, false);
     putstr("\n");
     printBacktrace();
@@ -1063,10 +1064,10 @@ nextInst:
 
 handleError:
     if (vm.handleException) {
-        // handler and arguments have already been pushed in runtimeError()
+        // handler and exception have already been pushed in runtimeError()
         if (vm.debug_trace_steps) {
             printStack();
-            putstr("....    |  /!\\ Handling exception\n");
+            putstr("----    | CALL1 ; /!\\ Handling exception\n");
         }
         vm.handleException = false;
         argCount           = 1;

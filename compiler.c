@@ -672,7 +672,6 @@ static void handler(bool canAssign) {
     // Build a thunk from expression
     initCompiler(&compiler, TYPE_LAMBDA);
     beginScope();
-    currentComp->target->arity = 0;        
     expression();
     emitByte(OP_RETURN);
     function = endCompiler(false);
