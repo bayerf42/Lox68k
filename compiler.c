@@ -686,7 +686,6 @@ static void handler(bool canAssign) {
     emitByte(OP_HCALL);
 }
 
-
 static const ParseRule rules[] = {
     // Keep same order as TokenType enum values in scanner.h
     // since C89 doesn't support array init by index values.
@@ -1213,7 +1212,6 @@ static void breakStatement(void) {
     } else
         error("Not in a loop.");
 }
-
 
 static void declaration(void) {
     if      (match(TOKEN_CLASS))  classDeclaration();

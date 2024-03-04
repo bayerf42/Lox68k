@@ -675,6 +675,10 @@ nextInst:
                 if (IS_INT(peek(1))) {
                     bInt = AS_INT(pop());
                     aInt = AS_INT(pop());
+                    if (bInt == 0) {
+                        runtimeError("'/' by zero.");
+                        goto handleError;
+                    }
                     pushUnchecked(INT_VAL(aInt / bInt));
                     goto nextInst;
                 } else if (IS_REAL(peek(1))) {
@@ -694,6 +698,10 @@ nextInst:
                              valueType(peek(1)), valueType(peek(0)));
                 goto handleError;
             }
+            if (bReal == 0) {
+                runtimeError("'/' by zero.");
+                goto handleError;
+            }
             dropNpush(2, makeReal(div(aReal,bReal)));
             CHECK_ARITH_ERROR("/")
             goto nextInst;
@@ -702,6 +710,10 @@ nextInst:
             if (IS_INT(peek(0)) && IS_INT(peek(1))) {
                 bInt = AS_INT(pop());
                 aInt = AS_INT(pop());
+                if (bInt == 0) {
+                    runtimeError("'/' by zero.");
+                    goto handleError;
+                }
                 pushUnchecked(INT_VAL(aInt % bInt));
             } else
                 goto typeErrorDiv;

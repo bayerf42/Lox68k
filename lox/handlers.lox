@@ -15,3 +15,21 @@ fun const(c) -> fun (_) -> c
 fun t1(n) {
   print handle(rec(n, "t1 error"), const("t1 handled"));
 }
+
+fun arith_handler(default) {
+  return fun(exc) {
+    if (index("arithmetic error", exc))
+      return default;
+    else
+      error(exc);
+  };
+}
+
+// or as one-liner: (doesn't work for falsey d)
+fun ah(d) -> fun(e) -> index("arith", e) and d or error(e)
+
+fun sexp(x) -> handle(exp(x), ah(0.0))
+
+
+
+

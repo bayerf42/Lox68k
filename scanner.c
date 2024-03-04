@@ -120,7 +120,7 @@ static TokenType checkKeyword(int args) {
     // FAlse                ###               
     // FOr            #
     // FUn      #
-    // Handle  #
+    // Handle  #####
     // If                      #
     // Nil                 ##
     // Or             #

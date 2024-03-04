@@ -34,6 +34,7 @@ static Obj* allocateObject(size_t size, ObjType type) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object creation 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
 ObjBound* makeBound(Value receiver, ObjClosure* method) {
     ObjBound* bound = ALLOCATE_OBJ(ObjBound, OBJ_BOUND);
     bound->receiver = receiver;
@@ -110,7 +111,7 @@ ObjList* makeList(int len, Value* items, int numCopy, int stride) {
 
 ObjNative* makeNative(const Native* native) {
     ObjNative* res = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
-    res->native = native;
+    res->native    = native;
     return res;
 }
 
@@ -122,7 +123,7 @@ Value makeReal(Real val) {
 
 ObjString* makeString(const char* chars, int length) {
     // Check if we already have an equal string
-    uint32_t hash = hashBytes((const uint8_t*)chars, length);
+    uint32_t hash       = hashBytes((const uint8_t*)chars, length);
     ObjString* string;
     ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
     if (interned != NULL)
@@ -252,7 +253,6 @@ void printObject(Value value, bool compact, bool machine) {
     }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Lists 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -290,7 +290,6 @@ Value indexFromList(ObjList* list, int index) {
         index += list->arr.count;
     return list->arr.values[index];
 }
-
 
 ObjList* sliceFromList(ObjList* list, int begin, int end) {
     int n = list->arr.count;
@@ -375,6 +374,7 @@ ObjString* caseString(ObjString* a, bool toUpper) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Reals 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
 const char* formatReal(Real val) {
 #ifdef KIT68K
     int   expo, dp, off;
@@ -428,14 +428,12 @@ const char* formatReal(Real val) {
 
     if (cvBuffer[0] == '+')
         return cvBuffer + 1;
-
 #else
     sprintf(cvBuffer, "%.15g", val);
     // Make sure it doesn't look like an int
     if (!strpbrk(cvBuffer, ".eE"))
         strcat(cvBuffer, ".0");
 #endif
-
     return cvBuffer;
 }
 
