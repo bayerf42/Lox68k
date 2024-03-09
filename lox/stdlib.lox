@@ -60,7 +60,7 @@ fun filter(fn, lst) {
 
 fun complement(fn) -> fun (x) -> !fn(x)
 
-fun id(x) ->x
+fun id(x) -> x
 
 fun reduce(fn, lst) {
   var len = length(lst);

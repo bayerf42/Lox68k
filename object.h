@@ -27,7 +27,7 @@
 #define AS_INSTANCE(value)     ((ObjInstance*)AS_OBJ(value))
 #define AS_ITERATOR(value)     ((ObjIterator*)AS_OBJ(value))
 #define AS_LIST(value)         ((ObjList*)AS_OBJ(value))
-#define AS_NATIVE(value)       ((ObjNative*)AS_OBJ(value))
+#define AS_NATIVE(value)       (((ObjNative*)AS_OBJ(value))->native)
 #define AS_REAL(value)         (((ObjReal*)AS_OBJ(value))->content)
 #define AS_STRING(value)       ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)      (((ObjString*)AS_OBJ(value))->chars)

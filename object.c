@@ -234,7 +234,7 @@ void printObject(Value value, bool compact, bool machine) {
             break;
 
         case OBJ_NATIVE:
-            printf("<native %s>", AS_NATIVE(value)->native->name);
+            printf("<native %s>", AS_NATIVE(value)->name);
             break;
 
         case OBJ_REAL:

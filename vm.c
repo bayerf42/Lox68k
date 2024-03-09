@@ -252,7 +252,7 @@ static bool callValue(Value callee, int argCount) {
                 return call(AS_CLOSURE(callee), argCount);
 
             case OBJ_NATIVE:
-                native = AS_NATIVE(callee)->native;
+                native = AS_NATIVE(callee);
 
                 if (vm.debug_trace_natives) {
                     if (vm.debug_trace_calls)

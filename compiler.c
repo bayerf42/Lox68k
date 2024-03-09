@@ -445,7 +445,9 @@ static void intNum(bool canAssign) {
 }
 
 static void realNum(bool canAssign) {
-    Value value = makeReal(strToReal(parser.previous.start, NULL));
+    Value value;
+    errno = 0;
+    value = makeReal(strToReal(parser.previous.start, NULL));
     if (errno != 0)
         error("Real constant overflow.");
     emitConstant(value);
@@ -1251,8 +1253,7 @@ ObjFunction* compile(const char* source) {
     STATIC_BREAKPOINT();
 
     vm.totallyAllocated = 0;
-    vm.numGCs = 0;
-    errno = 0;
+    vm.numGCs           = 0;
 
     initScanner(source);
     initCompiler(&compiler, TYPE_SCRIPT);
