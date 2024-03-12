@@ -31,6 +31,5 @@ print map(type, all_types);
 print map(name, all_types);
 print map(fun(obj) {
             var a=addr(obj);
-            if (a) return peek(a+4); // type tag in heap
-            else return nil;},
+            return if(a, peek(a+4), nil);}, // type tag in heap
           all_types);

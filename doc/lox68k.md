@@ -85,6 +85,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * `break` statement to leave loops early.
 * superclass in class declaration may be any expression evaluating to a class
 * `handle` expression to establish a dynamic exception handler
+* `if` expression, in addition to `if` statement 
 
 ### Omissions
 

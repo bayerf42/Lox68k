@@ -25,8 +25,8 @@ fun arith_handler(default) {
   };
 }
 
-// or as one-liner: (doesn't work for falsey d)
-fun ah(d) -> fun(e) -> index("arith", e) and d or error(e)
+// or as one-liner: 
+fun ah(d) -> fun(e) -> if(index("arith", e), d, error(e))
 
 fun sexp(x) -> handle(exp(x), ah(0.0))
 

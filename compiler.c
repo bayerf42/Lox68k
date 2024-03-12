@@ -352,13 +352,10 @@ static void call(bool canAssign) {
     int  argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
     if (isVarArg)
         emit2Bytes(OP_VCALL, argCount);
-    else 
-        switch (argCount) {
-            case 0:  emitByte(OP_CALL0); break;
-            case 1:  emitByte(OP_CALL1); break;
-            case 2:  emitByte(OP_CALL2); break;
-            default: emit2Bytes(OP_CALL, argCount); break;
-        }
+    else if (argCount <= 2)
+        emitByte(OP_CALL0 + argCount); // special case 0, 1, or 2 args
+    else
+        emit2Bytes(OP_CALL, argCount);
 }
 
 static void dot(bool canAssign) {
@@ -403,7 +400,6 @@ static void index_(bool canAssign) {
             slice(canAssign);
         else {
             consumeExp(TOKEN_RIGHT_BRACKET, "index");
-
             if (canAssign && match(TOKEN_EQUAL)) {
                 expression();
                 emitByte(OP_SET_INDEX);
@@ -688,6 +684,22 @@ static void handler(bool canAssign) {
     emitByte(OP_HCALL);
 }
 
+static void ifExpr(bool canAssign) {
+    int thenJump, elseJump;
+
+    consumeExp(TOKEN_LEFT_PAREN, "condition");
+    expression();
+    consumeExp(TOKEN_COMMA, "condition");
+    thenJump = emitJump(OP_JUMP_FALSE);
+    expression();
+    consumeExp(TOKEN_COMMA, "consequent");
+    elseJump = emitJump(OP_JUMP);
+    patchJump(thenJump);
+    expression();
+    patchJump(elseJump);
+    consumeExp(TOKEN_RIGHT_PAREN, "alternative");
+}
+
 static const ParseRule rules[] = {
     // Keep same order as TokenType enum values in scanner.h
     // since C89 doesn't support array init by index values.
@@ -732,7 +744,7 @@ static const ParseRule rules[] = {
     /* [TOKEN_FOR]           = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_FUN]           = */ {lambda,   NULL,   PREC_NONE},
     /* [TOKEN_HANDLE]        = */ {handler,  NULL,   PREC_NONE},
-    /* [TOKEN_IF]            = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_IF]            = */ {ifExpr,   NULL,   PREC_NONE},
     /* [TOKEN_NIL]           = */ {literal,  NULL,   PREC_NONE},
     /* [TOKEN_OR]            = */ {NULL,     or_,    PREC_OR},
     /* [TOKEN_PRINT]         = */ {NULL,     NULL,   PREC_NONE},

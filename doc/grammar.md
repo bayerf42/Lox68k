@@ -21,6 +21,7 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * `break` statement in loops
 * superclass can be any expression
 * `handle` expression to establish a dynamic exception handler
+* `if` expression 
 
 View this grammar as a [railroad diagram](grammar.html).
 
@@ -82,7 +83,8 @@ primary        → "true" | "false" | "nil" | "this"
                | NUMBER | STRING | IDENTIFIER | "(" expression ")"
                | "[" arguments "]" | "super" "." IDENTIFIER
                | "fun" function
-               | "handle" "(" expression "," expression ")" ;
+               | "handle" "(" expression "," expression ")"
+               | "if" "(" expression "," expression "," expression ")" ;
 
 function       → "(" parameters ")" (block | "->" expression) ;
 parameters     → ( rest_parameter | IDENTIFIER ( "," IDENTIFIER )* ( "," rest_parameter )? )? ;

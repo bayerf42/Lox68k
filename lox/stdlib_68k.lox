@@ -22,12 +22,8 @@ fun fmod(a,b) {
  var q=(a+0.0)/b;
  return b*(q-trunc(q));
 }
-fun max(a,b) {
- if (a>b) return a; else return b;
-}
-fun min(a,b) {
- if (a<b) return a; else return b;
-}
+fun max(a,b)->if(a>b,a,b)
+fun min(a,b)->if(a<b,a,b)
 fun map(fn,lst) {
  var len=length(lst);
  var res=list(len);
@@ -50,7 +46,7 @@ fun reduce(fn,lst) {
  if (len==0) return nil;
  if (len==1) return lst[0];
  var res=fn(lst[0],lst[1]);
- for (var i=2;i<len; i=i+1)
+ for (var i=2;i<len;i=i+1)
   res=fn(res,lst[i]);
  return res;
 }
