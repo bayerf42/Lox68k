@@ -183,6 +183,28 @@ static void printList(ObjList* list, bool machine) {
     putstr("]");
 }
 
+static void printInstance(ObjInstance* inst, bool compact, bool machine) {
+    int i;
+    const char* sep = "";
+    Entry*      entry;
+
+    printf("%s(", inst->klass->name->chars);
+    if (compact)
+        putstr("..");
+    else
+        for (i = 0; i < inst->fields.capacity; i++) {
+            entry = &inst->fields.entries[i];
+            if (IS_EMPTY(entry->key))
+                continue;
+            putstr(sep);
+            printValue(entry->key, true, machine); 
+            putstr(",");
+            printValue(entry->value, true, machine); // don't recurse into sub-objects
+            sep = ", ";
+        }
+    putstr(")");
+}
+
 const char* typeName(ObjType type) {
     switch (type) {
         case OBJ_BOUND:    return "bound";
@@ -219,7 +241,7 @@ void printObject(Value value, bool compact, bool machine) {
             break;
 
         case OBJ_INSTANCE:
-            printf("<%s instance>", AS_INSTANCE(value)->klass->name->chars);
+            printInstance(AS_INSTANCE(value), compact, machine);
             break;
 
         case OBJ_ITERATOR:

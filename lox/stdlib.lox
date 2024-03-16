@@ -94,8 +94,8 @@ fun _bh(hash, formatter) {
 }
 
 class Object {
-  string() -> join(_bh(this, fun (it) -> string(it@) + ":" + string(it^)), ", ", 
-                   "<" + name(class_of(this)) + " instance: ", ">") 
+  string() -> join(_bh(this, fun (it) -> string(it@) + "," + string(it^)), ", ", 
+                   name(class_of(this)) + "(", ")") 
 
   clone() {
     var res = class_of(this)();

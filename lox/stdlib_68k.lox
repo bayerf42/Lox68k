@@ -73,7 +73,7 @@ fun _bh(h,fmt) {
  return res;
 }
 class Object {
- string()->join(_bh(this,fun(it)->string(it@)+":"+string(it^)),", ","<"+name(class_of(this))+" instance: ",">") 
+ string()->join(_bh(this,fun(it)->string(it@)+","+string(it^)),", ",name(class_of(this))+"(",")") 
  clone() {
   var res=class_of(this)();
   for (var it=slots(this);valid(it);next(it))

@@ -1,0 +1,15 @@
+// Implement even/odd by mutual recursion, give back result by throwing an exception
+fun buildMutualRecursion() {
+  var even, odd; // forward declarations
+  odd  = fun (n) -> if(n==0, error(false), even(n-1));
+  even = fun (n) -> if(n==0, error(true),  odd(n-1));
+  return fun (n) -> handle(even(n), fun (exc) -> if(type(exc)=="bool", exc, error(exc)));
+}
+
+var even = buildMutualRecursion();
+
+// Try in the REPL
+?even(8);
+?even(9);
+//?even(1000);
+//?even("Not a number");
