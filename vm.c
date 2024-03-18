@@ -178,17 +178,10 @@ static bool call(ObjClosure* closure, int argCount) {
     ObjList*    args;
     int         itemCount;
     int         arity;
-    ObjClosure* handler = NULL;
 
     if (vm.frameCount == FRAMES_MAX) {
         runtimeError("Lox call stack overflow.");
         return false;
-    }
-
-    if (argCount == -1) {
-        // call thunk with active exception handler
-        argCount = 0;
-        handler  = AS_CLOSURE(pop());
     }
 
     if (vm.debug_trace_calls) {
@@ -217,9 +210,30 @@ static bool call(ObjClosure* closure, int argCount) {
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
-    frame->handler = handler;
+    frame->handler = NULL;
     frame->ip      = closure->function->chunk.code;
     frame->fp      = vm.sp - arity - 1;
+    return true;
+}
+
+static bool callWithHandler(ObjClosure* closure) {
+    CallFrame*  frame;
+
+    if (vm.frameCount == FRAMES_MAX) {
+        runtimeError("Lox call stack overflow.");
+        return false;
+    }
+
+    if (vm.debug_trace_calls) {
+        indentCallTrace();
+        printf("==> %s ()\n", functionName(closure->function));
+    }
+
+    frame = &vm.frames[vm.frameCount++];
+    frame->closure = closure;
+    frame->handler = AS_CLOSURE(pop());
+    frame->ip      = closure->function->chunk.code;
+    frame->fp      = vm.sp - 1;
     return true;
 }
 
@@ -793,8 +807,8 @@ nextInst:
             argCount = READ_BYTE() + AS_INT(pop());
             goto cont_call;
 
-        case OP_HCALL:
-            if (!call(AS_CLOSURE(peek(1)), -1))
+        case OP_CALL_HAND:
+            if (!callWithHandler(AS_CLOSURE(peek(1))))
                 goto handleError;
             goto updateFrame;
 
@@ -1077,10 +1091,6 @@ nextInst:
 handleError:
     if (vm.handleException) {
         // handler and exception have already been pushed in runtimeError()
-        if (vm.debug_trace_steps) {
-            printStack();
-            putstr("----    | CALL1 ; /!\\ Handling exception\n");
-        }
         vm.handleException = false;
         argCount           = 1;
         goto cont_call;

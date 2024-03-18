@@ -665,9 +665,9 @@ static void handler(bool canAssign) {
     ObjFunction* function;
     int          i;
 
-    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'handle'.");
+    consumeExp(TOKEN_LEFT_PAREN, "thunk");
 
-    // Build a thunk from expression
+    // Build a thunk around expression
     initCompiler(&compiler, TYPE_LAMBDA);
     beginScope();
     expression();
@@ -677,11 +677,11 @@ static void handler(bool canAssign) {
     emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
     for (i = 0; i < function->upvalueCount; i++) 
         emitByte(compiler.upvalues[i]);
-    consumeExp(TOKEN_COMMA, "expression");
+    consumeExp(TOKEN_COMMA, "thunk");
 
     expression();
     consumeExp(TOKEN_RIGHT_PAREN, "handler");
-    emitByte(OP_HCALL);
+    emitByte(OP_CALL_HAND);
 }
 
 static void ifExpr(bool canAssign) {
@@ -691,10 +691,12 @@ static void ifExpr(bool canAssign) {
     expression();
     consumeExp(TOKEN_COMMA, "condition");
     thenJump = emitJump(OP_JUMP_FALSE);
+
     expression();
     consumeExp(TOKEN_COMMA, "consequent");
     elseJump = emitJump(OP_JUMP);
     patchJump(thenJump);
+
     expression();
     patchJump(elseJump);
     consumeExp(TOKEN_RIGHT_PAREN, "alternative");
