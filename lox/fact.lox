@@ -1,0 +1,19 @@
+// function closures are powerful
+
+// traditional fixed-point operator from functional programming
+var Y = fun (g) -> (fun (f) -> f(f)) (fun (f) -> g(fun (x) -> f(f)(x)));
+
+// factorial without recursion
+var F = fun (f) -> fun (n) -> if(n == 0, 1, n * f(n - 1));
+
+
+var factorial = Y(F);   // factorial is the fixed point of F
+
+// now test it
+fun test(x) {
+    print x,"! = ",factorial(x);
+}
+
+for (var n=0; n<13; n=n+1)
+    test(n);
+

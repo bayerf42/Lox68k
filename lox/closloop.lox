@@ -1,0 +1,26 @@
+// Closing over loop variable
+
+//dbg_gc(2); // log allocations
+
+fun loop1(n) {
+  var res = [];
+  for (var i=0; i<n; i=i+1) {
+    // closing over i shares single upval for all closures
+    append(res, fun (x) -> x+i);
+  }
+  return res;
+}
+
+fun loop2(n) {
+  var res = [];
+  for (var i=0; i<n; i=i+1) {
+    var j = i;
+    // closing over j creates unique upval for each iteration
+    append(res, fun (x) -> x+j);
+  }
+  return res;
+}
+
+
+? map(fun (f) -> f(5), loop1(8));
+? map(fun (f) -> f(5), loop2(8));
