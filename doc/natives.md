@@ -22,6 +22,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | bit_shift   | int, int               | int         | all          | first integer shifted left, if second positive, right if negative by second int   |
 | bit_xor     | int, int               | int         | all          | bitwise exclusive OR of 2 integers                                                |
 | chr         | int                    | string      | all          | character with ASCII code *int*                                                   |
+| class_of    | any                    | class?      | all          | class of *any* if it's an instance or bound method, nil otherwise                 |  
 | clock       | -                      | int         | all          | runtime in milliseconds after start                                               |  
 | cos         | num                    | real        | all          | cosine                                                                            |  
 | cosh        | num                    | real        | all          | hyperbolic cosine                                                                 |  

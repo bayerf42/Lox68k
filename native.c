@@ -805,6 +805,16 @@ static bool parentNative(int argCount, Value* args) {
     return true;
 }
 
+static bool classOfNative(int argCount, Value* args) {
+    if (IS_INSTANCE(args[0]))
+        RESULT = OBJ_VAL(AS_INSTANCE(args[0])->klass);
+    else if (IS_BOUND(args[0]))
+        RESULT = OBJ_VAL(AS_BOUND(args[0])->method->function->klass);
+    else
+        RESULT = NIL_VAL;
+    return true;
+}
+
 static bool errorNative(int argCount, Value* args) {
     userError(args[0]);
     return false;
@@ -919,6 +929,7 @@ static const Native allNatives[] = {
     {"type",        "A",    typeNative},
     {"name",        "A",    nameNative},
     {"parent",      "K",    parentNative},
+    {"class_of",    "A",    classOfNative},
     {"error",       "A",    errorNative},
     {"clock",       "",     clockNative},
 };

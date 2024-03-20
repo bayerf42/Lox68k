@@ -281,14 +281,11 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
 }
 
 static ObjFunction* endCompiler(bool addReturn) {
-    ObjFunction* function;
+    ObjFunction* function = currentComp->target;
     if (addReturn)
         emitReturn();
-    function = currentComp->target;
-
     if (vm.debug_print_code && !parser.hadError)
         disassembleChunk(currentChunk(), functionName(function));
-
     currentComp = currentComp->enclosing;
     return function;
 }
@@ -299,7 +296,6 @@ static void beginScope(void) {
 
 static void endScope(void) {
     currentComp->scopeDepth--;
-
     while (currentComp->localCount > 0 &&
            currentComp->locals[currentComp->localCount - 1].depth > currentComp->scopeDepth) {
         if (currentComp->locals[currentComp->localCount - 1].isCaptured)

@@ -76,7 +76,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 ## Some numbers
 * 20 keywords
-* 70 native functions
+* 71 native functions
 * 61 VM opcodes
 * 12 data types
 * about 6000 lines source code
