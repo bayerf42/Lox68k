@@ -75,7 +75,7 @@ void runtimeError(const char* format, ...) {
     // search for handler in frames
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
-        if (frame->handler) {
+        if (AS_OBJ(frame->handler)) {
             if (vm.debug_trace_calls) {
                 indentCallTrace();
                 printf("<== \"%s\"\n", big_buffer);
@@ -83,7 +83,7 @@ void runtimeError(const char* format, ...) {
             closeUpvalues(frame->fp);
             vm.sp         = frame->fp;
             vm.frameCount = i;
-            pushUnchecked(OBJ_VAL(frame->handler));
+            pushUnchecked(frame->handler);
             pushUnchecked(OBJ_VAL(makeString(big_buffer, strlen(big_buffer))));
             vm.handleException = true; 
             return;
@@ -109,7 +109,7 @@ void userError(Value exception) {
     // search for handler in frames
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
-        if (frame->handler) {
+        if (AS_OBJ(frame->handler)) {
             if (vm.debug_trace_calls) {
                 indentCallTrace();
                 putstr("<== ");
@@ -119,7 +119,7 @@ void userError(Value exception) {
             closeUpvalues(frame->fp);
             vm.sp         = frame->fp;
             vm.frameCount = i;
-            pushUnchecked(OBJ_VAL(frame->handler));
+            pushUnchecked(frame->handler);
             pushUnchecked(exception);
             vm.handleException = true; 
             return;
@@ -210,7 +210,7 @@ static bool call(ObjClosure* closure, int argCount) {
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
-    frame->handler = NULL;
+    frame->handler = OBJ_VAL(NULL);
     frame->ip      = closure->function->chunk.code;
     frame->fp      = vm.sp - arity - 1;
     return true;
@@ -231,7 +231,7 @@ static bool callWithHandler(ObjClosure* closure) {
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
-    frame->handler = AS_CLOSURE(pop());
+    frame->handler = pop();
     frame->ip      = closure->function->chunk.code;
     frame->fp      = vm.sp - 1;
     return true;
