@@ -10,8 +10,8 @@ You can start Lox68k with or without the standard library:
   *without* the standard library. The standard library is bundled automatically when
   building the ROM image.
 
-* On the 68k Simulator the standard library is not available, you can use either start address
-  or just press the *RUN* icon.
+* On the 68k Simulator the standard library is loaded from the ROM image `../roms/mon_ffp_lox.bin`
+  on start-up. You can use either start address like above or just press the *RUN* icon.
 
 * With the Windows or Linux versions, you have to add the standard library explicitly to the
   command line, e.g.
