@@ -10,8 +10,8 @@ You can start Lox68k with or without the standard library:
   *without* the standard library. The standard library is bundled automatically when
   building the ROM image.
 
-* On the 68k Simulator the standard library is not available, you have to use start address
-  `$44008` always.
+* On the 68k Simulator the standard library is not available, you can use either start address
+  or just press the *RUN* icon.
 
 * With the Windows or Linux versions, you have to add the standard library explicitly to the
   command line, e.g.

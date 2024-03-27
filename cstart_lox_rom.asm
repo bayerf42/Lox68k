@@ -33,6 +33,7 @@ _monitor_scan          equ $40142
            section     code
            org         progstart
 code       equ         *               ; start address of code section (instructions in ROM)
+           entry       progstart       ; for Simulator
 
            section     const
 const      equ         *               ; start address of const section (initialized data in ROM)

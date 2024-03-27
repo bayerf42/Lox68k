@@ -29,6 +29,15 @@ int main() {
         lcd_puts("Lox68k REPL");
         onKit = true;
         startTicker();
+    } else {
+        // On Simulator, short-cut TRAP #1
+        TRAP1_VECTOR = (void *)ticker;
+        if (loadROM() == 0)
+            putstr("ROM loaded.\n");
+        else {
+            putstr("ROM not found, no FP or stdlib available.\n");
+            loxLibSrc = NULL;
+        }  
     }
 
     rand32 = 47110815;

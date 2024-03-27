@@ -157,13 +157,10 @@ To interrupt long-running computations, press the **REP** key bringing you back 
 prompt. Be sure to put the interrupt source switch to *10ms TICK* to have an accurate timer.
 In versions before 1.4, the **IRQ** key was used for this purpose.
 
-You can also run this version in the *IDE68K* emulator, but there are some differences to the Kit:
-  * You have to set the start address`$44008` manually into the PC register. You can't use start
-    address `$44000` which loads the [standard library](stdlib.md), which is not available here.
-  * Since the FFP library is not contained in the hex file, you cannot use floating point
-    numbers in the emulator. 
-  * The Kit's I/O (LCD, sound, keyboard) are not available
-  * Ignore the `TRAP #1` exceptions (3 per evaluation), just press RUN. 
+You can also run this version in the *IDE68K* emulator, but Kit's I/O (LCD, sound, keyboard)
+are not available. To use the Floating point and standard library, you must have built the
+ROM file as described above before starting the emulator.
+Just press the *RUN* icon and input Lox code into the console.
 
 ### Lox compiled to a Windows executable.
 It actually uses the same memory model and restrictions as the 68008 version and also omits

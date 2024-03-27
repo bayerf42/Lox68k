@@ -54,8 +54,9 @@ extern void _stackoverflow(void);
 #define STATIC_BREAKPOINT() _trap(1)
 
 // Using the 100 Hz IRQ as a timer
-#define clock()     (*((int32_t*)0x0268))
-#define IRQ2_VECTOR (*((int32_t*)0x0068))
+#define clock()      (*((int32_t*)0x0268))
+#define IRQ2_VECTOR  (*((int32_t*)0x0068))
+#define TRAP1_VECTOR (*((int32_t*)0x0084))
 extern void ticker(void); // in cstart_lox_rom.asm
 
 // Only on Kit: Check, if button REP is pressed
