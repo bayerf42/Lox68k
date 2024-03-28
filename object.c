@@ -160,7 +160,7 @@ const char* functionName(ObjFunction* function) {
         return "#script";
     else if (IS_INT(function->name))
         sprintf(buffer, "#%d", AS_INT(function->name));
-    else if (function->klass == AS_OBJ(NULL))
+    else if (function->klass == AS_CLASS(NULL))
         return AS_CSTRING(function->name);
     else
         // Limit output length to avoid buffer overflow 

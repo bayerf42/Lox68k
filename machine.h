@@ -17,7 +17,6 @@ typedef short          int16_t;
 typedef int            int32_t;
 typedef short          bool;
 
-
 #define true       1
 #define false      0
 
@@ -58,11 +57,16 @@ extern void _stackoverflow(void);
 #define IRQ2_VECTOR  (*((int32_t*)0x0068))
 #define TRAP1_VECTOR (*((int32_t*)0x0084))
 extern void ticker(void); // in cstart_lox_rom.asm
+extern void rte(void);    // in cstart_lox_rom.asm
 
 // Only on Kit: Check, if button REP is pressed
 #define INTERRUPTED()          (onKit && (*((char*)0x80000) & 0x40) == 0)
 #define RESET_INTERRUPTED()    // nothing to do
 #define handleInterrupts(flag) // nothing to do
+
+// Identification of actual 68k Kit
+#define MAGIC_VAL 0x1138
+#define MAGIC_LOC ((short*)0x0200)
 
 #else
 

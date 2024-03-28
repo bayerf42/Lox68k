@@ -48,37 +48,37 @@ _putstr:
        rts
 
 ; int loadROM(void);
-    ; For Simulator only: Load Motorola FFP code and Lox68k standard library from EEPROM file.
-    ; Load 8k bytes from file to $5e000 into memory
+    ; For Simulator only: Load Motorola FFP code and Lox68k standard library from ROM file.
+       xdef      _loadROM
 _loadROM:
-       lea       (ROM_FILE_NAME,PC),A0
-       moveq     #1,D0      ; read-only
-       trap      #15        ; FOPEN
-       dc.w      10
-       move.l    D0,-(A7)   ; save file handle
+       lea       (ROM_FILE_NAME,PC),A0     ; file name
+       moveq     #1,D0                     ; mode read-only
+       trap      #15                       ; FOPEN
+       dc.w      10 
+       move.l    D0,-(A7)                  ; save file handle
        blt.s     .error
 
-       move.l    (A7),D1    ; file handle
-       moveq.l   #0,D0      ; begin of file
-       movea.l   #$1e000,A0 ; file position
-       trap      #15        ; FSEEK
+       move.l    (A7),D1                   ; file handle
+       moveq.l   #0,D0                     ; seek from begin
+       movea.l   #loxlibsrc-lorom,A0       ; seek position
+       trap      #15                       ; FSEEK
        dc.w      14
        blt.s     .error
-       
 
-       move.l    (A7),D1    ; file handle
-       move.l    #$2000,D0  ; length
-       movea.l   #$5e000,A0 ; read destination
-       trap      #15        ; FREAD
-       dc.w      12 
+       move.l    (A7),D1                   ; file handle
+       move.l    #hirom-loxlibsrc,D0       ; length
+       movea.l   #loxlibsrc,A0             ; read destination
+       trap      #15                       ; FREAD
+       dc.w      12
        blt.s     .error
 
-       move.l    (A7),D1    ; file handle
-       trap      #15        ; FCLOSE
+       move.l    (A7),D1                   ; file handle
+       trap      #15                       ; FCLOSE
        dc.w      16
        blt.s     .error
 
-       clr.l     d0         ; Success!
+       clr.l     d0                        ; Success!
+
 .error addq.w    #4,A7
        rts
          

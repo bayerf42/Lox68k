@@ -16,10 +16,6 @@
 const char* loxLibSrc;
 
 int main() {
-
-#define MAGIC_VAL 0x1138
-#define MAGIC_LOC ((short*)0x0200)
-
     if (*MAGIC_LOC == MAGIC_VAL) {
         // We are actually running on 68008 Kit, not on the emulator, so we can
         // access the LCD.
@@ -31,7 +27,7 @@ int main() {
         startTicker();
     } else {
         // On Simulator, short-cut TRAP #1
-        TRAP1_VECTOR = (void *)ticker;
+        TRAP1_VECTOR = (void *)rte;
         if (loadROM() == 0)
             putstr("ROM loaded.\n");
         else {
