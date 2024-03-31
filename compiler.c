@@ -702,6 +702,7 @@ static const ParseRule rules[] = {
     // Keep same order as TokenType enum values in scanner.h
     // since C89 doesn't support array init by index values.
 
+    // single character punctuation ***********************************
     /* [TOKEN_LEFT_PAREN]    = */ {grouping, call,   PREC_POSTFIX},
     /* [TOKEN_RIGHT_PAREN]   = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_LEFT_BRACE]    = */ {NULL,     NULL,   PREC_NONE},
@@ -710,29 +711,37 @@ static const ParseRule rules[] = {
     /* [TOKEN_RIGHT_BRACKET] = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_COMMA]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_DOT]           = */ {NULL,     dot,    PREC_POSTFIX},
-    /* [TOKEN_MINUS]         = */ {unary,    binary, PREC_TERM},
-    /* [TOKEN_PLUS]          = */ {NULL,     binary, PREC_TERM},
     /* [TOKEN_SEMICOLON]     = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_COLON]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_SLASH]         = */ {NULL,     binary, PREC_FACTOR},
+
+    // single character operators *************************************
+    /* [TOKEN_PLUS]          = */ {NULL,     binary, PREC_TERM},
+    /* [TOKEN_MINUS]         = */ {unary,    binary, PREC_TERM},
     /* [TOKEN_STAR]          = */ {NULL,     binary, PREC_FACTOR},
+    /* [TOKEN_SLASH]         = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_BACKSLASH]     = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_AT]            = */ {NULL,     iter,   PREC_POSTFIX},
     /* [TOKEN_HAT]           = */ {NULL,     iter,   PREC_POSTFIX},
     /* [TOKEN_BANG]          = */ {unary,    NULL,   PREC_NONE},
-    /* [TOKEN_BANG_EQUAL]    = */ {NULL,     binary, PREC_EQUALITY},
     /* [TOKEN_EQUAL]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_EQUAL_EQUAL]   = */ {NULL,     binary, PREC_EQUALITY},
     /* [TOKEN_GREATER]       = */ {NULL,     binary, PREC_COMPARISON},
-    /* [TOKEN_GREATER_EQUAL] = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_LESS]          = */ {NULL,     binary, PREC_COMPARISON},
+
+    // double character operators *************************************
+    /* [TOKEN_BANG_EQUAL]    = */ {NULL,     binary, PREC_EQUALITY},
+    /* [TOKEN_EQUAL_EQUAL]   = */ {NULL,     binary, PREC_EQUALITY},
+    /* [TOKEN_GREATER_EQUAL] = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_LESS_EQUAL]    = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_DOT_DOT]       = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_ARROW]         = */ {NULL,     NULL,   PREC_NONE},
+
+    // literals *******************************************************
     /* [TOKEN_IDENTIFIER]    = */ {variable, NULL,   PREC_NONE},
     /* [TOKEN_STRING]        = */ {string,   NULL,   PREC_NONE},
     /* [TOKEN_INT]           = */ {intNum,   NULL,   PREC_NONE},
     /* [TOKEN_REAL]          = */ {realNum,  NULL,   PREC_NONE},
+
+    // keywords *******************************************************
     /* [TOKEN_AND]           = */ {NULL,     and_,   PREC_AND},
     /* [TOKEN_BREAK]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_CASE]          = */ {NULL,     NULL,   PREC_NONE},
@@ -753,6 +762,8 @@ static const ParseRule rules[] = {
     /* [TOKEN_VAR]           = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_WHEN]          = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_WHILE]         = */ {NULL,     NULL,   PREC_NONE},
+
+    // specials *******************************************************
     /* [TOKEN_ERROR]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_EOF]           = */ {NULL,     NULL,   PREC_NONE},
 };

@@ -77,7 +77,7 @@ _loadROM:
        dc.w      16
        blt.s     .error
 
-       clr.l     d0                        ; Success!
+       clr.l     D0                        ; Success!
 
 .error addq.w    #4,A7
        rts
