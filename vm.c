@@ -412,15 +412,19 @@ static InterpretResult run(void) {
     STATIC_BREAKPOINT();
 
 updateFrame:
+    // Last op changed call frame, update cached values
     frame  = &vm.frames[vm.frameCount - 1];
     consts = frame->closure->function->chunk.constants.values;
 
 nextInst:
+    // Last op possibly caused stack overflow, check here
     if (vm.hadStackoverflow) {
         runtimeError("Lox value stack overflow.");
         goto handleError;
     }
 
+nextInstNoSO:
+    // Last op guaranteed no stack overflow, omit check
     if (INTERRUPTED()) {
         (void)READ_BYTE();
         putstr("Interrupted.\n");
@@ -450,14 +454,14 @@ nextInst:
         case OP_FALSE: push(FALSE_VAL);  goto nextInst;
         case OP_ZERO:  push(INT_VAL(0)); goto nextInst;
         case OP_ONE:   push(INT_VAL(1)); goto nextInst;
-        case OP_POP:   drop();           goto nextInst;
+        case OP_POP:   drop();           goto nextInstNoSO;
         case OP_DUP:   push(peek(0));    goto nextInst;
 
         case OP_SWAP:
             aVal    = peek(0);
             peek(0) = peek(1);
             peek(1) = aVal;
-            goto nextInst;
+            goto nextInstNoSO;
   
         case OP_GET_LOCAL:
             slotNr = READ_BYTE();
@@ -467,7 +471,7 @@ nextInst:
         case OP_SET_LOCAL:
             slotNr = READ_BYTE();
             frame->fp[slotNr] = peek(0);
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_GET_GLOBAL:
             index    = READ_BYTE();
@@ -484,7 +488,7 @@ nextInst:
             constant = consts[index];
             tableSet(&vm.globals, constant, peek(0));
             drop();
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_SET_GLOBAL:
             index    = READ_BYTE();
@@ -494,7 +498,7 @@ nextInst:
                 runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
                 goto handleError;
             }
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_GET_UPVALUE:
             slotNr = READ_BYTE();
@@ -504,7 +508,7 @@ nextInst:
         case OP_SET_UPVALUE:
             slotNr = READ_BYTE();
             *frame->closure->upvalues[slotNr]->location = peek(0);
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_GET_PROPERTY:
             if (!IS_INSTANCE(peek(0))) {
@@ -516,12 +520,12 @@ nextInst:
             constant = consts[index];
             if (tableGet(&instance->fields, constant, &aVal)) {
                 dropNpush(1, aVal);
-                goto nextInst;
+                goto nextInstNoSO;
             }
             aStr = AS_STRING(constant);
             if (!bindMethod(instance->klass, aStr))
                 goto handleError;
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_SET_PROPERTY:
             if (!IS_INSTANCE(peek(1))) {
@@ -534,7 +538,7 @@ nextInst:
             tableSet(&instance->fields, constant, peek(0));
             aVal = pop();
             dropNpush(1, aVal);
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_GET_SUPER:
             index      = READ_BYTE();
@@ -543,13 +547,13 @@ nextInst:
             superclass = AS_CLASS(pop());
             if (!bindMethod(superclass, aStr))
                 goto handleError;
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_EQUAL:
             bVal = pop();
             aVal = pop();
             pushUnchecked(BOOL_VAL(valuesEqual(aVal, bVal)));
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_LESS:
             if (IS_INT(peek(0))) {
@@ -557,7 +561,7 @@ nextInst:
                     bInt = AS_INT(pop());
                     aInt = AS_INT(pop());
                     pushUnchecked(BOOL_VAL(aInt < bInt));
-                    goto nextInst;
+                    goto nextInstNoSO;
                 } else if (IS_REAL(peek(1))) {
                     aReal = AS_REAL(peek(1));
                     bReal = intToReal(AS_INT(peek(0)));
@@ -582,7 +586,7 @@ nextInst:
                              valueType(peek(1)), valueType(peek(0)));
                 goto handleError;
             }
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_ADD:
             if (IS_INT(peek(0))) {
@@ -590,7 +594,7 @@ nextInst:
                     bInt = AS_INT(pop());
                     aInt = AS_INT(pop());
                     pushUnchecked(INT_VAL(aInt + bInt));
-                    goto nextInst;
+                    goto nextInstNoSO;
                 } else if (IS_REAL(peek(1))) {
                     aReal = AS_REAL(peek(1));
                     bReal = intToReal(AS_INT(peek(0)));
@@ -626,7 +630,7 @@ nextInst:
                              valueType(peek(1)), valueType(peek(0)));
                 goto handleError;
             }
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_SUB:
             if (IS_INT(peek(0))) {
@@ -634,7 +638,7 @@ nextInst:
                     bInt = AS_INT(pop());
                     aInt = AS_INT(pop());
                     pushUnchecked(INT_VAL(aInt - bInt));
-                    goto nextInst;
+                    goto nextInstNoSO;
                 } else if (IS_REAL(peek(1))) {
                     aReal = AS_REAL(peek(1));
                     bReal = intToReal(AS_INT(peek(0)));
@@ -654,7 +658,7 @@ nextInst:
             }
             dropNpush(2, makeReal(sub(aReal,bReal)));
             CHECK_ARITH_ERROR("-")
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_MUL:
             if (IS_INT(peek(0))) {
@@ -662,7 +666,7 @@ nextInst:
                     bInt = AS_INT(pop());
                     aInt = AS_INT(pop());
                     pushUnchecked(INT_VAL(aInt * bInt));
-                    goto nextInst;
+                    goto nextInstNoSO;
                 } else if (IS_REAL(peek(1))) {
                     aReal = AS_REAL(peek(1));
                     bReal = intToReal(AS_INT(peek(0)));
@@ -682,7 +686,7 @@ nextInst:
             }
             dropNpush(2, makeReal(mul(aReal,bReal)));
             CHECK_ARITH_ERROR("*")
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_DIV:
             if (IS_INT(peek(0))) {
@@ -694,7 +698,7 @@ nextInst:
                         goto handleError;
                     }
                     pushUnchecked(INT_VAL(aInt / bInt));
-                    goto nextInst;
+                    goto nextInstNoSO;
                 } else if (IS_REAL(peek(1))) {
                     aReal = AS_REAL(peek(1));
                     bReal = intToReal(AS_INT(peek(0)));
@@ -718,7 +722,7 @@ nextInst:
             }
             dropNpush(2, makeReal(div(aReal,bReal)));
             CHECK_ARITH_ERROR("/")
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_MOD:
             if (IS_INT(peek(0)) && IS_INT(peek(1))) {
@@ -731,25 +735,25 @@ nextInst:
                 pushUnchecked(INT_VAL(aInt % bInt));
             } else
                 goto typeErrorDiv;
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_NOT:
             peek(0) = BOOL_VAL(IS_FALSEY(peek(0)));
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_PRINT:
             printValue(pop(), false, false);
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_PRINTLN:
             printValue(pop(), false, false);
             putstr("\n");
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_JUMP:
             offset = READ_USHORT();
             frame->ip += offset;
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_JUMP_OR:
             offset = READ_USHORT();
@@ -757,7 +761,7 @@ nextInst:
                 drop();
             else
                 frame->ip += offset;
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_JUMP_AND:
             offset = READ_USHORT();
@@ -765,24 +769,24 @@ nextInst:
                 frame->ip += offset;
             else
                 drop();
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_JUMP_TRUE:
             offset = READ_USHORT();
             if (!IS_FALSEY(pop()))
                 frame->ip += offset;
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_JUMP_FALSE:
             offset = READ_USHORT();
             if (IS_FALSEY(pop()))
                 frame->ip += offset;
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_LOOP:
             offset = READ_USHORT();
             frame->ip -= offset;
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_CALL0:
             argCount = 0;
@@ -862,7 +866,7 @@ nextInst:
         case OP_CLOSE_UPVALUE:
             closeUpvalues(vm.sp - 1);
             drop();
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_RETURN_NIL:
             resVal = NIL_VAL;
@@ -911,14 +915,14 @@ nextInst:
             subclass->superClass = aVal;
             tableAddAll(&superclass->methods, &subclass->methods);
             drop();
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_METHOD:
             index    = READ_BYTE();
             constant = consts[index];
             aStr     = AS_STRING(constant);
             defineMethod(aStr);
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_LIST:
             argCount = READ_BYTE();
@@ -948,7 +952,7 @@ nextInst:
                 vm.sp[i] = aLst->arr.values[i];
             vm.sp += itemCount;
             pushUnchecked(INT_VAL(itemCount + argCount));
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_GET_INDEX:
             aVal = peek(0); // index
@@ -967,7 +971,7 @@ nextInst:
                 }
                 resVal = indexFromList(bLst, index);
                 dropNpush(2, resVal);
-                goto nextInst;
+                goto nextInstNoSO;
             } else if (IS_STRING(bVal)) {
                 bStr = AS_STRING(bVal);
                 if (!IS_INT(aVal)) {
@@ -981,13 +985,13 @@ nextInst:
                 }
                 resVal = OBJ_VAL(indexFromString(bStr, index));
                 dropNpush(2, resVal);
-                goto nextInst;
+                goto nextInstNoSO;
             } else if (IS_INSTANCE(bVal)) {
                 instance = AS_INSTANCE(bVal);
                 resVal   = NIL_VAL;
                 tableGet(&instance->fields, aVal, &resVal); // not found -> nil
                 dropNpush(2, resVal);
-                goto nextInst;
+                goto nextInstNoSO;
             } else {
                 runtimeError("Can't %s type %s.", "index into", valueType(bVal));
                 goto handleError;
@@ -1011,12 +1015,12 @@ nextInst:
                 }
                 storeToList(bLst, index, cVal);
                 dropNpush(3, cVal);
-                goto nextInst;
+                goto nextInstNoSO;
             } else if (IS_INSTANCE(bVal)) {
                 instance = AS_INSTANCE(bVal);
                 tableSet(&instance->fields, aVal, cVal);
                 dropNpush(3, cVal);
-                goto nextInst;
+                goto nextInstNoSO;
             } else {
                 runtimeError("Can't %s type %s.", "store into", valueType(bVal));
                 goto handleError;
@@ -1041,12 +1045,12 @@ nextInst:
                 aLst   = AS_LIST(cVal);
                 resVal = OBJ_VAL(sliceFromList(aLst, begin, end));
                 dropNpush(1, resVal);
-                goto nextInst;
+                goto nextInstNoSO;
             } else if (IS_STRING(cVal)) {
                 aStr   = AS_STRING(cVal);
                 resVal = OBJ_VAL(sliceFromString(aStr, begin, end));
                 dropNpush(1, resVal);
-                goto nextInst;
+                goto nextInstNoSO;
             } else {
                 runtimeError("Can't %s type %s.", "slice into", valueType(cVal));
                 goto handleError;
@@ -1066,7 +1070,7 @@ nextInst:
             }
             resVal = getIterator(aIt, instruction==OP_GET_ITKEY);
             dropNpush(1, resVal);
-            goto nextInst;
+            goto nextInstNoSO;
 
         case OP_SET_ITVAL:
             bVal = peek(0); // item
@@ -1082,7 +1086,7 @@ nextInst:
             }
             setIterator(aIt, bVal);
             dropNpush(2, bVal);
-            goto nextInst;
+            goto nextInstNoSO;
 
         default:
             runtimeError("Invalid byte code $%02x.", instruction);
