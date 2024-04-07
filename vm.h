@@ -21,6 +21,7 @@ typedef struct {
     ObjString*  initString;
     ObjUpvalue* openUpvalues;
     int         lambdaCount;
+    uint32_t    randomState;
 
     bool        handleException;
     bool        hadStackoverflow;

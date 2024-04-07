@@ -52,21 +52,18 @@ extern void _stackoverflow(void);
 
 #define STATIC_BREAKPOINT() _trap(1)
 
-// Using the 100 Hz IRQ as a timer
-#define clock()      (*((int32_t*)0x0268))
-#define IRQ2_VECTOR  (*((int32_t*)0x0068))
-#define TRAP1_VECTOR (*((int32_t*)0x0084))
-extern void ticker(void); // in cstart_lox_rom.asm
-extern void rte(void);    // in cstart_lox_rom.asm
+// Using the 100 Hz IRQ as a timer and checking for interrupt button
+#define clock()       (*((int32_t*)0x0268))
+#define IRQ2_VECTOR   (*((int32_t*)0x0068))
+#define TRAP1_VECTOR  (*((int32_t*)0x0084))
+#define ON_KIT()      (*((short*)0x0200) == 0x1138)
+#define INTERRUPTED() ((*((char*)0x80000) & 0x40) == 0)
 
-// Only on Kit: Check, if button REP is pressed
-#define INTERRUPTED()          (onKit && (*((char*)0x80000) & 0x40) == 0)
 #define RESET_INTERRUPTED()    // nothing to do
 #define handleInterrupts(flag) // nothing to do
 
-// Identification of actual 68k Kit
-#define MAGIC_VAL 0x1138
-#define MAGIC_LOC ((short*)0x0200)
+extern void ticker(void);      // in cstart_lox_rom.asm
+extern void rte(void);         // in cstart_lox_rom.asm
 
 #else
 

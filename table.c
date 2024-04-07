@@ -167,7 +167,7 @@ ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t
             string = AS_STRING(entry->key); // keys will always be strings here!
             if (string->length == length &&
                 string->hash   == hash   &&
-                strncmp(string->chars, chars, length) == 0) {
+                fix_memcmp(string->chars, chars, length) == 0) {
                 // we found duplicate string
                 return string;
             }

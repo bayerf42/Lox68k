@@ -137,6 +137,7 @@ void initVM(void) {
     vm.bytesAllocated = 0;
     vm.grayCount      = 0;
     vm.lambdaCount    = 0;
+    vm.randomState    = 47110815;
 
     initTable(&vm.globals);
     initTable(&vm.strings);
@@ -1101,6 +1102,21 @@ handleError:
     }
     return INTERPRET_RUNTIME_ERROR;
 }
+
+#ifndef KIT68K
+#include <signal.h>
+
+static void irqHandler(int ignored) {
+    vm.interrupted = true;
+}
+
+static void handleInterrupts(bool enable) {
+    if (enable)
+        signal(SIGINT, &irqHandler);
+    else
+        signal(SIGINT, SIG_DFL);
+}
+#endif
 
 InterpretResult interpret(const char* source) {
     ObjFunction*    function = compile(source);

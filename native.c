@@ -2,14 +2,11 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "object.h"
 #include "native.h"
 #include "memory.h"
 #include "vm.h"
-
-bool    onKit;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Typechecking natives
@@ -500,19 +497,17 @@ static bool bitShiftNative(int argCount, Value* args) {
     return true;
 }
 
-uint32_t rand32;
-
 static bool randomNative(int argCount, Value* args) {
-    rand32  ^= rand32 << 13;
-    rand32  ^= rand32 >> 17;
-    rand32  ^= rand32 << 5;
-    RESULT = INT_VAL(rand32 & 0x3fffffff);
+    vm.randomState ^= vm.randomState << 13;
+    vm.randomState ^= vm.randomState >> 17;
+    vm.randomState ^= vm.randomState << 5;
+    RESULT = INT_VAL(vm.randomState & 0x3fffffff);
     return true;
 }
 
 static bool seedRandNative(int argCount, Value* args) {
-    RESULT = INT_VAL(rand32);
-    rand32   = AS_INT(args[0]);
+    RESULT = INT_VAL(vm.randomState);
+    vm.randomState = AS_INT(args[0]);
     return true;
 }
 
@@ -951,34 +946,3 @@ void defineAllNatives() {
     drop();
     drop();
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Interrupting computations and ticker handling
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#ifdef KIT68K
-
-void startTicker(void) {
-    clock()     = 0;
-    IRQ2_VECTOR = (void *)ticker;
-    // ANDI  #$f0ff,SR  ; clear interrupt mask in status register
-    _word(0x027c); _word(0xf0ff);
-}
-
-#else
-
-#include <signal.h>
-
-void irqHandler(int ignored) {
-    vm.interrupted = true;
-}
-
-void handleInterrupts(bool enable) {
-    if (enable)
-        signal(SIGINT, &irqHandler);
-    else
-        signal(SIGINT, SIG_DFL);
-}
-
-#endif

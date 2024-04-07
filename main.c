@@ -16,27 +16,32 @@
 const char* loxLibSrc;
 
 int main() {
-    if (*MAGIC_LOC == MAGIC_VAL) {
-        // We are actually running on 68008 Kit, not on the emulator, so we can
-        // access the LCD.
+    if (ON_KIT()) { // Running nn actual 68008 Kit
+        // Welcome message on LCD
         lcd_clear();
         lcd_puts("Use terminal for");
         lcd_goto(0,1);
         lcd_puts("Lox68k REPL");
-        onKit = true;
-        startTicker();
-    } else {
-        // On Simulator, short-cut TRAP #1
-        TRAP1_VECTOR = (void *)rte;
+
+        // init 100 Hz ticker
+        clock()     = 0;
+        IRQ2_VECTOR = (void *)ticker;
+        // ANDI  #$f0ff,SR  ; clear interrupt mask in status register
+        _word(0x027c); _word(0xf0ff);
+
+    } else { // Running on IDE68k Simulator
+        TRAP1_VECTOR      = (void *)rte; // short-cut TRAP #1
+        *((char*)0x80000) = 0x40;        // make IRQ button check fail
+
+        // Load ROM file with FFP lib and Lox standard lib.
         if (loadROM() == 0)
             putstr("ROM loaded.\n");
         else {
-            putstr("ROM not found, no FP or stdlib available.\n");
+            putstr("ROM not found.\n");
             loxLibSrc = NULL;
         }  
     }
 
-    rand32 = 47110815;
     init_freelist();
     initVM();
     printf("Lox68k %s by Fred Bayer\n", VERSION);
@@ -120,11 +125,10 @@ static void repl(void) {
 int main(int argc, const char* argv[]) {
     int arg;
 
-    rand32 = 47110815;
     init_freelist();
     initVM();
 
-    printf("Lox68k (compiled for Big Computer) %s by Fred Bayer\n", VERSION);
+    printf("Lox68k %s by Fred Bayer\n", VERSION);
     if (argc == 1)
         repl();
     else {
