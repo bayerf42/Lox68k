@@ -380,9 +380,9 @@ static void defineMethod(ObjString* name) {
 
 #define READ_BYTE()   (*frame->ip++)
 #define READ_USHORT() (frame->ip += 2, (frame->ip[-2] << 8) | frame->ip[-1])
+#define CURR_INSTR()  (frame->ip[-1])
 
 static InterpretResult run(void) {
-    int   instruction;
     int   index, begin, end, i;
     Value constant;
 
@@ -441,9 +441,7 @@ nextInstNoSO:
     }
 
     ++vm.stepsExecuted;
-    instruction = READ_BYTE();
-
-    switch (instruction) {
+    switch (READ_BYTE()) {
         case OP_CONSTANT:
             index = READ_BYTE();
             constant = consts[index];
@@ -1069,7 +1067,7 @@ nextInstNoSO:
                 runtimeError("Invalid iterator.");
                 goto handleError;
             }
-            resVal = getIterator(aIt, instruction==OP_GET_ITKEY);
+            resVal = getIterator(aIt, CURR_INSTR()==OP_GET_ITKEY);
             dropNpush(1, resVal);
             goto nextInstNoSO;
 
@@ -1090,7 +1088,7 @@ nextInstNoSO:
             goto nextInstNoSO;
 
         default:
-            runtimeError("Invalid byte code $%02x.", instruction);
+            runtimeError("Invalid byte code $%02x.", CURR_INSTR());
     }
 
 handleError:
