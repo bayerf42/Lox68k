@@ -163,15 +163,15 @@ void push(Value value) {
     *vm.sp++ = value;
 }
 
-#define dropNpush(n,value) {   \
-    vm.sp -= (n) - 1;    \
-    vm.sp[-1] = (value); \
+#define dropNpush(n,value) { \
+    vm.sp -= (n) - 1;        \
+    vm.sp[-1] = (value);     \
 }
 
 #define CHECK_ARITH_ERROR(op)                   \
 if (errno != 0) {                               \
     runtimeError("'%s' arithmetic error.", op); \
-    goto handleError;                             \
+    goto handleError;                           \
 }
 
 static bool call(ObjClosure* closure, int argCount) {
@@ -607,6 +607,7 @@ nextInstNoSO:
                     aReal = AS_REAL(peek(1));
                 else goto typeErrorAdd;
             addReals: 
+                errno = 0;
                 dropNpush(2, makeReal(add(aReal,bReal)));
                 CHECK_ARITH_ERROR("+")
             } else if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
@@ -655,6 +656,7 @@ nextInstNoSO:
                              valueType(peek(1)), valueType(peek(0)));
                 goto handleError;
             }
+            errno = 0;
             dropNpush(2, makeReal(sub(aReal,bReal)));
             CHECK_ARITH_ERROR("-")
             goto nextInstNoSO;
@@ -683,6 +685,7 @@ nextInstNoSO:
                              valueType(peek(1)), valueType(peek(0)));
                 goto handleError;
             }
+            errno = 0;
             dropNpush(2, makeReal(mul(aReal,bReal)));
             CHECK_ARITH_ERROR("*")
             goto nextInstNoSO;
@@ -719,6 +722,7 @@ nextInstNoSO:
                 runtimeError("'/' by zero.");
                 goto handleError;
             }
+            errno = 0;
             dropNpush(2, makeReal(div(aReal,bReal)));
             CHECK_ARITH_ERROR("/")
             goto nextInstNoSO;

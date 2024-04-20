@@ -88,6 +88,7 @@ static bool absNative(int argCount, Value* args) {
 }
 
 static bool truncNative(int argCount, Value* args) {
+    errno = 0;
     if (IS_INT(args[0]))
         RESULT = args[0];
     else
@@ -99,6 +100,7 @@ static bool truncNative(int argCount, Value* args) {
 typedef Real (*RealFun)(Real);
 
 static bool transcendentalNative(int argCount, Value* args, RealFun fn, const char* op) {
+    errno = 0;
     if (IS_INT(args[0]))
         RESULT = makeReal((*fn)(intToReal(AS_INT(args[0]))));
     else
@@ -150,6 +152,7 @@ static bool atanNative(int argCount, Value* args) {
 static bool powNative(int argCount, Value* args) {
     Real x = (IS_INT(args[0])) ? intToReal(AS_INT(args[0])) : AS_REAL(args[0]);
     Real y = (IS_INT(args[1])) ? intToReal(AS_INT(args[1])) : AS_REAL(args[1]);
+    errno  = 0;
     RESULT = makeReal(pow(x,y));
     CHECK_ARITH_ERROR("pow")
     return true;
@@ -289,7 +292,7 @@ static bool equalNative(int argCount, Value* args) {
         bit = AS_ITERATOR(b);  
         res = ait->table == bit->table && ait->position == bit->position;
     } else
-        res  = a == b;
+        res = a == b;
     RESULT = BOOL_VAL(res);
     return true;
 }
@@ -305,7 +308,7 @@ static bool upperNative(int argCount, Value* args) {
 }
 
 #define APPEND(str) { \
-    len = strlen(str); if (dest - big_buffer + len >= (INPUT_SIZE-1)) goto ErrExit; \
+    len = strlen(str); if (dest - big_buffer + len >= (INPUT_SIZE-1)) goto Overflow; \
     strcpy(dest, (str)); \
     dest += len; }
 
@@ -337,7 +340,7 @@ static bool joinNative(int argCount, Value* args) {
     RESULT = OBJ_VAL(makeString(big_buffer, dest - big_buffer));
     return true;
 
-ErrExit:
+Overflow:
     runtimeError("'%s' stringbuffer overflow.", "join");
     return false;
 }

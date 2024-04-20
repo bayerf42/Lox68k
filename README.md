@@ -27,7 +27,7 @@ Lox was designed as a toy language to study the implementation of interpreters, 
 due to its small size and simplicity it's very well suited as a scripting language for a
 single board computer.
 
-The Lox68K port also contains several native functions to access the
+The Lox68K port also contains several language extensions and native functions to access the
 Kit peripherals and to integrate machine level coding. I wish I had such a system in the 80ies
 when learning computing, but had to use stupid BASIC...
 

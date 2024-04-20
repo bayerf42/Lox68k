@@ -111,7 +111,7 @@ typedef double Real;
 #define HEAP_SIZE   65536
 #define STACK_MAX    4096
 #define INPUT_SIZE  16384
-#define FRAMES_MAX    128
+#define FRAMES_MAX    224  // Maxed, but keep C heap start below C stack limit
 #define GRAY_MAX     1024
 
 #define PRINT_SEPARATOR "   "
