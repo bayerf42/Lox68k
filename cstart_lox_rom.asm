@@ -20,6 +20,9 @@ ticks      equ         $268            ; monitor variable counting 100 Hz ticks
 
 ; Official monitor entry points in 4.x   
                                          
+_get_byte              equ $40100 
+_send_byte             equ $40106
+_pstring               equ $4010C
 _print_led             equ $40112
 _disassemble           equ $40118
 _lcd_init              equ $4011e
@@ -92,7 +95,7 @@ __putch:                               ; Basic character output routine
            dc.w        1               ; IDE68K system call 1 -> PUTCH
            rts
 
-.on_sbc    jmp         $040106         ; entry to send_byte in Monitor 4.x
+.on_sbc    jmp         _send_byte      ; entry in Monitor 4.x
 
            xdef        __getch
 __getch:                               ; Basic character input routine
@@ -105,7 +108,7 @@ __getch:                               ; Basic character input routine
            ext.l       D0              ; D0.L is char, sign extended to 32 bits
            rts
 
-.on_sbc    jsr         $040100         ; entry to _get_byte in Monitor 4.x
+.on_sbc    jsr         _get_byte       ; entry in Monitor 4.x
            ext.w       D0
            ext.l       D0              ; D0.L is char, sign extended to 32 bits
            rts
@@ -123,7 +126,7 @@ __stackoverflow:                       ; label for manual check
            bra         __exit          ; abort program
 
 .on_sbc    pea         stackmsg
-           jsr         $04010c         ; entry to _pstring in Monitor 4.x
+           jsr         _pstring        ; entry in Monitor 4.x
            bra         __exit          ; abort program
 
 _ticker    addq.l      #1,ticks.w      ; 10 ms interrupt handler

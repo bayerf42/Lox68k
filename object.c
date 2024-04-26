@@ -31,6 +31,14 @@ static Obj* allocateObject(size_t size, ObjType type) {
     return object;
 }
 
+static uint32_t hashBytes(const uint8_t* bytes, int length) {
+    // Bernstein hash (djb2)
+    uint32_t hash = 5381;
+    while (length--)
+        hash = ((hash << 5) + hash) ^ *bytes++;
+    return hash;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object creation 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,7 +131,7 @@ Value makeReal(Real val) {
 
 ObjString* makeString(const char* chars, int length) {
     // Check if we already have an equal string
-    uint32_t hash       = hashBytes((const uint8_t*)chars, length);
+    uint32_t   hash     = hashBytes((const uint8_t*)chars, length);
     ObjString* string;
     ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
     if (interned != NULL)

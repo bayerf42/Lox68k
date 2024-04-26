@@ -60,6 +60,5 @@ void        freeValueArray(ValueArray* array);
 void        printValue(Value value, bool compact, bool machine);
 const char* valueType(Value value);
 uint32_t    hashValue(Value value);
-uint32_t    hashBytes(const uint8_t* bytes, int length);
 
 #endif

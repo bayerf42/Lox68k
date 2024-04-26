@@ -26,6 +26,8 @@ typedef short          bool;
 
 #define WRAP_BIG_ENDIAN
 
+#include "monitor4x.h"
+
 // Real number implementation
 typedef int32_t Real; // sic!
 #include "ffp_glue.h"
@@ -53,11 +55,11 @@ extern void _stackoverflow(void);
 #define STATIC_BREAKPOINT() _trap(1)
 
 // Using the 100 Hz IRQ as a timer and checking for interrupt button
-#define clock()       (*((int32_t*)0x0268))
+#define clock()       (*((int32_t*)tick_100hz))
 #define IRQ2_VECTOR   (*((int32_t*)0x0068))
 #define TRAP1_VECTOR  (*((int32_t*)0x0084))
 #define ON_KIT()      (*((short*)0x0200) == 0x1138)
-#define INTERRUPTED() ((*((char*)0x80000) & 0x40) == 0)
+#define INTERRUPTED() ((*port0 & 0x40) == 0)
 
 #define RESET_INTERRUPTED()    // nothing to do
 #define handleInterrupts(flag) // nothing to do

@@ -30,8 +30,8 @@ int main() {
         _word(0x027c); _word(0xf0ff);
 
     } else { // Running on IDE68k Simulator
-        TRAP1_VECTOR      = (void *)rte; // short-cut TRAP #1
-        *((char*)0x80000) = 0x40;        // make IRQ button check fail
+        TRAP1_VECTOR = (void *)rte; // short-cut TRAP #1
+        *port0       = 0x40;        // make IRQ button check fail
 
         // Load ROM file with FFP lib and Lox standard lib.
         if (loadROM() == 0)

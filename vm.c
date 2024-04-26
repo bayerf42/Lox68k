@@ -310,7 +310,7 @@ static bool invoke(ObjString* name, int argCount) {
     Value        value = NIL_VAL;
 
     if (!IS_INSTANCE(receiver)) {
-        runtimeError("Only instances have methods.");
+        runtimeError("Only instances have %s.", "methods");
         return false;
     }
     instance = AS_INSTANCE(receiver);
@@ -511,7 +511,7 @@ nextInstNoSO:
 
         case OP_GET_PROPERTY:
             if (!IS_INSTANCE(peek(0))) {
-                runtimeError("Only instances have properties.");
+                runtimeError("Only instances have %s.", "properties");
                 goto handleError;
             }
             instance = AS_INSTANCE(peek(0));
@@ -528,7 +528,7 @@ nextInstNoSO:
 
         case OP_SET_PROPERTY:
             if (!IS_INSTANCE(peek(1))) {
-                runtimeError("Only instances have properties.");
+                runtimeError("Only instances have %s.", "properties");
                 goto handleError;
             }
             instance = AS_INSTANCE(peek(1));

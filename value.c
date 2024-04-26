@@ -46,13 +46,3 @@ uint32_t hashValue(Value value) {
     else                    return value;
 }
 
-uint32_t hashBytes(const uint8_t* bytes, int length) {
-    // Bernstein hash (djb2)
-    uint32_t hash = 5381;
-
-    while (length--)
-        hash = ((hash << 5) + hash) ^ *bytes++;
-    return hash;
-}
-
-
