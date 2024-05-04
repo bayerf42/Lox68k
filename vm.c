@@ -25,8 +25,9 @@ static void indentCallTrace(void) {
         putstr("  ");
 }
 
-static void printArgList(int argCount, Value* args) {
+static void printArgList(int argCount) {
     const char* separator = "";
+    Value*      args      = vm.sp - argCount; 
     while (argCount--) {
         putstr(separator);
         separator = ", ";
@@ -188,7 +189,7 @@ static bool call(ObjClosure* closure, int argCount) {
     if (vm.debug_trace_calls) {
         indentCallTrace();
         printf("--> %s (", functionName(closure->function));
-        printArgList(argCount, vm.sp - argCount);
+        printArgList(argCount);
         putstr(")\n");
     }
 
@@ -273,7 +274,7 @@ static bool callValue(Value callee, int argCount) {
                     if (vm.debug_trace_calls)
                         indentCallTrace();
                     printf("--- %s (", native->name);
-                    printArgList(argCount, vm.sp - argCount);
+                    printArgList(argCount);
                     putstr(") -> ");
                     vm.log_native_result = true;
                 }

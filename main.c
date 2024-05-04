@@ -16,7 +16,7 @@
 const char* loxLibSrc;
 
 int main() {
-    if (ON_KIT()) { // Running nn actual 68008 Kit
+    if (ON_KIT()) { // Running on actual 68008 Kit
         // Welcome message on LCD
         lcd_clear();
         lcd_puts("Use terminal for");
@@ -91,7 +91,7 @@ static bool runFile(const char* path) {
     if (source) {
         InterpretResult result = interpret(source);
         free(source);
-        return  result == INTERPRET_OK;
+        return result == INTERPRET_OK;
     }
     return false;
 }
