@@ -50,16 +50,16 @@ _putstr:
 ; bool isObjType(Value value, ObjType type);
        xdef      _isObjType
 _isObjType:
-       move.l    (4,A7),D1      ; Value
+       move.l    (4,A7),D1      ; value
        clr.l     D0
-       btst      D0,D1
+       btst      D0,D1          ; LSB set?  
        bne.s     .done
        cmp.l     #6,D1
        bls.s     .done
        move.l    D1,A0
-       move.b    (4,A0),D0
-       sub.b     (11,A7),D0     ; type
-       not.b     D0
+       move.b    (4,A0),D0      ; type tag in object
+       cmp.b     (11,A7),D0     ; type argument passed
+       seq       D0
 .done  rts
 
 
