@@ -916,7 +916,7 @@ nextInstNoSO:
                 runtimeError("Can't %s itself.", "inherit from");
                 goto handleError;
             }
-            subclass->superClass = aVal;
+            subclass->superClass = superclass;
             tableAddAll(&superclass->methods, &subclass->methods);
             drop();
             goto nextInstNoSO;

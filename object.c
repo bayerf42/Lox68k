@@ -11,9 +11,12 @@
 char        buffer[130];     // general purpose: debugging, name building, error messages
 static char cvBuffer[32];    // for number conversion
 
+#ifndef KIT68K
+// Optimized ASM code for 68K, see kit_util.asm
 bool isObjType(Value value, ObjType type) {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
 }
+#endif
 
 #define ALLOCATE_OBJ(type, objectType) \
     (type*)allocateObject(sizeof(type), objectType)
@@ -75,7 +78,7 @@ ObjFunction* makeFunction() {
     function->arity        = 0;
     function->upvalueCount = 0;
     function->name         = NIL_VAL;
-    function->klass        = NULL;
+    function->klass        = NIL_VAL;
     initChunk(&function->chunk);
     return function;
 }
@@ -168,7 +171,7 @@ const char* functionName(ObjFunction* function) {
         return "#script";
     else if (IS_INT(function->name))
         sprintf(buffer, "#%d", AS_INT(function->name));
-    else if (function->klass == AS_CLASS(NULL))
+    else if (IS_NIL(function->klass))
         return AS_CSTRING(function->name);
     else
         // Limit output length to avoid buffer overflow 

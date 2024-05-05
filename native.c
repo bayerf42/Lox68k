@@ -799,7 +799,7 @@ static bool nameNative(int argCount, Value* args) {
 }
 
 static bool parentNative(int argCount, Value* args) {
-    RESULT = AS_CLASS(args[0])->superClass;
+    RESULT = OBJ_VAL(AS_CLASS(args[0])->superClass);
     return true;
 }
 

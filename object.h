@@ -78,7 +78,7 @@ struct ObjBound {
 struct ObjClass {
     OBJ_HEADER
     ObjString*   name;
-    Value        superClass;   // nil when no superclass
+    ObjClass*    superClass;   // nil when no superclass
     Table        methods;
 };
 
@@ -95,7 +95,7 @@ struct ObjFunction {
     uint8_t      upvalueCount;
     Chunk        chunk;
     Value        name;         // string for named functions, int for anonymous, nil for script
-    ObjClass*    klass;        // defining class for method, NULL for normal function
+    ObjClass*    klass;        // defining class for method, nil for normal function
 };
 
 struct ObjInstance {
