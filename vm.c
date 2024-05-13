@@ -85,7 +85,7 @@ void runtimeError(const char* format, ...) {
             vm.sp         = frame->fp;
             vm.frameCount = i;
             pushUnchecked(frame->handler);
-            pushUnchecked(OBJ_VAL(makeString(big_buffer, strlen(big_buffer))));
+            pushUnchecked(OBJ_VAL(makeString0(big_buffer)));
             vm.handleException = true; 
             return;
         }
@@ -144,7 +144,7 @@ void initVM(void) {
     initTable(&vm.strings);
 
     vm.initString = NULL;
-    vm.initString = makeString("init", 4);
+    vm.initString = makeString0("init");
 
     defineAllNatives();
 }

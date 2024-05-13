@@ -132,6 +132,10 @@ Value makeReal(Real val) {
     return OBJ_VAL(real);
 }
 
+ObjString* makeString0(const char* chars) {
+    return makeString(chars, strlen(chars));
+}
+
 ObjString* makeString(const char* chars, int length) {
     // Check if we already have an equal string
     uint32_t   hash     = hashBytes((const uint8_t*)chars, length);

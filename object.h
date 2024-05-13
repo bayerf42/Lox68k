@@ -12,11 +12,9 @@
 
 #define IS_BOUND(value)        isObjType(value, OBJ_BOUND)
 #define IS_CLASS(value)        isObjType(value, OBJ_CLASS)
-#define IS_CLOSURE(value)      isObjType(value, OBJ_CLOSURE)
 #define IS_INSTANCE(value)     isObjType(value, OBJ_INSTANCE)
 #define IS_ITERATOR(value)     isObjType(value, OBJ_ITERATOR)
 #define IS_LIST(value)         isObjType(value, OBJ_LIST)
-#define IS_NATIVE(value)       isObjType(value, OBJ_NATIVE)
 #define IS_REAL(value)         isObjType(value, OBJ_REAL)
 #define IS_STRING(value)       isObjType(value, OBJ_STRING)
 
@@ -86,7 +84,7 @@ struct ObjClosure {
     OBJ_HEADER
     int16_t      upvalueCount; // too big, but keep alignment
     ObjFunction* function;
-    ObjUpvalue*  upvalues[];   // like ObjString, array embedded in structure
+    ObjUpvalue*  upvalues[];   // array embedded in structure
 };
 
 struct ObjFunction {
@@ -106,8 +104,8 @@ struct ObjInstance {
 
 struct ObjIterator {
     OBJ_HEADER
-    int16_t      position;  // -1 means invalid
-    ObjInstance* instance;  // for GC
+    int16_t      position;     // -1 means invalid
+    ObjInstance* instance;     // for GC
     Table*       table;
 };
 
@@ -130,7 +128,7 @@ struct ObjString {
     OBJ_HEADER
     int16_t      length;
     uint32_t     hash;
-    char         chars[]; // chap 19, single alloc for strings, as embedded char array
+    char         chars[];      // single alloc for strings, as embedded char array
 };
 
 struct ObjUpvalue {
@@ -153,6 +151,7 @@ ObjIterator* makeIterator(Table* table, ObjInstance* instance);
 ObjList*     makeList(int len, Value* items, int numCopy, int stride);
 ObjNative*   makeNative(const Native* native);
 Value        makeReal(Real val);
+ObjString*   makeString0(const char* chars);
 ObjString*   makeString(const char* chars, int length);
 ObjUpvalue*  makeUpvalue(Value* slot);
 

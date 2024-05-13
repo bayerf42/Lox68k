@@ -1,10 +1,10 @@
 // ye goode olde function plotter...
 
 fun plot(fn, xmin, xmax, dx) {
-    var vals  = [];
-    var ymax  = -1e18;
-    var ymin  = -ymax;
-    var width = 80;
+    var vals  = [],
+        ymax  = -1e18,
+        ymin  = -ymax,
+        width = 80;
 
     for (var x = xmin; x <= xmax; x = x + dx) {
         var y = fn(x);

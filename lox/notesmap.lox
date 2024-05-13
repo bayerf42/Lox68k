@@ -1,5 +1,6 @@
 // Variant 2
-var freq = Map(
+class Notes < Map {}
+var freq = Notes(
     "C",   733, "Cis",  692, "Des",  692, "D",    653, "Dis",  616, "Es",   616,
     "E",   581, "F",    549, "Fis",  518, "Ges",  518, "G",    489, "Gis",  461,
     "As",  461, "A",    435, "Ais",  410, "B",    410, "H",    387,

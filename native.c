@@ -420,19 +420,19 @@ static bool decNative(int argCount, Value* args) {
         res = formatInt(AS_INT(args[0]));
     else
         res = formatReal(AS_REAL(args[0]));
-    RESULT = OBJ_VAL(makeString(res, strlen(res)));
+    RESULT = OBJ_VAL(makeString0(res));
     return true;
 }
 
 static bool hexNative(int argCount, Value* args) {
     const char* res = formatHex(AS_INT(args[0]));
-    RESULT = OBJ_VAL(makeString(res, strlen(res)));
+    RESULT = OBJ_VAL(makeString0(res));
     return true;
 }
 
 static bool binNative(int argCount, Value* args) {
     const char* res = formatBin(AS_INT(args[0]));
-    RESULT = OBJ_VAL(makeString(res, strlen(res)));
+    RESULT = OBJ_VAL(makeString0(res));
     return true;
 }
 
@@ -459,7 +459,7 @@ static bool inputNative(int argCount, Value* args) {
     if (argCount > 0)
         putstr(AS_CSTRING(args[0]));
     if (readLine())
-        RESULT = OBJ_VAL(makeString(big_buffer, strlen(big_buffer)));
+        RESULT = OBJ_VAL(makeString0(big_buffer));
     else
         RESULT = NIL_VAL;
     return true;
@@ -760,7 +760,7 @@ static bool gcNative(int argCount, Value* args) {
 
 static bool typeNative(int argCount, Value* args) {
     const char* type = valueType(args[0]);
-    RESULT = OBJ_VAL(makeString(type, strlen(type)));
+    RESULT = OBJ_VAL(makeString0(type));
     return true;
 }
 
@@ -793,7 +793,7 @@ static bool nameNative(int argCount, Value* args) {
                 break;
         }
         if (name)
-            RESULT = OBJ_VAL(makeString(name, strlen(name)));
+            RESULT = OBJ_VAL(makeString0(name));
     }
     return true;
 }
@@ -940,7 +940,7 @@ void defineAllNatives() {
     pushUnchecked(NIL_VAL);
 
     while (natCount--) {
-        vm.stack[0] = OBJ_VAL(makeString(currNat->name, strlen(currNat->name)));
+        vm.stack[0] = OBJ_VAL(makeString0(currNat->name));
         vm.stack[1] = OBJ_VAL(makeNative(currNat));
         tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
         currNat++;

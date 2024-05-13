@@ -1162,14 +1162,14 @@ static void caseStatement(void) {
 
 static void printStatement(void) {
     if (match(TOKEN_SEMICOLON)) {
-        emitConstant(OBJ_VAL(makeString("", 0)));
+        emitConstant(OBJ_VAL(makeString0("")));
         emitByte(OP_PRINTLN);
     } else {
         expression();
         while (match(TOKEN_COMMA)) {
             emitByte(OP_PRINT);
             if (match(TOKEN_COMMA)) {
-                emitConstant(OBJ_VAL(makeString(PRINT_SEPARATOR, sizeof(PRINT_SEPARATOR) - 1)));
+                emitConstant(OBJ_VAL(makeString0(PRINT_SEPARATOR)));
                 emitByte(OP_PRINT);
             }
             if (match(TOKEN_SEMICOLON))
