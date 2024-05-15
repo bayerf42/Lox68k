@@ -9,9 +9,6 @@ fun rec(n, v) {
   return sub(n);
 }
 
-
-fun const(c) -> fun (_) -> c
-
 fun t1(n) {
   print handle(rec(n, "t1 error"), const("t1 handled"));
 }

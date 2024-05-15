@@ -1,0 +1,72 @@
+// Dump functions and other stuff
+
+fun hexpad(n, digits) -> ("00000000" + hex(n))[-digits:]
+
+// Size of object header, hack: if name 'lcd_clear' defined we're running
+// on the Kit, so structs are word-aligned and sizeof(Obj) is 6, otherwise it's 8 
+fun objHead() -> handle(lcd_clear and 6, const(8))
+
+fun printQuoted(adr) {
+    var obj = heap(adr);
+    case (type(obj)) {
+        when "string": print chr(34), obj, chr(34);
+        when "fun":    print obj, " at $", hex(adr);
+        else           print obj;
+    }
+}
+
+fun hexdump(ad, len) {
+    var offset = 0;
+    for (;len > 0; len = len - 1) {
+        if (bit_and(offset, $0f) == 0)
+            print hexpad(ad + offset, 8),": ",;
+        print hexpad(peek(ad + offset), 2)," ",;
+        offset = offset + 1;
+        if (bit_and(offset, $0f) == 0)
+            print;
+    }
+    if (bit_and(offset, $0f) != 0)
+        print;
+}
+
+fun dump(obj) {
+    if (type(obj) == "int")
+        obj = heap(obj);
+    var funa;
+    case (type(obj)) {
+        when "bound":   funa = peekl(addr(heap(addr(obj) + objHead() + 4)) + 8);
+        when "closure": funa = peekl(addr(obj) + 8);
+        when "fun":     funa = addr(obj);
+        else            error("Invalid argument for dump.");
+    }
+
+    var arity    = peek(funa + 6);
+    var numUpval = peek(funa + 7);
+    var numBytes = peekw(funa + 8);
+    var szBytes  = peekw(funa + 10);
+    var numLines = peekw(funa + 16);
+    var szLines  = peekw(funa + 18) * 4;
+    var numConst = peekw(funa + 24);
+    var szConst  = peekw(funa + 26) * 4;
+    var szHeader = 40;
+
+    print "Dump of  ", obj;
+    print "Arity    ", bit_and(arity,$7f), if(bit_and(arity,$80)!=0," VAR",""); 
+    print "Upvalues ", numUpval; 
+    print "Byte code (",numBytes," bytes)";
+    hexdump(peekl(funa + 12), numBytes);
+    print "Constants (",numConst*4," bytes)";
+    for (var i=0; i<numConst; i=i+1) {
+        print i, ": ",;
+        printQuoted(peekl(funa + 28) + 4*i);
+    }
+
+    print "Line info (",numLines*4," bytes)";
+    for (var i=0; i<numLines; i=i+1) {
+        var infoa = peekl(funa + 20) + 4*i;
+        print i, ": ", peekw(infoa)," -> ",peekw(infoa + 2);
+    }
+    print "Total size Header + Code + Const + Line = ",
+          szHeader, " + " ,szBytes, " + ", szConst, " + ", szLines, " = ",
+          szHeader + szBytes + szConst + szLines, " bytes";
+}

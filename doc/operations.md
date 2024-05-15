@@ -3,7 +3,7 @@
 ## Types
 
 ### Any
-`= == != addr case equal error id name print return string type when`
+`= == != addr case const equal error id name print return string type when`
 
 
 ### Bool
@@ -23,7 +23,8 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### String
-`+ < <= > >= [] [:] asc bin chr dec hex index input join length lower parse_int parse_real upper`
+`+ < <= > >= [] [:] asc bin chr dec hex index input join length lower max min parse_int
+parse_real upper`
 
 
 ### List
@@ -39,7 +40,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### Closure
-`() -> complement handle`
+`() -> complement const id handle`
 
 
 ### Native
@@ -82,7 +83,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 * about 6000 lines source code
 * 52 k bytes code size on 68008 kit
 * Performance
-  * 7k ops on 68008 kit
+  * 8k ops on 68008 kit
   * 60M ops on Raspberry 4 Linux
   * 230M ops on Intel i7 Laptop Windows 11
 

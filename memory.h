@@ -18,9 +18,9 @@
     reallocate(pointer, sizeof(type), 0)
 
 #define GROW_CAPACITY(capacity) \
-    ((capacity) < 8 ? 8 : (capacity) * 2)
+    ((capacity) < 4 ? 4 : (capacity) * 2)
 
-#define MIN_CAPACITY(len) \
+#define MIN_LIST_CAPACITY(len) \
     ((len) < 8 ? 8 : (len))
 
 #define GROW_ARRAY(type, pointer, oldCount, newCount) \

@@ -107,7 +107,7 @@ ObjList* makeList(int len, Value* items, int numCopy, int stride) {
     initValueArray(&list->arr);
     push(OBJ_VAL(list));
     if (len > 0) {
-        newCap             = MIN_CAPACITY(len); // avoid fragmentation with many small lists
+        newCap             = MIN_LIST_CAPACITY(len); // avoid fragmentation with many small lists
         list->arr.values   = GROW_ARRAY(Value, list->arr.values, 0, newCap);
         list->arr.count    = len;
         list->arr.capacity = newCap;

@@ -29,6 +29,7 @@ You can start Lox68k with or without the standard library:
 | asinh        | num                   | real        | inverse hyperbolic sine                                                           |  
 | atanh        | num                   | real        | inverse hyperbolic tangent                                                        |  
 | complement   | fun                   | fun         | boolean complement of *fun*                                                       |  
+| const        | any                   | fun         | creates a function which always returns *any*                                     |  
 | deg          | num                   | real        | convert from radians to degrees                                                   |  
 | filter       | fun, list             | list        | filter all items of *list* which satisfy predicate *fun*                          |  
 | fmod         | num, num              | real        | floating point modulo                                                             |  
