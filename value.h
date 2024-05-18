@@ -57,6 +57,7 @@ typedef struct {
 void        initValueArray(ValueArray* array);
 void        appendValueArray(ValueArray* array, Value value);
 void        freeValueArray(ValueArray* array);
+void        freezeValueArray(ValueArray* array);
 void        printValue(Value value, bool compact, bool machine);
 const char* valueType(Value value);
 uint32_t    hashValue(Value value);

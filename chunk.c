@@ -21,6 +21,17 @@ void freeChunk(Chunk* chunk) {
     initChunk(chunk);
 }
 
+void freezeChunk(Chunk* chunk) {
+    // Freeze all array capacities to current size, no more items can be added from now.
+    chunk->code = GROW_ARRAY(uint8_t, chunk->code, chunk->capacity, chunk->count);
+    chunk->capacity = chunk->count;
+
+    chunk->lines = GROW_ARRAY(LineStart, chunk->lines, chunk->lineCapacity, chunk->lineCount);
+    chunk->lineCapacity = chunk->lineCount;
+
+    freezeValueArray(&chunk->constants);
+}
+
 void writeChunk(Chunk* chunk, int byte, int line) {
     int16_t    oldCapacity;
     LineStart* lineStart;

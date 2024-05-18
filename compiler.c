@@ -284,6 +284,7 @@ static ObjFunction* endCompiler(bool addReturn) {
     ObjFunction* function = currentComp->target;
     if (addReturn)
         emitReturn();
+    freezeChunk(currentChunk());
     if (vm.debug_print_code && !parser.hadError)
         disassembleChunk(currentChunk(), functionName(function));
     currentComp = currentComp->enclosing;

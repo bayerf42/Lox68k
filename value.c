@@ -25,6 +25,11 @@ void freeValueArray(ValueArray* array) {
     initValueArray(array);
 }
 
+void freezeValueArray(ValueArray* array) {
+    array->values   = GROW_ARRAY(Value, array->values, array->capacity, array->count);
+    array->capacity = array->count;
+}
+
 void printValue(Value value, bool compact, bool machine) {
     if      (IS_BOOL(value))   putstr(AS_BOOL(value) ? "true" : "false");
     else if (IS_NIL(value))    putstr("nil");
