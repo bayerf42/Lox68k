@@ -59,7 +59,7 @@ in the release. Just burn it into an EPROM or flash chip.
 ### Extensions
 
 * A list datatype with according primitives.
-* Indexing composite data with `[]` operator, by number (strings and lists) or any value (instances)
+* Indexing composite data with `[]` [operator](operators.md), by number (strings and lists) or any value (instances)
 * [Slicing syntax](grammar.md) to extract subsequences from strings or lists,
   including negative indices to index from the end of the list or string,
   [like in Python](https://www.w3schools.com/python/python_strings_slicing.asp).
@@ -69,7 +69,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * Runtime statistics, trace calls and returns.
 * Hexadecimal literals via the `$` prefix, like `$ff` == `255`.
 * Binary literals via the `%` prefix, like `%1110` == `14`.
-* Modulo operator `\`
+* Modulo [operator](operators.md) `\`
 * Interrupting long-running computations with **REP** key (or `ctrl-C` in Windows/Linux versions).
 * `print` allows list of expression, all printed on one line. With trailing comma,
   no line feed is printed. When expressions are separated by two commas, 3 spaces are inserted.
