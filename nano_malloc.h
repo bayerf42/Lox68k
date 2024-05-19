@@ -1,5 +1,5 @@
 #ifndef clox_nano_malloc_h
-#define clox_nano_mamlloc_h
+#define clox_nano_malloc_h
 
 void  init_freelist(void);
 void* nano_malloc(size_t s);
