@@ -15,9 +15,8 @@
 static const char* matchesType(Value value, int type) {
     switch (type) {
         case 'A': return                                      NULL;  // any value
-        case 'B': return IS_BOOL(value)                     ? NULL : "a bool";
+        case 'C': return IS_CLASS(value)                    ? NULL : "a class";
         case 'I': return IS_INSTANCE(value)                 ? NULL : "an instance";
-        case 'K': return IS_CLASS(value)                    ? NULL : "a class";
         case 'L': return IS_LIST(value)                     ? NULL : "a list";
         case 'N': return IS_INT(value)                      ? NULL : "an int";
         case 'Q': return IS_STRING(value) || IS_LIST(value) ? NULL : "a sequence";
@@ -518,40 +517,36 @@ static bool seedRandNative(int argCount, Value* args) {
 // Modifying debugging options
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static bool dbgCodeNative(int argCount, Value* args) {
-    vm.debug_print_code = AS_BOOL(args[0]);
-    RESULT = args[0];
+static bool setVMFlag(Value* args, bool* flag) {
+    *flag = !IS_FALSEY(args[0]);
+    RESULT = NIL_VAL;
     return true;
+}
+
+static bool dbgCodeNative(int argCount, Value* args) {
+    return setVMFlag(args, &vm.debug_print_code);
 }
 
 static bool dbgStepNative(int argCount, Value* args) {
-    vm.debug_trace_steps = AS_BOOL(args[0]);
-    RESULT = args[0];
-    return true;
+    return setVMFlag(args, &vm.debug_trace_steps);
 }
 
 static bool dbgCallNative(int argCount, Value* args) {
-    vm.debug_trace_calls = AS_BOOL(args[0]);
-    RESULT = args[0];
-    return true;
+    return setVMFlag(args, &vm.debug_trace_calls);
 }
 
 static bool dbgNatNative(int argCount, Value* args) {
-    vm.debug_trace_natives = AS_BOOL(args[0]);
-    RESULT = args[0];
-    return true;
+    return setVMFlag(args, &vm.debug_trace_natives);
 }
 
 static bool dbgGcNative(int argCount, Value* args) {
     vm.debug_log_gc = AS_INT(args[0]);
-    RESULT = args[0];
+    RESULT = NIL_VAL;
     return true;
 }
 
 static bool dbgStatNative(int argCount, Value* args) {
-    vm.debug_statistics = AS_BOOL(args[0]);
-    RESULT = args[0];
-    return true;
+    return setVMFlag(args, &vm.debug_statistics);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -899,12 +894,12 @@ static const Native allNatives[] = {
     {"random",      "",     randomNative},
     {"seed_rand",   "N",    seedRandNative},
 
-    {"dbg_code",    "B",    dbgCodeNative},
-    {"dbg_step",    "B",    dbgStepNative},
-    {"dbg_call",    "B",    dbgCallNative},
-    {"dbg_nat",     "B",    dbgNatNative},
+    {"dbg_code",    "A",    dbgCodeNative},
+    {"dbg_step",    "A",    dbgStepNative},
+    {"dbg_call",    "A",    dbgCallNative},
+    {"dbg_nat",     "A",    dbgNatNative},
     {"dbg_gc",      "N",    dbgGcNative},
-    {"dbg_stat",    "B",    dbgStatNative},
+    {"dbg_stat",    "A",    dbgStatNative},
 
     {"peek",        "N",    peekNative},
     {"poke",        "NN",   pokeNative},
@@ -926,7 +921,7 @@ static const Native allNatives[] = {
     {"gc",          "",     gcNative},
     {"type",        "A",    typeNative},
     {"name",        "A",    nameNative},
-    {"parent",      "K",    parentNative},
+    {"parent",      "C",    parentNative},
     {"class_of",    "A",    classOfNative},
     {"error",       "A",    errorNative},
     {"clock",       "",     clockNative},
