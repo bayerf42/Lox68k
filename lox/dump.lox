@@ -4,7 +4,7 @@ fun hexpad(n, digits) -> ("00000000" + hex(n))[-digits:]
 
 // Size of object header, hack: if name 'lcd_clear' defined we're running
 // on the Kit, so structs are word-aligned and sizeof(Obj) is 6, otherwise it's 8 
-fun objHead() -> handle(lcd_clear and 6, const(8))
+fun objHead() -> handle(lcd_clear and 6 : const(8))
 
 fun printQuoted(adr) {
     var obj = heap(adr);
@@ -51,7 +51,7 @@ fun dump(obj) {
     var szHeader = 40;
 
     print "Dump of  ", obj;
-    print "Arity    ", bit_and(arity,$7f), if(bit_and(arity,$80)!=0," VAR",""); 
+    print "Arity    ", bit_and(arity,$7f), if(bit_and(arity,$80)!=0 : " VAR" : ""); 
     print "Upvalues ", numUpval; 
     print "Byte code (",numBytes," bytes)";
     hexdump(peekl(funa + 12), numBytes);

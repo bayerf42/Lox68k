@@ -21,8 +21,8 @@ fun fmod(a,b) {
  var q=(a+0.0)/b;
  return b*(q-trunc(q));
 }
-fun max(a,b)->if(a>b,a,b)
-fun min(a,b)->if(a<b,a,b)
+fun max(a,b)->if(a>b:a:b)
+fun min(a,b)->if(a<b:a:b)
 fun map(fn,lst) {
  var len=length(lst);
  var res=list(len);

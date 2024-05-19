@@ -53,8 +53,8 @@ primary        ::= literal
                  | "this"
                  | "super" "." IDENTIFIER
                  | "fun" function
-                 | "if" "(" expression "," expression "," expression ")"
-                 | "handle" "(" expression "," expression ")"
+                 | "if" "(" expression ":" expression ":" expression ")"
+                 | "handle" "(" expression ":" expression ")"
 literal        ::= "nil" | "true" | "false" | NUMBER | STRING
 function       ::= "(" parameters ")" (block | "->" expression)
 parameters     ::= (".." IDENTIFIER | IDENTIFIER ("," IDENTIFIER)* ("," ".." IDENTIFIER)?)?

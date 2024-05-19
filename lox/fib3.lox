@@ -1,5 +1,5 @@
 // Fibonacci, this time via new if-expression
 
-fun fib(n) -> if(n<2, 1, fib(n-1) + fib(n-2))
+fun fib(n) -> if(n<2 : 1 : fib(n-1) + fib(n-2))
 
 

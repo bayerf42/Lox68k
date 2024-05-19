@@ -83,8 +83,8 @@ primary        → "true" | "false" | "nil" | "this"
                | NUMBER | STRING | IDENTIFIER | "(" expression ")"
                | "[" arguments "]" | "super" "." IDENTIFIER
                | "fun" function
-               | "handle" "(" expression "," expression ")"
-               | "if" "(" expression "," expression "," expression ")" ;
+               | "handle" "(" expression ":" expression ")"
+               | "if" "(" expression ":" expression ":" expression ")" ;
 
 function       → "(" parameters ")" (block | "->" expression) ;
 parameters     → ( rest_parameter | IDENTIFIER ( "," IDENTIFIER )* ( "," rest_parameter )? )? ;
@@ -123,7 +123,7 @@ BINDIGIT       → "0" ... "1" ;
 * `.` decimal point, property access, `..` unpack list, rest argument
 * `/` division, `//` comment until end of line
 * `0-9` digit
-* `:` case branch separator, splice separator
+* `:` case branch separator, splice separator, separator in `if` and `handle` expressions
 * `;` statement terminator
 * `<` less than, subclass, `<=` less or equal
 * `=` assignment, `==` equals

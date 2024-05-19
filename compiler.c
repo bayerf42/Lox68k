@@ -674,7 +674,7 @@ static void handler(bool canAssign) {
     emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
     for (i = 0; i < function->upvalueCount; i++) 
         emitByte(compiler.upvalues[i]);
-    consumeExp(TOKEN_COMMA, "thunk");
+    consumeExp(TOKEN_COLON, "thunk");
 
     expression();
     consumeExp(TOKEN_RIGHT_PAREN, "handler");
@@ -686,11 +686,11 @@ static void ifExpr(bool canAssign) {
 
     consumeExp(TOKEN_LEFT_PAREN, "condition");
     expression();
-    consumeExp(TOKEN_COMMA, "condition");
+    consumeExp(TOKEN_COLON, "condition");
     thenJump = emitJump(OP_JUMP_FALSE);
 
     expression();
-    consumeExp(TOKEN_COMMA, "consequent");
+    consumeExp(TOKEN_COLON, "consequent");
     elseJump = emitJump(OP_JUMP);
     patchJump(thenJump);
 

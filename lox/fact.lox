@@ -4,7 +4,7 @@
 var Y = fun (g) -> (fun (f) -> f(f)) (fun (f) -> g(fun (x) -> f(f)(x)));
 
 // factorial without recursion
-var F = fun (f) -> fun (n) -> if(n == 0, 1, n * f(n - 1));
+var F = fun (f) -> fun (n) -> if(n == 0 : 1 : n * f(n - 1));
 
 
 var factorial = Y(F);   // factorial is the fixed point of F
