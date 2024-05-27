@@ -12,6 +12,8 @@
 
 #define IS_BOUND(value)        isObjType(value, OBJ_BOUND)
 #define IS_CLASS(value)        isObjType(value, OBJ_CLASS)
+#define IS_CLOSURE(value)      isObjType(value, OBJ_CLOSURE)
+#define IS_FUNCTION(value)     isObjType(value, OBJ_FUNCTION)
 #define IS_INSTANCE(value)     isObjType(value, OBJ_INSTANCE)
 #define IS_ITERATOR(value)     isObjType(value, OBJ_ITERATOR)
 #define IS_LIST(value)         isObjType(value, OBJ_LIST)

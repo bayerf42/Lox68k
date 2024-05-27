@@ -55,6 +55,7 @@ fun dump(obj) {
     print "Upvalues ", numUpval; 
     print "Byte code (",numBytes," bytes)";
     hexdump(peekl(funa + 12), numBytes);
+    for (var offset=0; offset; offset = disasm(obj, offset)) {}
     print "Constants (",numConst*4," bytes)";
     for (var i=0; i<numConst; i=i+1) {
         print i, ": ",;

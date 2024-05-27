@@ -438,7 +438,6 @@ nextInstNoSO:
         printStack();
         disassembleInst(&frame->closure->function->chunk,
                         (int)(frame->ip - frame->closure->function->chunk.code));
-        putstr("\n");
     }
 
     ++vm.stepsExecuted;

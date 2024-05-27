@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "object.h"
+#include "disasm.h"
 #include "native.h"
 #include "memory.h"
 #include "vm.h"
@@ -14,16 +15,21 @@
 
 static const char* matchesType(Value value, int type) {
     switch (type) {
-        case 'A': return                                      NULL;  // any value
-        case 'C': return IS_CLASS(value)                    ? NULL : "a class";
-        case 'I': return IS_INSTANCE(value)                 ? NULL : "an instance";
-        case 'L': return IS_LIST(value)                     ? NULL : "a list";
-        case 'N': return IS_INT(value)                      ? NULL : "an int";
-        case 'Q': return IS_STRING(value) || IS_LIST(value) ? NULL : "a sequence";
-        case 'R': return IS_INT(value) || IS_REAL(value)    ? NULL : "a number";
-        case 'S': return IS_STRING(value)                   ? NULL : "a string";
-        case 'T': return IS_ITERATOR(value)                 ? NULL : "an iterator";
-        default:  return                                             "an unknown type";
+        case 'A': return                      NULL;  // any value
+        case 'C': return IS_CLASS(value)    ? NULL : "a class";
+        case 'F': return IS_CLOSURE(value)
+                      || IS_BOUND(value)
+                      || IS_FUNCTION(value) ? NULL : "a function";
+        case 'I': return IS_INSTANCE(value) ? NULL : "an instance";
+        case 'L': return IS_LIST(value)     ? NULL : "a list";
+        case 'N': return IS_INT(value)      ? NULL : "an int";
+        case 'Q': return IS_STRING(value)
+                      || IS_LIST(value)     ? NULL : "a sequence";
+        case 'R': return IS_INT(value)
+                      || IS_REAL(value)     ? NULL : "a number";
+        case 'S': return IS_STRING(value)   ? NULL : "a string";
+        case 'T': return IS_ITERATOR(value) ? NULL : "an iterator";
+        default : return                             "an unknown type";
     }
 }
 
@@ -828,6 +834,21 @@ NATIVE(clockNative) {
     return true;
 }
 
+NATIVE(disasmNative) {
+    ObjFunction* fun = IS_FUNCTION(args[0]) ? AS_FUNCTION(args[0])
+                     : IS_BOUND(args[0])    ? AS_BOUND(args[0])->method->function
+                                            : AS_CLOSURE(args[0])->function;
+    Chunk* chunk     = &fun->chunk;
+    int offset       = AS_INT(args[1]);
+    if (offset < 0 || offset >= chunk->count) {
+        runtimeError("'%s' %s out of range.", "disasm", "offset");
+        return false;
+    }
+    offset = disassembleInst(chunk, offset);
+    RESULT = (offset < chunk->count) ? INT_VAL(offset) : NIL_VAL;
+    return true;
+}
+
 char* readLine() {
 #ifdef KIT68K
     return gets(big_buffer);
@@ -927,6 +948,7 @@ static const Native allNatives[] = {
     {"class_of",    "A",    classOfNative},
     {"error",       "A",    errorNative},
     {"clock",       "",     clockNative},
+    {"disasm",      "FN",   disasmNative},
 };
 
 void defineAllNatives() {

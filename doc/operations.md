@@ -40,7 +40,7 @@ parse_real upper`
 
 
 ### Closure
-`() -> complement const id handle`
+`() -> complement const disasm id handle`
 
 
 ### Native
@@ -48,7 +48,7 @@ parse_real upper`
 
 
 ### Bound
-`()`
+`() disasm`
 
 
 ### Iterator
@@ -64,7 +64,7 @@ parse_real upper`
 `input keycode list_globals print sound`
 
 ### System
-`clock gc globals sleep`
+`clock disasm gc globals sleep`
 
 ### Exceptions
 `error handle`
@@ -73,11 +73,11 @@ parse_real upper`
 `lcd_clear lcd_defchar lcd_goto lcd_puts`
 
 ### Debugging
-`dbg_call dbg_code dbg_gc dbg_nat dbg_stat dbg_step`
+`dbg_call dbg_code dbg_gc dbg_nat dbg_stat dbg_step disasm`
 
 ## Some numbers
 * 20 keywords
-* 71 native functions
+* 72 native functions
 * 61 VM opcodes
 * 12 data types
 * about 6000 lines source code

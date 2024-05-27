@@ -10,16 +10,15 @@ static void disassembleIntern(void);
 void disassembleChunk(Chunk* pChunk, const char* name) {
     chunk = pChunk;
     printf("== %s ==\n", name);
-    for (offset = 0; offset < chunk->count;) {
+    for (offset = 0; offset < chunk->count;)
         disassembleIntern();
-        putstr("\n");
-    }
 }
 
-void disassembleInst(Chunk* pChunk, int pOffset) {
+int disassembleInst(Chunk* pChunk, int pOffset) {
     chunk  = pChunk;
     offset = pOffset;
     disassembleIntern();
+    return offset;
 }
 
 static void simpleInst(const char* name) {
@@ -144,4 +143,5 @@ static void disassembleIntern(void) {
             printf("Unknown opcode %d", opcd);
             ++offset;
     }
+    putstr("\n");
 }
