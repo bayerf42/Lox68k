@@ -50,12 +50,14 @@ fun dump(obj) {
     var szConst  = peekw(funa + 26) * 4;
     var szHeader = 40;
 
-    print "Dump of  ", obj;
-    print "Arity    ", bit_and(arity,$7f), if(bit_and(arity,$80)!=0 : " VAR" : ""); 
-    print "Upvalues ", numUpval; 
+    print "Dump of   ", obj;
+    print "Arity     ", bit_and(arity,$7f), if(bit_and(arity,$80)!=0 : " VAR" : ""); 
+    print "Upvalues  ", numUpval; 
+
     print "Byte code (",numBytes," bytes)";
     hexdump(peekl(funa + 12), numBytes);
     for (var offset=0; offset; offset = disasm(obj, offset)) {}
+
     print "Constants (",numConst*4," bytes)";
     for (var i=0; i<numConst; i=i+1) {
         print i, ": ",;
@@ -67,6 +69,7 @@ fun dump(obj) {
         var infoa = peekl(funa + 20) + 4*i;
         print i, ": ", peekw(infoa)," -> ",peekw(infoa + 2);
     }
+
     print "Total size Header + Code + Const + Line = ",
           szHeader, " + " ,szBytes, " + ", szConst, " + ", szLines, " = ",
           szHeader + szBytes + szConst + szLines, " bytes";

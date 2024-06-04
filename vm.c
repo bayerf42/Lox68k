@@ -212,7 +212,7 @@ static bool call(ObjClosure* closure, int argCount) {
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
-    frame->handler = OBJ_VAL(NULL);
+    frame->handler = NIL_VAL;
     frame->ip      = closure->function->chunk.code;
     frame->fp      = vm.sp - arity - 1;
     return true;
