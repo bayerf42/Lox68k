@@ -447,11 +447,15 @@ static void realNum(bool canAssign) {
 }
 
 static void string(bool canAssign) {
-    emitConstant(OBJ_VAL(makeString(parser.previous.start + 1, parser.previous.length - 2)));
+    // Redundant code in IDE68K without str local variable?
+    ObjString* str = makeString(parser.previous.start + 1, parser.previous.length - 2);
+    emitConstant(OBJ_VAL(str));
 }
 
 static int identifierConstant(Token* name) {
-    return makeConstant(OBJ_VAL(makeString(name->start, name->length)));
+    // Redundant code in IDE68K without str local variable?
+    ObjString* str = makeString(name->start, name->length);
+    return makeConstant(OBJ_VAL(str));
 }
 
 static void list(bool canAssign) {
