@@ -168,7 +168,7 @@ the 68008 kit hardware features of course and uses a slightly different I/O and 
 
 To build it on Windows, execute
 ```sh
-tcc -owlox.exe *.c -m32
+build
 ```
 
 To start Lox interactively (aka. the REPL), execute
@@ -200,7 +200,7 @@ Works exactly as the Windows version, but compiled with `GCC` on Linux.
 
 To build it, execute
 ```sh
-gcc -O3 -std=gnu89 -m32 -lm -flto -o llox *.c
+build
 ```
 
 Be sure to compile it for 32 bit architecture, Lox68k assumes 32 bit `int`, `long` and pointers.
