@@ -26,11 +26,6 @@ fun atanh(x) -> 0.5 * log((1+x)/(1-x))
 fun rad(x)   -> pi/180*x
 fun deg(x)   -> 180/pi*x
 
-fun fmod(a, b) {
-  var q = (a+0.0)/b;
-  return b * (q-trunc(q));
-}
-
 fun max(a,b) -> if(a>b : a : b)
 fun min(a,b) -> if(a<b : a : b)
 

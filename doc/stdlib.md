@@ -32,7 +32,6 @@ You can start Lox68k with or without the standard library:
 | const        | any                   | fun         | creates a function which always returns *any*                                     |  
 | deg          | num                   | real        | convert from radians to degrees                                                   |  
 | filter       | fun, list             | list        | filter all items of *list* which satisfy predicate *fun*                          |  
-| fmod         | num, num              | real        | floating point modulo                                                             |  
 | id           | any                   | any         | returns its argument                                                              |  
 | instance     | any, class            | bool        | true, if *any* is an instance of *class*                                          |  
 | list_globals | -                     | nil         | prints all global variables                                                       |  

@@ -18,7 +18,7 @@ parse_int random seed_rand trunc`
 
 
 ### Real
-`+ - * / < <= > >= abs acos acosh asin asinh atan atanh cos cosh dec deg exp fmod log max min
+`+ - * / \ < <= > >= abs acos acosh asin asinh atan atanh cos cosh dec deg exp log max min
 parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 

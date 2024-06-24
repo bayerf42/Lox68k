@@ -691,15 +691,20 @@ nextInstNoSO:
             goto nextInstNoSO;
 
         case OP_DIV:
+        case OP_MOD:
             if (IS_INT(peek(0))) {
                 if (IS_INT(peek(1))) {
                     bInt = AS_INT(pop());
                     aInt = AS_INT(pop());
                     if (bInt == 0) {
-                        runtimeError("'/' by zero.");
+                        runtimeError("div by zero.");
                         goto handleError;
                     }
-                    pushUnchecked(INT_VAL(aInt / bInt));
+                    if (CURR_INSTR()==OP_DIV) 
+                        aInt = aInt / bInt;
+                    else
+                        aInt = aInt % bInt;
+                    pushUnchecked(INT_VAL(aInt));
                     goto nextInstNoSO;
                 } else if (IS_REAL(peek(1))) {
                     aReal = AS_REAL(peek(1));
@@ -719,25 +724,16 @@ nextInstNoSO:
                 goto handleError;
             }
             if (bReal == 0) {
-                runtimeError("'/' by zero.");
+                runtimeError("div by zero.");
                 goto handleError;
             }
             errno = 0;
-            dropNpush(2, makeReal(div(aReal,bReal)));
-            CHECK_ARITH_ERROR("/")
-            goto nextInstNoSO;
-
-        case OP_MOD:
-            if (IS_INT(peek(0)) && IS_INT(peek(1))) {
-                bInt = AS_INT(pop());
-                aInt = AS_INT(pop());
-                if (bInt == 0) {
-                    runtimeError("'/' by zero.");
-                    goto handleError;
-                }
-                pushUnchecked(INT_VAL(aInt % bInt));
-            } else
-                goto typeErrorDiv;
+            if (CURR_INSTR()==OP_DIV)
+                aReal = div(aReal,bReal);
+            else
+                aReal = mod(aReal,bReal);
+            dropNpush(2, makeReal(aReal));
+            CHECK_ARITH_ERROR("div")
             goto nextInstNoSO;
 
         case OP_NOT:

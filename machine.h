@@ -31,6 +31,7 @@ typedef short          bool;
 // Real number implementation
 typedef int32_t Real; // sic!
 #include "ffp_glue.h"
+extern Real mod(Real a, Real b); // in native.c
 
 // Replace broken string routines from stdlib
 #include "kit_util.h"
@@ -89,6 +90,7 @@ typedef double Real;
 #define sub(x,y)       ((x)-(y))
 #define mul(x,y)       ((x)*(y))
 #define div(x,y)       ((x)/(y))
+#define mod(x,y)       (fmod((x),(y)))
 #define less(x,y)      ((x)<(y))
 
 // use standard routines here

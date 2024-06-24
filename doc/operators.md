@@ -16,6 +16,7 @@ when neccessary.
 | /   | int      | int       | int    | 7          | truncated quotient                                    |  
 | /   | num      | num       | real   | 7          | real quotient                                         |  
 | \   | int      | int       | int    | 7          | remainder of divison                                  |  
+| \   | num      | num       | real   | 7          | remainder of divison (like C fmod)                    |  
 | +   | num      | num       | num    | 6          | numeric sum                                           |  
 | +   | string   | string    | string | 6          | string concatenation                                  |  
 | +   | list     | list      | list   | 6          | list concatenation                                    |  
@@ -40,8 +41,8 @@ when neccessary.
 | []  | string   | int       | string | no         | string index, result is string of single character    |  
 | []  | list     | int       | any    | yes        | list index                                            |  
 | []  | instance | any       | any    | yes        | property of instance, no class access                 |  
-| [:] | string   | int, int  | string | no         | substring (slice)                                     |  
-| [:] | list     | int, int  | any    | no         | sublist (slice)                                       |  
+| [:] | string   | int?, int?| string | no         | substring (slice)                                     |  
+| [:] | list     | int?, int?| list   | no         | sublist (slice)                                       |  
 | .   | instance | name      | any    | yes        | named property of instance, may access class          |  
 | @   | iterator | -         | any    | no         | key of iterator                                       |  
 | ^   | iterator | -         | any    | yes        | value of iterator                                     |  

@@ -24,7 +24,7 @@ fun eps(t) {
 fun eqTime(t) {
     // Compute equation of time.
     fun red(a) {
-        var res = fmod(a,pi2);
+        var res = a \ pi2;
         if (res<0) res = res + pi2;
         return res;
     }
@@ -41,7 +41,7 @@ fun eqTime(t) {
     var dk = asin(sin(e)*sin(l));
 
     // Normalise to 0<=raAv<24
-    raAv = fmod(raAv, 24);
+    raAv = raAv \ 24;
     if (raAv<0) raAv = raAv + 24;
 
     var dra = raAv - ra;
@@ -76,7 +76,7 @@ fun rs(y, m, d, latitude, longitude, timezone) {
 class Time < Object {
     init(hfrac) {
         this.hours = trunc(hfrac);
-        this.minutes = max(0, trunc(fmod(hfrac, 1) * 60 + 0.5));
+        this.minutes = max(0, trunc(hfrac \  1.0 * 60 + 0.5));
         if (this.minutes >= 60) { this.minutes = 0; this.hours = this.hours + 1;}
         if (this.hours >= 24) error("Overflow to next day");
     }
