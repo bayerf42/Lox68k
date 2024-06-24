@@ -21,8 +21,9 @@ _sqrt
        movem.l d3-d7,-(a7)
        move.l  (24,a7),d7
        jsr     ffp_sqrt
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        movem.l (a7)+,d3-d7
        rts
 
@@ -30,8 +31,9 @@ _sin
        move.l  d7,-(a7)
        move.l  (8,a7),d7
        jsr     ffp_sin
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        move.l  (a7)+,d7
        rts
 
@@ -39,8 +41,9 @@ _cos
        move.l  d7,-(a7)
        move.l  (8,a7),d7
        jsr     ffp_cos
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        move.l  (a7)+,d7
        rts
 
@@ -48,8 +51,9 @@ _tan
        move.l  d7,-(a7)
        move.l  (8,a7),d7
        jsr     ffp_tan
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        move.l  (a7)+,d7
        rts
 
@@ -57,8 +61,9 @@ _sinh
        movem.l d3-d5/d7,-(a7)
        move.l  (20,a7),d7
        jsr     ffp_sinh
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        movem.l (a7)+,d3-d5/d7
        rts
 
@@ -66,8 +71,9 @@ _cosh
        movem.l d3-d5/d7,-(a7)
        move.l  (20,a7),d7
        jsr     ffp_cosh
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        movem.l (a7)+,d3-d5/d7
        rts
 
@@ -91,8 +97,9 @@ _exp
        move.l  d7,-(a7)
        move.l  (8,a7),d7
        jsr     ffp_exp
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        move.l  (a7)+,d7
        rts
 
@@ -100,8 +107,9 @@ _log
        move.l  d7,-(a7)
        move.l  (8,a7),d7
        jsr     ffp_log
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        move.l  (a7)+,d7
        rts
 
@@ -110,8 +118,9 @@ _pow
        move.l  (12,a7),d7
        move.l  (16,a7),d6
        jsr     ffp_pow
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        movem.l (a7)+,d6-d7
        rts
 
@@ -120,8 +129,9 @@ _add
        move.l  (24,a7),d7
        move.l  (28,a7),d6
        jsr     ffp_add
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        movem.l (a7)+,d3-d7
        rts
 
@@ -130,8 +140,9 @@ _sub
        move.l  (24,a7),d7
        move.l  (28,a7),d6
        jsr     ffp_sub
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        movem.l (a7)+,d3-d7
        rts
 
@@ -140,8 +151,9 @@ _mul
        move.l  (24,a7),d7
        move.l  (28,a7),d6
        jsr     ffp_mul
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        movem.l (a7)+,d3-d7
        rts
 
@@ -150,8 +162,9 @@ _div
        move.l  (24,a7),d7
        move.l  (28,a7),d6
        jsr     ffp_div
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        movem.l (a7)+,d3-d7
        rts
 
@@ -177,8 +190,9 @@ _realToInt
        movem.l d5/d7,-(a7)
        move.l  (12,a7),d7
        jsr     ffp_flp_to_int
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        movem.l (a7)+,d5/d7
        rts
 
@@ -186,8 +200,9 @@ _strToReal
        movem.l d3-d7,-(a7)
        move.l  (24,a7),a0
        jsr     ffp_asc_to_flp
-       svs     _errno.W
-       move.l  d7,d0
+       bvc.s   .ok
+       st      _errno.W
+.ok    move.l  d7,d0
        move.l  (28,a7),d1
        beq.s   .nostore 
        move.l  d1,a1  
