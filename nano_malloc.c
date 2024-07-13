@@ -40,28 +40,9 @@
 /* Define free_list as internal name to avoid conflict with user names */
 #define free_list __malloc_free_list
 
-#define ALIGN_TO(size, align) \
-    (((size) + (align) -1) & ~((align) -1))
+#define ALIGN_TO(size, align) ((size+(align-1)) & ~(align-1))
 
-/* Alignment of allocated block */
-
-#ifdef KIT68K
-// Alignment to even address is sufficient for 68008
-#define MALLOC_ALIGN (2U)
-#define CHUNK_ALIGN (2U)
-#else
-#define MALLOC_ALIGN (8U)
-#define CHUNK_ALIGN (sizeof(void*))
-#endif
-
-#define MALLOC_PADDING ((MAX(MALLOC_ALIGN, CHUNK_ALIGN)) - CHUNK_ALIGN)
-
-/* as well as the minimal allocation size
- * to hold a free pointer */
-#define MALLOC_MINSIZE (sizeof(void *))
-
-typedef struct malloc_chunk
-{
+typedef struct malloc_chunk {
     /*          ------------------
      *   chunk->| size (4 bytes) |
      *          ------------------
@@ -86,12 +67,31 @@ typedef struct malloc_chunk
 
 #define CHUNK_OFFSET ((size_t)(&(((struct malloc_chunk *)0)->next)))
 
+/* as well as the minimal allocation size
+ * to hold a free pointer */
+#define MALLOC_MINSIZE (sizeof(void *))
+
+
+/* Alignment of allocated block */
+
+#ifdef KIT68K
+// Alignment to even address is sufficient for 68008
+// Simplify size calculations here since IDE68K compiler generates redundant code
+#define MALLOC_ALIGN    2
+#define CHUNK_ALIGN     2
+#define MALLOC_PADDING  0
+#define MALLOC_MINCHUNK 8
+#else
+#define MALLOC_ALIGN    sizeof(double)
+#define CHUNK_ALIGN     sizeof(void*)
+#define MALLOC_PADDING  ((MAX(MALLOC_ALIGN, CHUNK_ALIGN)) - CHUNK_ALIGN)
 /* size of smallest possible chunk. A memory piece smaller than this size
  * won't be able to create a chunk */
 #define MALLOC_MINCHUNK (CHUNK_OFFSET + MALLOC_PADDING + MALLOC_MINSIZE)
+#endif
 
-static chunk * get_chunk_from_ptr(void * ptr)
-{
+
+static chunk * get_chunk_from_ptr(void * ptr) {
     chunk * c = (chunk *)((char *)ptr - CHUNK_OFFSET);
     /* Skip the padding area */
     if (c->size < 0) c = (chunk *)((char *)c + c->size);
@@ -111,34 +111,27 @@ void init_freelist(void) {
   *   Walk through the free list to find the first match. If fails to find
   *   one, call sbrk to allocate a new chunk.
   */
-void* nano_malloc(size_t s)
-{
-    chunk *p, *r;
-    char * ptr, * align_ptr;
-    int offset;
-
+void* nano_malloc(size_t s) {
+    chunk  *p, *r;
+    char   *ptr, *align_ptr;
+    int    offset;
     size_t alloc_size;
 
     alloc_size = ALIGN_TO(s, CHUNK_ALIGN); /* size of aligned data load */
-    alloc_size += MALLOC_PADDING; /* padding */
-    alloc_size += CHUNK_OFFSET; /* size of chunk head */
-    alloc_size = MAX(alloc_size, MALLOC_MINCHUNK);
+    alloc_size += MALLOC_PADDING;          /* padding */
+    alloc_size += CHUNK_OFFSET;            /* size of chunk head */
+    //  alloc_size = MAX(alloc_size, MALLOC_MINCHUNK);
+    //  alloc_size >= MALLOC_MINCHUNK holds always in Lox szenario
 
-    if (alloc_size < s)
-    {
-        return NULL;
-    }
+    if (alloc_size < s) return NULL;
 
     p = free_list;
     r = p;
 
-    while (r)
-    {
+    while (r) {
         int rem = r->size - alloc_size;
-        if (rem >= 0)
-        {
-            if (rem >= MALLOC_MINCHUNK)
-            {
+        if (rem >= 0) {
+            if (rem >= MALLOC_MINCHUNK) {
                 /* Find a chunk that much larger than required size, break
                 * it into two chunks and return the second one */
                 r->size = rem;
@@ -147,14 +140,11 @@ void* nano_malloc(size_t s)
             }
             /* Find a chunk that is exactly the size or slightly bigger
              * than requested size, just return this chunk */
-            else if (p == r)
-            {
+            else if (p == r) {
                 /* Now it implies p==r==free_list. Move the free_list
                  * to next chunk */
                 free_list = r->next;
-            }
-            else
-            {
+            } else {
                 /* Normal case. Remove it from free_list */
                 p->next = r->next;
             }
@@ -165,10 +155,7 @@ void* nano_malloc(size_t s)
     }
 
     /* Failed to find a appropriate chunk. Give up */
-    if (r == NULL)
-    {
-        return NULL;
-    }
+    if (r == NULL) return NULL;
 
     ptr = (char *)r + CHUNK_OFFSET;
 
@@ -176,9 +163,7 @@ void* nano_malloc(size_t s)
     offset = align_ptr - ptr;
 
     if (offset)
-    {
-        *(int *)((char *)r + offset) = -offset;
-    }
+      *(int *)((char *)r + offset) = -offset;
 
     return align_ptr;
 }
@@ -192,8 +177,7 @@ void* nano_malloc(size_t s)
   *  insert should make sure all chunks are sorted by address from low to
   *  high.  Then merge with neighbor chunks if adjacent.
   */
-void nano_free (void* free_p)
-{
+void nano_free (void* free_p) {
     chunk * p_to_free;
     chunk * p, * q;
 
@@ -201,25 +185,20 @@ void nano_free (void* free_p)
 
     p_to_free = get_chunk_from_ptr(free_p);
 
-    if (free_list == NULL)
-    {
+    if (free_list == NULL) {
         /* Set first free list element */
         p_to_free->next = free_list;
         free_list = p_to_free;
         return;
     }
 
-    if (p_to_free < free_list)
-    {
-        if ((char *)p_to_free + p_to_free->size == (char *)free_list)
-        {
+    if (p_to_free < free_list) {
+        if ((char *)p_to_free + p_to_free->size == (char *)free_list) {
             /* Chunk to free is just before the first element of
              * free list  */
             p_to_free->size += free_list->size;
             p_to_free->next = free_list->next;
-        }
-        else
-        {
+        } else {
             /* Insert before current free_list */
             p_to_free->next = free_list;
         }
@@ -229,8 +208,7 @@ void nano_free (void* free_p)
 
     q = free_list;
     /* Walk through the free list to find the place for insert. */
-    do
-    {
+    do {
         p = q;
         q = q->next;
     } while (q && q <= p_to_free);
@@ -238,37 +216,31 @@ void nano_free (void* free_p)
     /* Now p <= p_to_free and either q == NULL or q > p_to_free
      * Try to merge with chunks immediately before/after it. */
 
-    if ((char *)p + p->size == (char *)p_to_free)
-    {
+    if ((char *)p + p->size == (char *)p_to_free) {
         /* Chunk to be freed is adjacent
          * to a free chunk before it */
         p->size += p_to_free->size;
         /* If the merged chunk is also adjacent
          * to the chunk after it, merge again */
-        if ((char *)p + p->size == (char *) q)
-        {
+        if ((char *)p + p->size == (char *) q) {
             p->size += q->size;
             p->next = q->next;
         }
     }
 #ifdef MALLOC_CHECK_DOUBLE_FREE
-    else if ((char *)p + p->size > (char *)p_to_free)
-    {
+    else if ((char *)p + p->size > (char *)p_to_free) {
         /* Report double free fault */
         putstr("Double free\n");
         return;
     }
 #endif
-    else if ((char *)p_to_free + p_to_free->size == (char *) q)
-    {
+    else if ((char *)p_to_free + p_to_free->size == (char *) q) {
         /* Chunk to be freed is adjacent
          * to a free chunk after it */
         p_to_free->size += q->size;
         p_to_free->next = q->next;
         p->next = p_to_free;
-    }
-    else
-    {
+    } else {
         /* Not adjacent to any chunk. Just insert it. Resulting
          * a fragment. */
         p_to_free->next = q;

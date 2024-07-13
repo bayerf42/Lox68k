@@ -73,6 +73,7 @@ class Notes < Object {
         this.h2   =  47; // -12 cent
         this.c3   =  44; 
         this.cis3 =  41; // +14 cent
+        this.des3 =  41; // +14 cent
         this.d3   =  39; 
         this.dis3 =  37; // -16 cent  
         this.es3  =  37; // -16 cent  
