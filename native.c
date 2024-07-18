@@ -191,8 +191,13 @@ NATIVE(lengthNative) {
 NATIVE(listNative) {
     Value    item = (argCount == 2) ? args[1] : NIL_VAL;
     Int      len  = AS_INT(args[0]);
-    ObjList* list = makeList(len, &item, len, 0);
-    RESULT = OBJ_VAL(list);
+
+    if (len >= 16000) {
+        runtimeError("'%s' %s out of range.", "list", "length");
+        return false;
+    }
+
+    RESULT = OBJ_VAL(makeList(len, &item, len, 0));
     return true;
 }
 
