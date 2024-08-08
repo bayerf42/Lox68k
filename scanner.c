@@ -118,7 +118,7 @@ typedef struct {
 
 static TokenType identifierType(void) {
     // Compressed keyword postfixes in single string
-    const char* const rest =
+    const char* rest =
               "andleturnassilsefarintupereakisue";
     //         012345678901234567890123456789012
     // And      ##
@@ -145,7 +145,7 @@ static TokenType identifierType(void) {
     int16_t     id_length = scanner.current - scanner.start;
     int32_t     trie      = 0;
     char        c         = scanner.start[0];
-    const char *src, *key;
+    const char *src;
 
     if (c & LOWER_CASE_MASK) { // only lower-case names can be keywords
         // Use a hard-coded trie to recognize keywords
@@ -201,11 +201,11 @@ static TokenType identifierType(void) {
         return TOKEN_IDENTIFIER;
 
     if (scanner.current - scanner.start == TRIE(start) + TRIE(length)) {
-        src = scanner.start + TRIE(start);
-        key = rest + TRIE(offset);
+        src   = scanner.start + TRIE(start);
+        rest += TRIE(offset);
         ++TRIE(length);
         while (--TRIE(length)) 
-            if (*src++ != *key++)
+            if (*src++ != *rest++)
                 return TOKEN_IDENTIFIER;
         return TRIE(type);
     }
