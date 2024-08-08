@@ -111,6 +111,11 @@ typedef struct {
 // and accessing Trie info components
 #define TRIE(name) ((TrieInfo*)&trie)->name
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+
 static TokenType identifierType(void) {
     // Compressed keyword postfixes in single string
     const char* const rest =
@@ -206,6 +211,10 @@ static TokenType identifierType(void) {
     }
     return TOKEN_IDENTIFIER;
 }
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 static Token identifier(void) {
     while (isalnum(peek()) || peek() == '_')
