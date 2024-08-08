@@ -94,20 +94,24 @@ static void skipWhitespace(void) {
     }
 }
 
-// Wrapping and unwrapping 4 bytes to/from a single 32 bit argument
+// Wrapping 4 bytes Trie info into a single 32 bit argument
 #ifdef WRAP_BIG_ENDIAN
 #define WRAP(a,b,c,d) ((a)<<24|(b)<<16|(c)<<8|(d))
 #else
 #define WRAP(a,b,c,d) ((a)|(b)<<8|(c)<<16|(d)<<24)
 #endif
-#define UNWRAP(tup,n) ((uint8_t*)&(tup))[(n)]
 
-#define ARG_START  0
-#define ARG_LENGTH 1
-#define ARG_OFFSET 2
-#define ARG_TYPE   3
+typedef struct {
+    int8_t start;
+    int8_t length;
+    int8_t offset;
+    int8_t type;
+} TrieInfo;
 
-static TokenType checkKeyword(int args) {
+// and accessing Trie info components
+#define TRIE(name) ((TrieInfo*)&trie)->name
+
+static TokenType identifierType(void) {
     // Compressed keyword postfixes in single string
     const char* const rest =
               "andleturnassilsefarintupereakisue";
@@ -133,74 +137,74 @@ static TokenType checkKeyword(int args) {
     // WHEn     #
     // WHIle      ##
     //         012345678901234567890123456789012
-    const char  *src, *key;
-    int         len = UNWRAP(args, ARG_LENGTH);
-    if (scanner.current - scanner.start == UNWRAP(args, ARG_START) + len) {
-        src = scanner.start + UNWRAP(args, ARG_START);
-        key = rest + UNWRAP(args, ARG_OFFSET);
-        while (len--) 
-            if (*src++ != *key++)
-                return TOKEN_IDENTIFIER;
-        return UNWRAP(args, ARG_TYPE);
-    }
-    return TOKEN_IDENTIFIER;
-}
-
-static TokenType identifierType(void) {
-    int  id_length = scanner.current - scanner.start;
-    int  args      = 0;
-    char c         = scanner.start[0];
+    int16_t     id_length = scanner.current - scanner.start;
+    int32_t     trie      = 0;
+    char        c         = scanner.start[0];
+    const char *src, *key;
 
     if (c & LOWER_CASE_MASK) { // only lower-case names can be keywords
         // Use a hard-coded trie to recognize keywords
         // bisect on first char to reduce number of sequential comparisons
         if (c <= 'n') {
-            if      (c == 'a')                 args = WRAP(1, 2,  1, TOKEN_AND);
-            else if (c == 'b')                 args = WRAP(1, 4, 25, TOKEN_BREAK);
+            if      (c == 'a')                 trie = WRAP(1, 2,  1, TOKEN_AND);
+            else if (c == 'b')                 trie = WRAP(1, 3, 25, TOKEN_BREAK);
             else if (c == 'c') {
                 if (id_length > 1) {
                     c = scanner.start[1];
-                    if      (c == 'a')         args = WRAP(2, 2, 14, TOKEN_CASE);
-                    else if (c == 'l')         args = WRAP(2, 3,  9, TOKEN_CLASS);
+                    if      (c == 'a')         trie = WRAP(2, 2, 14, TOKEN_CASE);
+                    else if (c == 'l')         trie = WRAP(2, 3,  9, TOKEN_CLASS);
                 }
             }
-            else if (c == 'e')                 args = WRAP(1, 3, 13, TOKEN_ELSE);
+            else if (c == 'e')                 trie = WRAP(1, 3, 13, TOKEN_ELSE);
             else if (c == 'f') {
                 if (id_length > 1) {
                     c = scanner.start[1];
-                    if      (c == 'a')         args = WRAP(2, 3, 13, TOKEN_FALSE);
-                    else if (c == 'o')         args = WRAP(2, 1,  7, TOKEN_FOR);
-                    else if (c == 'u')         args = WRAP(2, 1,  1, TOKEN_FUN);
+                    if      (c == 'a')         trie = WRAP(2, 3, 13, TOKEN_FALSE);
+                    else if (c == 'o')         trie = WRAP(2, 1,  7, TOKEN_FOR);
+                    else if (c == 'u')         trie = WRAP(2, 1,  1, TOKEN_FUN);
                 }
             }
-            else if (c == 'h')                 args = WRAP(1, 5,  0, TOKEN_HANDLE);
-            else if (c == 'i')                 args = WRAP(1, 1, 16, TOKEN_IF);
-            else if (c == 'n')                 args = WRAP(1, 2, 12, TOKEN_NIL);
+            else if (c == 'h')                 trie = WRAP(1, 5,  0, TOKEN_HANDLE);
+            else if (c == 'i')                 trie = WRAP(1, 1, 16, TOKEN_IF);
+            else if (c == 'n')                 trie = WRAP(1, 2, 12, TOKEN_NIL);
         } else {  // c >  'n' 
-            if      (c == 'o')                 args = WRAP(1, 1,  7, TOKEN_OR);
-            else if (c == 'p')                 args = WRAP(1, 4, 18, TOKEN_PRINT);
-            else if (c == 'r')                 args = WRAP(1, 5,  4, TOKEN_RETURN);
-            else if (c == 's')                 args = WRAP(1, 4, 22, TOKEN_SUPER);
+            if      (c == 'o')                 trie = WRAP(1, 1,  7, TOKEN_OR);
+            else if (c == 'p')                 trie = WRAP(1, 4, 18, TOKEN_PRINT);
+            else if (c == 'r')                 trie = WRAP(1, 5,  4, TOKEN_RETURN);
+            else if (c == 's')                 trie = WRAP(1, 4, 22, TOKEN_SUPER);
             else if (c == 't') {
                 if (id_length > 1) {
                     c = scanner.start[1];
-                    if      (c == 'h')         args = WRAP(2, 2, 29, TOKEN_THIS);
-                    else if (c == 'r')         args = WRAP(2, 2, 31, TOKEN_TRUE);
+                    if      (c == 'h')         trie = WRAP(2, 2, 29, TOKEN_THIS);
+                    else if (c == 'r')         trie = WRAP(2, 2, 31, TOKEN_TRUE);
                 }
             }
-            else if (c == 'v')                 args = WRAP(1, 2, 17, TOKEN_VAR);
+            else if (c == 'v')                 trie = WRAP(1, 2, 17, TOKEN_VAR);
             else if (c == 'w') {
                 if (id_length > 1 &&
                     scanner.start[1] == 'h' &&
                     id_length > 2) {
                     c = scanner.start[2];
-                    if      (c == 'e')         args = WRAP(3, 1,  1, TOKEN_WHEN);
-                    else if (c == 'i')         args = WRAP(3, 2,  3, TOKEN_WHILE);
+                    if      (c == 'e')         trie = WRAP(3, 1,  1, TOKEN_WHEN);
+                    else if (c == 'i')         trie = WRAP(3, 2,  3, TOKEN_WHILE);
                 }
             }
         }
     }
-    return args ? checkKeyword(args) : TOKEN_IDENTIFIER;
+
+    if (!trie)
+        return TOKEN_IDENTIFIER;
+
+    if (scanner.current - scanner.start == TRIE(start) + TRIE(length)) {
+        src = scanner.start + TRIE(start);
+        key = rest + TRIE(offset);
+        ++TRIE(length);
+        while (--TRIE(length)) 
+            if (*src++ != *key++)
+                return TOKEN_IDENTIFIER;
+        return TRIE(type);
+    }
+    return TOKEN_IDENTIFIER;
 }
 
 static Token identifier(void) {
