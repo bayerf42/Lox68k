@@ -197,16 +197,13 @@ static TokenType identifierType(void) {
         }
     }
 
-    if (!trie)
-        return TOKEN_IDENTIFIER;
-
-    if (scanner.current - scanner.start == TRIE(start) + TRIE(length)) {
+    if (trie && scanner.current - scanner.start == TRIE(start) + TRIE(length)) {
         src   = scanner.start + TRIE(start);
         rest += TRIE(offset);
-        ++TRIE(length);
-        while (--TRIE(length)) 
+        do {
             if (*src++ != *rest++)
                 return TOKEN_IDENTIFIER;
+        } while (--TRIE(length));
         return TRIE(type);
     }
     return TOKEN_IDENTIFIER;
