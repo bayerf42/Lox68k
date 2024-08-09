@@ -197,7 +197,7 @@ static TokenType identifierType(void) {
         }
     }
 
-    if (trie && scanner.current - scanner.start == TRIE(start) + TRIE(length)) {
+    if (trie && id_length == TRIE(start) + TRIE(length)) {
         src   = scanner.start + TRIE(start);
         rest += TRIE(offset);
         do {
