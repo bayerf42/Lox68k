@@ -68,28 +68,20 @@ static Token makeNumToken(bool isReal) {
 
 static void skipWhitespace(void) {
     char c;
-    for (;;) {
-        c = peek();
-        switch (c) {
-            case CHAR_RS:
-            case CHAR_LF:
-                scanner.line++;
-                // fall thru
-            case ' ':
-            case CHAR_CR:
-            case CHAR_HT:
+again:
+    c = peek();
+    if (c == CHAR_RS || c == CHAR_LF) {
+        scanner.line++;
+        goto advance;
+    } else if (c == ' ' || c == CHAR_CR || c == CHAR_HT) {
+        advance: advance();
+        goto again;
+    } else if (c == '/') {
+        if (peekNext() == '/') {
+            // A comment goes until the end of the line.
+            while ((c = peek()) != '\0' && c != CHAR_LF && c != CHAR_RS)
                 advance();
-                break;
-            case '/':
-                if (peekNext() == '/') {
-                    // A comment goes until the end of the line.
-                    while (peek() != CHAR_LF && peek() != CHAR_RS && !isAtEnd())
-                        advance();
-                    break;
-                }
-                // fall thru
-            default:
-                return;
+            goto again;
         }
     }
 }
