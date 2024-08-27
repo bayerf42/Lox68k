@@ -312,8 +312,8 @@ static void endScope(void) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void  expression(void);
-static void  statement(void);
-static void  declaration(void);
+static void  statement(bool topLevel);
+static void  declaration(bool topLevel);
 static void  function(FunctionType type);
 static void  parsePrecedence(Precedence precedence);
 static int   argumentList(bool* isVarArg, TokenType terminator);
@@ -859,7 +859,7 @@ static void expression(void) {
 
 static void block(void) {
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
-        declaration();
+        declaration(false);
     consumeExp(TOKEN_RIGHT_BRACE, "block");
 }
 
@@ -992,10 +992,13 @@ static void varDeclaration(void) {
 // Statements
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void expressionStatement(void) {
+static void expressionStatement(bool topLevel) {
     expression();
     consumeExp(TOKEN_SEMICOLON, "expression");
-    emitByte(OP_POP);
+    if (currentComp->type == TYPE_SCRIPT && topLevel)
+        emitByte(OP_PRINTLN);
+    else
+        emitByte(OP_POP);
 }
 
 static void initBreaks(LoopInfo* loop) {
@@ -1029,7 +1032,7 @@ static void forStatement(void) {
     else if (match(TOKEN_VAR))
         varDeclaration();
     else
-        expressionStatement();
+        expressionStatement(false);
 
     loopStart = currentChunk()->count;
     exitJump  = -1;
@@ -1052,7 +1055,7 @@ static void forStatement(void) {
         patchJump(bodyJump);
     }
 
-    statement();
+    statement(false);
     emitLoop(loopStart);
 
     if (exitJump != -1)
@@ -1070,12 +1073,12 @@ static void ifStatement(void) {
     consumeExp(TOKEN_RIGHT_PAREN, "condition");
 
     thenJump = emitJump(OP_JUMP_FALSE);
-    statement();
+    statement(false);
 
     if (match(TOKEN_ELSE)) {
         elseJump = emitJump(OP_JUMP);
         patchJump(thenJump);
-        statement();
+        statement(false);
         patchJump(elseJump);
     } else
         patchJump(thenJump);
@@ -1147,7 +1150,7 @@ static void caseStatement(void) {
             // Fix jumps from previous labels, will execute on first statement in branch only (!)
             while (labelCount)
                 patchJump(whenLabels[--labelCount]);
-            statement();
+            statement(false);
             emptyBranch = false;
         }
     }      
@@ -1214,7 +1217,7 @@ static void whileStatement(void) {
 
     initBreaks(&loopInfo);
     exitJump = emitJump(OP_JUMP_FALSE);
-    statement();
+    statement(false);
     emitLoop(loopStart);
 
     patchJump(exitJump);
@@ -1241,17 +1244,17 @@ static void breakStatement(void) {
         error("Not in a loop.");
 }
 
-static void declaration(void) {
+static void declaration(bool topLevel) {
     if      (match(TOKEN_CLASS))  classDeclaration();
     else if (match(TOKEN_FUN))    funDeclaration();
     else if (match(TOKEN_VAR))    varDeclaration();
-    else                          statement();
+    else                          statement(topLevel);
 
     if (parser.panicMode)
         synchronize();
 }
 
-static void statement(void) {
+static void statement(bool topLevel) {
     if      (match(TOKEN_PRINT))  printStatement();
     else if (match(TOKEN_FOR))    forStatement();
     else if (match(TOKEN_IF))     ifStatement();
@@ -1265,7 +1268,7 @@ static void statement(void) {
         endScope();
     }
     else
-        expressionStatement();
+        expressionStatement(topLevel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1290,7 +1293,7 @@ ObjFunction* compile(const char* source) {
     advance();
 
     while (!match(TOKEN_EOF))
-        declaration();
+        declaration(true);
 
     function = endCompiler(true);
     return parser.hadError ? NULL : function;
