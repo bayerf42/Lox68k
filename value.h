@@ -48,6 +48,12 @@ typedef struct ObjUpvalue  ObjUpvalue;
 // Fast version, use native equal to compare reals and iterators
 #define valuesEqual(a,b) ((a) == (b))
 
+// Printing flags
+#define PRTF_HUMAN   0x00
+#define PRTF_MACHINE 0x01
+#define PRTF_EXPAND  0x00
+#define PRTF_COMPACT 0x02
+
 typedef struct {
     int16_t count;
     int16_t capacity;
@@ -58,7 +64,7 @@ void        initValueArray(ValueArray* array);
 void        appendValueArray(ValueArray* array, Value value);
 void        freeValueArray(ValueArray* array);
 void        freezeValueArray(ValueArray* array);
-void        printValue(Value value, bool compact, bool machine);
+void        printValue(Value value, int flags);
 const char* valueType(Value value);
 uint32_t    hashValue(Value value);
 

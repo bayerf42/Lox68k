@@ -31,14 +31,14 @@ static void printArgList(int argCount) {
     while (argCount--) {
         putstr(separator);
         separator = ", ";
-        printValue(*args++, false, true);
+        printValue(*args++, PRTF_MACHINE | PRTF_COMPACT);
     } 
 }
 
 static void printStack(void) {
     Value*  slot;
     for (slot = vm.stack; slot < vm.sp; slot++) {
-        printValue(*slot, true, true);
+        printValue(*slot, PRTF_MACHINE | PRTF_COMPACT);
         putstr(" | ");
     }
     putstr("\n");
@@ -102,7 +102,7 @@ void userError(Value exception) {
 
     if (vm.log_native_result) {
         putstr("/!\\ ");
-        printValue(exception, true, true);
+        printValue(exception, PRTF_MACHINE | PRTF_COMPACT);
         putstr("\n");
         vm.log_native_result = false;
     }
@@ -114,7 +114,7 @@ void userError(Value exception) {
             if (vm.debug_trace_calls) {
                 indentCallTrace();
                 putstr("<== ");
-                printValue(exception, true, true);
+                printValue(exception, PRTF_MACHINE | PRTF_COMPACT);
                 putstr("\n");
             }
             closeUpvalues(frame->fp);
@@ -127,7 +127,7 @@ void userError(Value exception) {
         }
     }
     putstr("Runtime error: ");
-    printValue(exception, false, false);
+    printValue(exception, PRTF_HUMAN | PRTF_EXPAND);
     putstr("\n");
     printBacktrace();
 }
@@ -285,7 +285,7 @@ static bool callValue(Value callee, int argCount) {
                 vm.sp -= argCount;
 
                 if (vm.log_native_result) {
-                    printValue(vm.sp[-1], false, true);
+                    printValue(vm.sp[-1], PRTF_MACHINE | PRTF_EXPAND);
                     putstr("\n");
                     vm.log_native_result = false;
                 } 
@@ -741,11 +741,11 @@ nextInstNoSO:
             goto nextInstNoSO;
 
         case OP_PRINT:
-            printValue(pop(), false, false);
+            printValue(pop(), PRTF_HUMAN | PRTF_EXPAND);
             goto nextInstNoSO;
 
         case OP_PRINTLN:
-            printValue(pop(), false, false);
+            printValue(pop(), PRTF_HUMAN | PRTF_EXPAND);
             putstr("\n");
             goto nextInstNoSO;
 
@@ -880,7 +880,7 @@ nextInstNoSO:
             if (vm.debug_trace_calls) {
                 indentCallTrace();
                 printf("<-- %s ", functionName(frame->closure->function));
-                printValue(resVal, false, true);
+                printValue(resVal, PRTF_MACHINE | PRTF_EXPAND);
                 putstr("\n");
             }
 

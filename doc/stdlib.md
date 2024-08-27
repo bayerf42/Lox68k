@@ -31,11 +31,11 @@ You can start Lox68k with or without the standard library:
 | complement   | fun                   | fun         | boolean complement of *fun*                                                       |  
 | const        | any                   | fun         | creates a function which always returns *any*                                     |  
 | deg          | num                   | real        | convert from radians to degrees                                                   |  
-| filter       | fun, list             | list        | filter all items of *list* which satisfy predicate *fun*                          |  
+| filter       | fun, seq              | list        | filter all items of *seq* which satisfy predicate *fun*                           |  
 | id           | any                   | any         | returns its argument                                                              |  
 | instance     | any, class            | bool        | true, if *any* is an instance of *class*                                          |  
 | list_globals | -                     | nil         | prints all global variables                                                       |  
-| map          | fun, list             | list        | apply *fun* to every item in *list*, return list of results.                      |  
+| map          | fun, seq              | list        | apply *fun* to every item in *seq*, return list of results.                       |  
 | max          | num, num              | num         | maximum of arguments                                                              |  
 | max          | string, string        | string      | maximum of arguments                                                              |  
 | min          | num, num              | num         | minimum of arguments                                                              |  
@@ -46,7 +46,7 @@ You can start Lox68k with or without the standard library:
 | pokel        | int *addr*, int *long*| nil         | writes 31 bit *long* to *addr*                                                    |  
 | pokew        | int *addr*, int *word*| nil         | writes 16 bit *word* to *addr*                                                    |  
 | rad          | num                   | real        | convert from degrees to radians                                                   |  
-| reduce       | fun, list             | any         | combine all items of *list* with operator *fun* from the left                     |  
+| reduce       | fun, seq              | any         | combine all items of *seq* with operator *fun* from the left                      |  
 | string       | any                   | string      | convert *any* to a string, using *string* method for objects.                     |  
 
 
@@ -64,5 +64,6 @@ You can start Lox68k with or without the standard library:
 |             | union     | Set           | Set         | unite *Set* with receiver, modifying it                                           |  
 
 
-Trailing `?` indicates optional parameter. `num` means any number type, `int` or `real`.
+Trailing `?` indicates optional parameter. `num` means any number type, `int` or `real`,
+`seq` is any sequence, `list` or `string`.
 

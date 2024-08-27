@@ -30,12 +30,12 @@ void freezeValueArray(ValueArray* array) {
     array->capacity = array->count;
 }
 
-void printValue(Value value, bool compact, bool machine) {
+void printValue(Value value, int flags) {
     if      (IS_BOOL(value))   putstr(AS_BOOL(value) ? "true" : "false");
     else if (IS_NIL(value))    putstr("nil");
     else if (IS_EMPTY(value))  putstr("<empty>");
     else if (IS_INT(value))    printf("%d", AS_INT(value));
-    else                       printObject(value, compact, machine);
+    else                       printObject(value, flags);
 }
 
 const char* valueType(Value value) {

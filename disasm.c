@@ -41,7 +41,7 @@ static void jumpInst(const char* name, int sign) {
 static void constInst(const char* name) {
     int constant = chunk->code[++offset];
     printf("%-9s %4d ; ", name, constant);
-    printValue(chunk->constants.values[constant], true, true);
+    printValue(chunk->constants.values[constant], PRTF_MACHINE | PRTF_COMPACT);
     ++offset;
 }
 
@@ -49,7 +49,7 @@ static void invokeInst(const char* name) {
     int constant = chunk->code[++offset];
     int argCount = chunk->code[++offset];
     printf("%-9s %4d ; ", name, constant);
-    printValue(chunk->constants.values[constant], true, true);
+    printValue(chunk->constants.values[constant], PRTF_MACHINE | PRTF_COMPACT);
     printf(" (%d args)", argCount);
     ++offset;
 }
@@ -59,7 +59,7 @@ static void closureInst(const char* name) {
     ObjFunction* function = AS_FUNCTION(chunk->constants.values[constant]);
     int          j, upvalue;
     printf("%-9s %4d ; ", name, constant);
-    printValue(chunk->constants.values[constant], true, true);
+    printValue(chunk->constants.values[constant], PRTF_MACHINE | PRTF_COMPACT);
     for (j = 0, ++offset; j < function->upvalueCount; j++, ++offset) {
         upvalue = chunk->code[offset];
         printf("\n%04d    |   %5s   %4d", offset,

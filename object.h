@@ -157,7 +157,7 @@ ObjString*   makeString0(const char* chars);
 ObjString*   makeString(const char* chars, int length);
 ObjUpvalue*  makeUpvalue(Value* slot);
 
-void         printObject(Value value, bool compact, bool machine);
+void         printObject(Value value, int flags);
 const char*  typeName(ObjType type);
 bool         isObjType(Value value, ObjType type);
 

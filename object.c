@@ -183,7 +183,7 @@ const char* functionName(ObjFunction* function) {
     return buffer;
 }
 
-static void printList(ObjList* list, bool machine) {
+static void printList(ObjList* list, int flags) {
     int i;
     const char* sep = "";
 
@@ -192,19 +192,19 @@ static void printList(ObjList* list, bool machine) {
     putstr("[");
     for (i = 0; i < list->arr.count; i++) {
         putstr(sep);
-        printValue(list->arr.values[i], false, machine);
+        printValue(list->arr.values[i], flags);
         sep = ", ";
     }
     putstr("]");
 }
 
-static void printInstance(ObjInstance* inst, bool compact, bool machine) {
+static void printInstance(ObjInstance* inst, int flags) {
     int i;
     const char* sep = "";
     Entry*      entry;
 
     printf("%s(", inst->klass->name->chars);
-    if (compact)
+    if (flags & PRTF_COMPACT)
         putstr("..");
     else
         for (i = 0; i < inst->fields.capacity; i++) {
@@ -212,9 +212,9 @@ static void printInstance(ObjInstance* inst, bool compact, bool machine) {
             if (IS_EMPTY(entry->key))
                 continue;
             putstr(sep);
-            printValue(entry->key, true, machine); 
+            printValue(entry->key, flags & PRTF_COMPACT); 
             putstr(",");
-            printValue(entry->value, true, machine); // don't recurse into sub-objects
+            printValue(entry->value, flags & PRTF_COMPACT); // don't recurse into sub-objects
             sep = ", ";
         }
     putstr(")");
@@ -237,7 +237,7 @@ const char* typeName(ObjType type) {
     }
 }
 
-void printObject(Value value, bool compact, bool machine) {
+void printObject(Value value, int flags) {
     switch (OBJ_TYPE(value)) {
         case OBJ_BOUND:
             printf("<bound %s>", functionName(AS_BOUND(value)->method->function));
@@ -256,7 +256,7 @@ void printObject(Value value, bool compact, bool machine) {
             break;
 
         case OBJ_INSTANCE:
-            printInstance(AS_INSTANCE(value), compact, machine);
+            printInstance(AS_INSTANCE(value), flags);
             break;
 
         case OBJ_ITERATOR:
@@ -264,10 +264,10 @@ void printObject(Value value, bool compact, bool machine) {
             break;
 
         case OBJ_LIST:
-            if (compact)
+            if (flags & PRTF_COMPACT)
                 printf("<list %d>", AS_LIST(value)->arr.count);
             else
-                printList(AS_LIST(value), machine);
+                printList(AS_LIST(value), flags);
             break;
 
         case OBJ_NATIVE:
@@ -279,9 +279,9 @@ void printObject(Value value, bool compact, bool machine) {
             break;
 
         case OBJ_STRING:
-            if (machine) putstr("\"");
+            if (flags & PRTF_MACHINE) putstr("\"");
             putstr(AS_CSTRING(value));
-            if (machine) putstr("\"");
+            if (flags & PRTF_MACHINE) putstr("\"");
             break;
 
         case OBJ_UPVALUE:

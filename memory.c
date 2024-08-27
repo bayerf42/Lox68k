@@ -53,7 +53,7 @@ void markObject(Obj* object) {
 
     if (vm.debug_log_gc & DBG_GC_MARK) {
         printf("GC %05x mark ", (int32_t)object);
-        printValue(OBJ_VAL(object), true, true);
+        printValue(OBJ_VAL(object), PRTF_MACHINE | PRTF_COMPACT);
         putstr("\n");
     }
 
@@ -91,7 +91,7 @@ static void blackenObject(Obj* object) {
 
     if (vm.debug_log_gc & DBG_GC_BLACK) {
         printf("GC %05x blak ", (int32_t)object);
-        printValue(OBJ_VAL(object), true, true);
+        printValue(OBJ_VAL(object), PRTF_MACHINE | PRTF_COMPACT);
         putstr("\n");
     }
 

@@ -335,6 +335,8 @@ NATIVE(upperNative) {
     strcpy(dest, (str)); \
     dest += len; }
 
+// FIXME?? Doesn't handle embedded \0 characters correctly.
+
 NATIVE(joinNative) {
     ObjList*    list   = AS_LIST(args[0]);
     const char* sepa   = (argCount > 1) ? AS_CSTRING(args[1]) : "";
