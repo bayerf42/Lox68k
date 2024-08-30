@@ -144,7 +144,7 @@ static TokenType identifierType(void) {
         // bisect on first char to reduce number of sequential comparisons
         if (c <= 'n') {
             if      (c == 'a')                 trie = WRAP(1, 2,  1, TOKEN_AND);
-            else if (c == 'b')                 trie = WRAP(1, 3, 25, TOKEN_BREAK);
+            else if (c == 'b')                 trie = WRAP(1, 4, 25, TOKEN_BREAK);
             else if (c == 'c') {
                 if (id_length > 1) {
                     c = scanner.start[1];
