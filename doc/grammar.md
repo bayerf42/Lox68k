@@ -27,7 +27,7 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 View this grammar as a [railroad diagram](grammar.html).
 
 ``` ebnf
-script         → ( declaration | expression ";"? )* EOF ;
+script         → ( declaration | expression )* EOF ;
 
 declaration    → class_decl
                | fun_decl

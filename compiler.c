@@ -994,10 +994,9 @@ static void varDeclaration(void) {
 
 static void expressionStatement(bool topLevel) {
     expression();
-    if (topLevel) {
-        match(TOKEN_SEMICOLON); // optional
-        emitByte(OP_PRINTLN);
-    } else {
+    if (topLevel)
+        emitByte(match(TOKEN_SEMICOLON) ? OP_POP : OP_PRINTLN);
+    else {
         consumeExp(TOKEN_SEMICOLON, "expression");
         emitByte(OP_POP);
     }
