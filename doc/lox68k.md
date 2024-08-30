@@ -86,6 +86,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * superclass in class declaration may be any expression evaluating to a class
 * `handle` expression to establish a dynamic exception handler
 * `if` expression, in addition to `if` statement 
+* expressions entered at top-value are evaluated and printed 
 
 ### Omissions
 

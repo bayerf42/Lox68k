@@ -3,7 +3,7 @@
 /* Open 'Edit grammar' tab, paste this file and select 'View Diagram' tab. */
 /* Disable 'factoring' in options, it leads to confusing diagrams. */
 
-script         ::= declaration*
+script         ::= (declaration | expression ";"?)*
 
 declaration    ::= class_decl
                  | fun_decl

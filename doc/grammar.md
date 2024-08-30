@@ -21,12 +21,13 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * `break` statement in loops
 * superclass can be any expression
 * `handle` expression to establish a dynamic exception handler
-* `if` expression 
+* `if` expression
+* expressions at top-level 
 
 View this grammar as a [railroad diagram](grammar.html).
 
 ``` ebnf
-program        → declaration* EOF ;
+script         → ( declaration | expression ";"? )* EOF ;
 
 declaration    → class_decl
                | fun_decl
