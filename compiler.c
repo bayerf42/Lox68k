@@ -995,10 +995,7 @@ static void varDeclaration(void) {
 static void expressionStatement(bool topLevel) {
     expression();
     consumeExp(TOKEN_SEMICOLON, "expression");
-    if (currentComp->type == TYPE_SCRIPT && topLevel)
-        emitByte(OP_PRINTLN);
-    else
-        emitByte(OP_POP);
+    emitByte(topLevel ? OP_PRINTLN : OP_POP);
 }
 
 static void initBreaks(LoopInfo* loop) {
