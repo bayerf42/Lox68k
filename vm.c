@@ -31,7 +31,7 @@ static void printArgList(int argCount) {
     while (argCount--) {
         putstr(separator);
         separator = ", ";
-        printValue(*args++, PRTF_MACHINE | PRTF_COMPACT);
+        printValue(*args++, PRTF_MACHINE | PRTF_EXPAND);
     } 
 }
 
@@ -102,7 +102,7 @@ void userError(Value exception) {
 
     if (vm.log_native_result) {
         putstr("/!\\ ");
-        printValue(exception, PRTF_MACHINE | PRTF_COMPACT);
+        printValue(exception, PRTF_MACHINE | PRTF_EXPAND);
         putstr("\n");
         vm.log_native_result = false;
     }
@@ -114,7 +114,7 @@ void userError(Value exception) {
             if (vm.debug_trace_calls) {
                 indentCallTrace();
                 putstr("<== ");
-                printValue(exception, PRTF_MACHINE | PRTF_COMPACT);
+                printValue(exception, PRTF_MACHINE | PRTF_EXPAND);
                 putstr("\n");
             }
             closeUpvalues(frame->fp);
