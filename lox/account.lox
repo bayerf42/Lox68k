@@ -1,0 +1,55 @@
+// Encapsulation: Store object state in upval defined in factory
+
+fun makeAccount(name, initial) {
+
+  var amount = initial; // inaccessible outside of makeAccount
+
+  class Account {
+    init (name) {
+      this.name = name;
+    }
+
+    balance () -> amount
+
+    deposit (val) {
+      amount = amount + val;
+    }
+
+    withdraw (val) {
+      if (val > amount)
+        error("Overdrawn");
+      else
+        amount = amount - val;
+    }   
+  }
+
+  return Account(name);
+}
+
+fun report(msg) {
+  print msg;
+}
+
+fun status() {
+  print acc1.balance(),,acc2.balance();
+}
+
+// Tests ============================================
+
+var acc1 = makeAccount("Harry", 100), acc2 = makeAccount("Sally", 500);
+
+print acc1,,acc2;
+
+status();
+
+acc1.deposit(20);
+acc2.deposit(50);
+
+status();
+
+handle(acc1.withdraw(200) : report);
+handle(acc2.withdraw(200) : report);
+
+status();
+
+
