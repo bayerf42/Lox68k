@@ -21,14 +21,16 @@ typedef enum {
     // literals
     TOKEN_IDENTIFIER, TOKEN_STRING, TOKEN_INT, TOKEN_REAL,
 
-    // keywords
-    TOKEN_AND, TOKEN_BREAK, TOKEN_CASE, TOKEN_CLASS, TOKEN_ELSE, TOKEN_FALSE,
-    TOKEN_FOR, TOKEN_FUN, TOKEN_HANDLE, TOKEN_IF, TOKEN_NIL, TOKEN_OR,
-    TOKEN_PRINT, TOKEN_RETURN, TOKEN_SUPER, TOKEN_THIS,
-    TOKEN_TRUE, TOKEN_VAR, TOKEN_WHEN, TOKEN_WHILE,
-
     // specials
-    TOKEN_ERROR, TOKEN_EOF
+    TOKEN_ERROR, TOKEN_EOF,
+
+    // keywords not starting declarations
+    TOKEN_AND, TOKEN_ELSE, TOKEN_FALSE, TOKEN_HANDLE, TOKEN_NIL,
+    TOKEN_OR, TOKEN_SUPER, TOKEN_THIS, TOKEN_TRUE, TOKEN_WHEN,
+
+    // keywords starting declarations or statements allowing to sync parser after syntax error
+    TOKEN_BREAK, TOKEN_CASE, TOKEN_CLASS, TOKEN_FOR, TOKEN_FUN,
+    TOKEN_IF, TOKEN_PRINT, TOKEN_RETURN, TOKEN_VAR, TOKEN_WHILE,
 } TokenType;
 
 // For printing syntax errors in consumeExp(), first group of TokenType

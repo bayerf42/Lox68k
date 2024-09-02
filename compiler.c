@@ -127,8 +127,8 @@ static void advance(void) {
     }
 }
 
-static void consume(TokenType type, const char* message) {
-    if (parser.current.type == type) {
+static void consume(TokenType expected, const char* message) {
+    if (parser.current.type == expected) {
         advance();
         return;
     }
@@ -147,12 +147,12 @@ static void consumeExp(TokenType expected, const char* context) {
     errorAtCurrent(buffer);
 }
 
-static bool check(TokenType type) {
-    return parser.current.type == type;
+static bool check(TokenType expected) {
+    return parser.current.type == expected;
 }
 
-static bool match(TokenType type) {
-    if (parser.current.type != type)
+static bool match(TokenType expected) {
+    if (parser.current.type != expected)
         return false;
     advance();
     return true;
@@ -162,19 +162,9 @@ static void synchronize(void) {
     parser.panicMode = false;
 
     while (parser.current.type != TOKEN_EOF) {
-        if (parser.previous.type == TOKEN_SEMICOLON) return;
-
-        // Original switch crashed the compiler, no idea, why....
-        if (parser.current.type == TOKEN_CLASS)  return;
-        if (parser.current.type == TOKEN_FUN)    return;
-        if (parser.current.type == TOKEN_VAR)    return;
-        if (parser.current.type == TOKEN_FOR)    return;
-        if (parser.current.type == TOKEN_IF)     return;
-        if (parser.current.type == TOKEN_WHILE)  return;
-        if (parser.current.type == TOKEN_PRINT)  return;
-        if (parser.current.type == TOKEN_RETURN) return;
-        if (parser.current.type == TOKEN_CASE)   return;
-
+        if (parser.previous.type == TOKEN_SEMICOLON ||
+            parser.current.type  >= TOKEN_BREAK)    // Tokens to synchronize on
+            return;
         advance();
     }
 }
@@ -746,31 +736,33 @@ static const ParseRule rules[] = {
     /* [TOKEN_INT]           = */ {intNum,   NULL,   PREC_NONE},
     /* [TOKEN_REAL]          = */ {realNum,  NULL,   PREC_NONE},
 
-    // keywords *******************************************************
-    /* [TOKEN_AND]           = */ {NULL,     and_,   PREC_AND},
-    /* [TOKEN_BREAK]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_CASE]          = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_CLASS]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_ELSE]          = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_FALSE]         = */ {literal,  NULL,   PREC_NONE},
-    /* [TOKEN_FOR]           = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_FUN]           = */ {lambda,   NULL,   PREC_NONE},
-    /* [TOKEN_HANDLE]        = */ {handler,  NULL,   PREC_NONE},
-    /* [TOKEN_IF]            = */ {ifExpr,   NULL,   PREC_NONE},
-    /* [TOKEN_NIL]           = */ {literal,  NULL,   PREC_NONE},
-    /* [TOKEN_OR]            = */ {NULL,     or_,    PREC_OR},
-    /* [TOKEN_PRINT]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_RETURN]        = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_SUPER]         = */ {super_,   NULL,   PREC_NONE},
-    /* [TOKEN_THIS]          = */ {this_,    NULL,   PREC_NONE},
-    /* [TOKEN_TRUE]          = */ {literal,  NULL,   PREC_NONE},
-    /* [TOKEN_VAR]           = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_WHEN]          = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_WHILE]         = */ {NULL,     NULL,   PREC_NONE},
-
     // specials *******************************************************
     /* [TOKEN_ERROR]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_EOF]           = */ {NULL,     NULL,   PREC_NONE},
+
+    // non-syncing keywords *******************************************
+    /* [TOKEN_AND]           = */ {NULL,     and_,   PREC_AND},
+    /* [TOKEN_ELSE]          = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_FALSE]         = */ {literal,  NULL,   PREC_NONE},
+    /* [TOKEN_HANDLE]        = */ {handler,  NULL,   PREC_NONE},
+    /* [TOKEN_NIL]           = */ {literal,  NULL,   PREC_NONE},
+    /* [TOKEN_OR]            = */ {NULL,     or_,    PREC_OR},
+    /* [TOKEN_SUPER]         = */ {super_,   NULL,   PREC_NONE},
+    /* [TOKEN_THIS]          = */ {this_,    NULL,   PREC_NONE},
+    /* [TOKEN_TRUE]          = */ {literal,  NULL,   PREC_NONE},
+    /* [TOKEN_WHEN]          = */ {NULL,     NULL,   PREC_NONE},
+
+    // syncing keywords ***********************************************
+    /* [TOKEN_BREAK]         = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_CASE]          = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_CLASS]         = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_FOR]           = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_FUN]           = */ {lambda,   NULL,   PREC_NONE},
+    /* [TOKEN_IF]            = */ {ifExpr,   NULL,   PREC_NONE},
+    /* [TOKEN_PRINT]         = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_RETURN]        = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_VAR]           = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_WHILE]         = */ {NULL,     NULL,   PREC_NONE},
 };
 
 static void parsePrecedence(Precedence precedence) {
