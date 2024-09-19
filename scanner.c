@@ -139,52 +139,50 @@ static TokenType identifierType(void) {
     char        c         = scanner.start[0];
     const char *src;
 
-    if (c & LOWER_CASE_MASK) { // only lower-case names can be keywords
-        // Use a hard-coded trie to recognize keywords
-        // bisect on first char to reduce number of sequential comparisons
-        if (c <= 'n') {
-            if      (c == 'a')                 trie = WRAP(1, 2,  1, TOKEN_AND);
-            else if (c == 'b')                 trie = WRAP(1, 4, 25, TOKEN_BREAK);
-            else if (c == 'c') {
-                if (id_length > 1) {
-                    c = scanner.start[1];
-                    if      (c == 'a')         trie = WRAP(2, 2, 14, TOKEN_CASE);
-                    else if (c == 'l')         trie = WRAP(2, 3,  9, TOKEN_CLASS);
-                }
+    // Use a hard-coded trie to recognize keywords
+    // bisect on first char to reduce number of sequential comparisons
+    if (c <= 'n') {
+        if      (c == 'a')                 trie = WRAP(1, 2,  1, TOKEN_AND);
+        else if (c == 'b')                 trie = WRAP(1, 4, 25, TOKEN_BREAK);
+        else if (c == 'c') {
+            if (id_length > 1) {
+                c = scanner.start[1];
+                if      (c == 'a')         trie = WRAP(2, 2, 14, TOKEN_CASE);
+                else if (c == 'l')         trie = WRAP(2, 3,  9, TOKEN_CLASS);
             }
-            else if (c == 'e')                 trie = WRAP(1, 3, 13, TOKEN_ELSE);
-            else if (c == 'f') {
-                if (id_length > 1) {
-                    c = scanner.start[1];
-                    if      (c == 'a')         trie = WRAP(2, 3, 13, TOKEN_FALSE);
-                    else if (c == 'o')         trie = WRAP(2, 1,  7, TOKEN_FOR);
-                    else if (c == 'u')         trie = WRAP(2, 1,  1, TOKEN_FUN);
-                }
+        }
+        else if (c == 'e')                 trie = WRAP(1, 3, 13, TOKEN_ELSE);
+        else if (c == 'f') {
+            if (id_length > 1) {
+                c = scanner.start[1];
+                if      (c == 'a')         trie = WRAP(2, 3, 13, TOKEN_FALSE);
+                else if (c == 'o')         trie = WRAP(2, 1,  7, TOKEN_FOR);
+                else if (c == 'u')         trie = WRAP(2, 1,  1, TOKEN_FUN);
             }
-            else if (c == 'h')                 trie = WRAP(1, 5,  0, TOKEN_HANDLE);
-            else if (c == 'i')                 trie = WRAP(1, 1, 16, TOKEN_IF);
-            else if (c == 'n')                 trie = WRAP(1, 2, 12, TOKEN_NIL);
-        } else {  // c >  'n' 
-            if      (c == 'o')                 trie = WRAP(1, 1,  7, TOKEN_OR);
-            else if (c == 'p')                 trie = WRAP(1, 4, 18, TOKEN_PRINT);
-            else if (c == 'r')                 trie = WRAP(1, 5,  4, TOKEN_RETURN);
-            else if (c == 's')                 trie = WRAP(1, 4, 22, TOKEN_SUPER);
-            else if (c == 't') {
-                if (id_length > 1) {
-                    c = scanner.start[1];
-                    if      (c == 'h')         trie = WRAP(2, 2, 29, TOKEN_THIS);
-                    else if (c == 'r')         trie = WRAP(2, 2, 31, TOKEN_TRUE);
-                }
+        }
+        else if (c == 'h')                 trie = WRAP(1, 5,  0, TOKEN_HANDLE);
+        else if (c == 'i')                 trie = WRAP(1, 1, 16, TOKEN_IF);
+        else if (c == 'n')                 trie = WRAP(1, 2, 12, TOKEN_NIL);
+    } else {  // c >  'n' 
+        if      (c == 'o')                 trie = WRAP(1, 1,  7, TOKEN_OR);
+        else if (c == 'p')                 trie = WRAP(1, 4, 18, TOKEN_PRINT);
+        else if (c == 'r')                 trie = WRAP(1, 5,  4, TOKEN_RETURN);
+        else if (c == 's')                 trie = WRAP(1, 4, 22, TOKEN_SUPER);
+        else if (c == 't') {
+            if (id_length > 1) {
+                c = scanner.start[1];
+                if      (c == 'h')         trie = WRAP(2, 2, 29, TOKEN_THIS);
+                else if (c == 'r')         trie = WRAP(2, 2, 31, TOKEN_TRUE);
             }
-            else if (c == 'v')                 trie = WRAP(1, 2, 17, TOKEN_VAR);
-            else if (c == 'w') {
-                if (id_length > 1 &&
-                    scanner.start[1] == 'h' &&
-                    id_length > 2) {
-                    c = scanner.start[2];
-                    if      (c == 'e')         trie = WRAP(3, 1,  1, TOKEN_WHEN);
-                    else if (c == 'i')         trie = WRAP(3, 2,  3, TOKEN_WHILE);
-                }
+        }
+        else if (c == 'v')                 trie = WRAP(1, 2, 17, TOKEN_VAR);
+        else if (c == 'w') {
+            if (id_length > 1 &&
+                scanner.start[1] == 'h' &&
+                id_length > 2) {
+                c = scanner.start[2];
+                if      (c == 'e')         trie = WRAP(3, 1,  1, TOKEN_WHEN);
+                else if (c == 'i')         trie = WRAP(3, 2,  3, TOKEN_WHILE);
             }
         }
     }
@@ -205,10 +203,10 @@ static TokenType identifierType(void) {
 #pragma GCC diagnostic pop
 #endif
 
-static Token identifier(void) {
+static Token identifier(bool possKeyword) {
     while (isalnum(peek()) || peek() == '_')
         advance();
-    return makeToken(identifierType());
+    return makeToken(possKeyword ? identifierType() : TOKEN_IDENTIFIER);
 }
 
 static Token number(char start) {
@@ -277,14 +275,32 @@ Token scanToken(void) {
 
     c = *scanner.current++;
 
-    if (isalpha(c) || c == '_')
-        return identifier();
-
-    if (isdigit(c) || c == '$' || c == '%')
-        return number(c);
-
     switch (c) {
-        case '"': return string();
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+        case '$': case '%':
+            return number(c);
+
+        case 'a': case 'b': case 'c': case 'e': case 'f':
+        case 'h': case 'i': case 'n': case 'o': case 'p':
+        case 'r': case 's': case 't': case 'v': case 'w':
+            return identifier(true);
+
+        case 'd': case 'g': case 'j': case 'k': case 'l':
+        case 'm': case 'q': case 'u': case 'x': case 'y':
+        case 'z':
+        case 'A': case 'B': case 'C': case 'D': case 'E':
+        case 'F': case 'G': case 'H': case 'I': case 'J':
+        case 'K': case 'L': case 'M': case 'N': case 'O':
+        case 'P': case 'Q': case 'R': case 'S': case 'T':
+        case 'U': case 'V': case 'W': case 'X': case 'Y':
+        case 'Z':
+        case '_': 
+            return identifier(false);
+
+        case '"':
+            return string();
+
         case '(': token = TOKEN_LEFT_PAREN;    break;
         case ')': token = TOKEN_RIGHT_PAREN;   break;
         case '{': token = TOKEN_LEFT_BRACE;    break;
@@ -307,6 +323,7 @@ Token scanToken(void) {
         case '>': if (match('=')) token = TOKEN_GREATER_EQUAL; else token = TOKEN_GREATER; break;
         case '.': if (match('.')) token = TOKEN_DOT_DOT;       else token = TOKEN_DOT;     break;
         case '-': if (match('>')) token = TOKEN_ARROW;         else token = TOKEN_MINUS;   break;
+
         default:
             sprintf(buffer, "Invalid character '%c'.", c);
             return errorToken(buffer);

@@ -5,17 +5,17 @@ fun makeAccount(name, initial) {
   var amount = initial; // inaccessible outside of makeAccount
 
   class Account {
-    init (name) {
+    init(name) {
       this.name = name;
     }
 
-    balance () -> amount
+    balance() -> amount
 
-    deposit (val) {
+    deposit(val) {
       amount = amount + val;
     }
 
-    withdraw (val) {
+    withdraw(val) {
       if (val > amount)
         error("Overdrawn");
       else
@@ -51,5 +51,3 @@ handle(acc1.withdraw(200) : report);
 handle(acc2.withdraw(200) : report);
 
 status();
-
-
