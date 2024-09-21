@@ -92,6 +92,7 @@ again:
 #else
 #define WRAP(a,b,c,d) ((a)|(b)<<8|(c)<<16|(d)<<24)
 #endif
+#define AMBIGUOUS (-1)
 
 typedef struct {
     int8_t start;
@@ -108,7 +109,7 @@ typedef struct {
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-static TokenType identifierType(void) {
+static Token identifier(int32_t trie) {
     // Compressed keyword postfixes in single string
     const char* rest =
               "andleturnassilsefarintupereakisue";
@@ -134,49 +135,39 @@ static TokenType identifierType(void) {
     // WHEn     #
     // WHIle      ##
     //         012345678901234567890123456789012
-    int16_t     id_length = scanner.current - scanner.start;
-    int32_t     trie      = 0;
-    char        c         = scanner.start[0];
+    int16_t    id_length;
     const char *src;
+    char       c         = scanner.start[0];
+    TokenType  tokenType = TOKEN_IDENTIFIER; 
 
-    // Use a hard-coded trie to recognize keywords
-    // bisect on first char to reduce number of sequential comparisons
-    if (c <= 'n') {
-        if      (c == 'a')                 trie = WRAP(1, 2,  1, TOKEN_AND);
-        else if (c == 'b')                 trie = WRAP(1, 4, 25, TOKEN_BREAK);
-        else if (c == 'c') {
+    while (isalnum(peek()) || peek() == '_')
+        advance();
+
+    id_length = scanner.current - scanner.start;
+
+    // Disambiguate possible keywords starting with same letter.
+    if (trie == AMBIGUOUS) {
+        trie = 0;   
+        if (c == 'c') {
             if (id_length > 1) {
                 c = scanner.start[1];
                 if      (c == 'a')         trie = WRAP(2, 2, 14, TOKEN_CASE);
                 else if (c == 'l')         trie = WRAP(2, 3,  9, TOKEN_CLASS);
             }
-        }
-        else if (c == 'e')                 trie = WRAP(1, 3, 13, TOKEN_ELSE);
-        else if (c == 'f') {
+        } else if (c == 'f') {
             if (id_length > 1) {
                 c = scanner.start[1];
                 if      (c == 'a')         trie = WRAP(2, 3, 13, TOKEN_FALSE);
                 else if (c == 'o')         trie = WRAP(2, 1,  7, TOKEN_FOR);
                 else if (c == 'u')         trie = WRAP(2, 1,  1, TOKEN_FUN);
             }
-        }
-        else if (c == 'h')                 trie = WRAP(1, 5,  0, TOKEN_HANDLE);
-        else if (c == 'i')                 trie = WRAP(1, 1, 16, TOKEN_IF);
-        else if (c == 'n')                 trie = WRAP(1, 2, 12, TOKEN_NIL);
-    } else {  // c >  'n' 
-        if      (c == 'o')                 trie = WRAP(1, 1,  7, TOKEN_OR);
-        else if (c == 'p')                 trie = WRAP(1, 4, 18, TOKEN_PRINT);
-        else if (c == 'r')                 trie = WRAP(1, 5,  4, TOKEN_RETURN);
-        else if (c == 's')                 trie = WRAP(1, 4, 22, TOKEN_SUPER);
-        else if (c == 't') {
+        } else if (c == 't') {
             if (id_length > 1) {
                 c = scanner.start[1];
                 if      (c == 'h')         trie = WRAP(2, 2, 29, TOKEN_THIS);
                 else if (c == 'r')         trie = WRAP(2, 2, 31, TOKEN_TRUE);
             }
-        }
-        else if (c == 'v')                 trie = WRAP(1, 2, 17, TOKEN_VAR);
-        else if (c == 'w') {
+        } else { // if (c == 'w') always true
             if (id_length > 1 &&
                 scanner.start[1] == 'h' &&
                 id_length > 2) {
@@ -192,22 +183,17 @@ static TokenType identifierType(void) {
         rest += TRIE(offset);
         do {
             if (*src++ != *rest++)
-                return TOKEN_IDENTIFIER;
+                goto noKeyword;
         } while (--TRIE(length));
-        return TRIE(type);
+        tokenType = TRIE(type);
     }
-    return TOKEN_IDENTIFIER;
+noKeyword:
+    return makeToken(tokenType);
 }
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
-
-static Token identifier(bool possKeyword) {
-    while (isalnum(peek()) || peek() == '_')
-        advance();
-    return makeToken(possKeyword ? identifierType() : TOKEN_IDENTIFIER);
-}
 
 static Token number(char start) {
     bool exponentEmpty = true;
@@ -266,6 +252,7 @@ static Token string(void) {
 Token scanToken(void) {
     char      c;
     TokenType token;
+    int32_t   trie = 0;
 
     skipWhitespace();
     scanner.start = scanner.current;
@@ -281,22 +268,32 @@ Token scanToken(void) {
         case '$': case '%':
             return number(c);
 
-        case 'a': case 'b': case 'c': case 'e': case 'f':
-        case 'h': case 'i': case 'n': case 'o': case 'p':
-        case 'r': case 's': case 't': case 'v': case 'w':
-            return identifier(true);
-
         case 'd': case 'g': case 'j': case 'k': case 'l':
         case 'm': case 'q': case 'u': case 'x': case 'y':
-        case 'z':
         case 'A': case 'B': case 'C': case 'D': case 'E':
         case 'F': case 'G': case 'H': case 'I': case 'J':
         case 'K': case 'L': case 'M': case 'N': case 'O':
         case 'P': case 'Q': case 'R': case 'S': case 'T':
         case 'U': case 'V': case 'W': case 'X': case 'Y':
-        case 'Z':
-        case '_': 
-            return identifier(false);
+        case 'Z': case '_': case 'z':
+        ident: 
+            return identifier(trie);
+
+        case 'a': trie = WRAP(1, 2,  1, TOKEN_AND);    goto ident;
+        case 'b': trie = WRAP(1, 4, 25, TOKEN_BREAK);  goto ident;
+        case 'c': trie = AMBIGUOUS;                    goto ident;
+        case 'e': trie = WRAP(1, 3, 13, TOKEN_ELSE);   goto ident;
+        case 'f': trie = AMBIGUOUS;                    goto ident;  
+        case 'h': trie = WRAP(1, 5,  0, TOKEN_HANDLE); goto ident;
+        case 'i': trie = WRAP(1, 1, 16, TOKEN_IF);     goto ident;
+        case 'n': trie = WRAP(1, 2, 12, TOKEN_NIL);    goto ident;
+        case 'o': trie = WRAP(1, 1,  7, TOKEN_OR);     goto ident;
+        case 'p': trie = WRAP(1, 4, 18, TOKEN_PRINT);  goto ident; 
+        case 'r': trie = WRAP(1, 5,  4, TOKEN_RETURN); goto ident;
+        case 's': trie = WRAP(1, 4, 22, TOKEN_SUPER);  goto ident;
+        case 't': trie = AMBIGUOUS;                    goto ident;
+        case 'v': trie = WRAP(1, 2, 17, TOKEN_VAR);    goto ident;
+        case 'w': trie = AMBIGUOUS;                    goto ident; 
 
         case '"':
             return string();
