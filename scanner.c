@@ -268,6 +268,7 @@ Token scanToken(void) {
         case '$': case '%':
             return number(c);
 
+        // can't start keywords
         case 'd': case 'g': case 'j': case 'k': case 'l':
         case 'm': case 'q': case 'u': case 'x': case 'y':
         case 'A': case 'B': case 'C': case 'D': case 'E':
@@ -279,11 +280,10 @@ Token scanToken(void) {
         ident: 
             return identifier(trie);
 
+        // possibly starting unique keyword
         case 'a': trie = WRAP(1, 2,  1, TOKEN_AND);    goto ident;
         case 'b': trie = WRAP(1, 4, 25, TOKEN_BREAK);  goto ident;
-        case 'c': trie = AMBIGUOUS;                    goto ident;
         case 'e': trie = WRAP(1, 3, 13, TOKEN_ELSE);   goto ident;
-        case 'f': trie = AMBIGUOUS;                    goto ident;  
         case 'h': trie = WRAP(1, 5,  0, TOKEN_HANDLE); goto ident;
         case 'i': trie = WRAP(1, 1, 16, TOKEN_IF);     goto ident;
         case 'n': trie = WRAP(1, 2, 12, TOKEN_NIL);    goto ident;
@@ -291,9 +291,12 @@ Token scanToken(void) {
         case 'p': trie = WRAP(1, 4, 18, TOKEN_PRINT);  goto ident; 
         case 'r': trie = WRAP(1, 5,  4, TOKEN_RETURN); goto ident;
         case 's': trie = WRAP(1, 4, 22, TOKEN_SUPER);  goto ident;
-        case 't': trie = AMBIGUOUS;                    goto ident;
         case 'v': trie = WRAP(1, 2, 17, TOKEN_VAR);    goto ident;
-        case 'w': trie = AMBIGUOUS;                    goto ident; 
+
+        // possibly starting several keywords
+        case 'c': case 'f': case 't': case 'w':
+            trie = AMBIGUOUS;
+            goto ident; 
 
         case '"':
             return string();
