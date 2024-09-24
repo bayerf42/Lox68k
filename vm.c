@@ -156,6 +156,8 @@ void freeVM(void) {
     freeObjects();
 }
 
+#ifndef KIT68K
+// Optimized ASM code for 68K, see kit_util.asm
 void push(Value value) {
     if (vm.sp >= (vm.stack + (STACK_MAX-1))) {
         vm.hadStackoverflow = true;
@@ -163,6 +165,7 @@ void push(Value value) {
     }
     *vm.sp++ = value;
 }
+#endif
 
 #define dropNpush(n,value) { \
     vm.sp -= (n) - 1;        \

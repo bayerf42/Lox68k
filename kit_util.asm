@@ -46,6 +46,10 @@ _putstr:
 .done  move.l    (A7)+,A2
        rts                     ; return value never used
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Some assembler replacements for bottleneck functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; bool isObjType(Value value, ObjType type);
        xdef      _isObjType
 _isObjType:
@@ -61,9 +65,27 @@ _isObjType:
        seq       D0
 .done  rts
 
+; void push(Value value);
+       xdef      _push
+_push:
+       lea       _vm.L,A1
+       move.l    A1,D1
+       add.l     #16380+4,D1   ; beyond end of value stack
+       cmp.l     (A1),D1
+       bhi.s     .push
+       st        20010(A1)     ; stack overflow
+       rts
+
+.push  move.l    (A1),A0       ; push actually
+       addq.l    #4,(A1)
+       move.l    4(A7),(A0)
+       rts
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; For Simulator only: Load Motorola FFP code and Lox68k standard library from ROM file.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; int loadROM(void);
-    ; For Simulator only: Load Motorola FFP code and Lox68k standard library from ROM file.
        xdef      _loadROM
 _loadROM:
        lea       (ROM_FILE_NAME,PC),A0     ; file name
