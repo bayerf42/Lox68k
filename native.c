@@ -33,7 +33,7 @@ static const char* matchesType(Value value, int type) {
     }
 }
 
-bool checkNativeSignature(const Native* native, int argCount, Value* args) {
+bool callNative(const Native* native, int argCount, Value* args) {
     int maxParmCount      = 0;
     int minParmCount      = 0;
     int i;
@@ -67,7 +67,7 @@ bool checkNativeSignature(const Native* native, int argCount, Value* args) {
             return false;
         }
     }
-    return true;
+    return (*native->function)(argCount, args);
 }
 
 

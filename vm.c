@@ -279,8 +279,7 @@ static bool callValue(Value callee, int argCount) {
                     vm.log_native_result = true;
                 }
 
-                if (!checkNativeSignature(native, argCount, vm.sp - argCount) ||
-                    !(*native->function)(argCount, vm.sp - argCount))
+                if (!callNative(native, argCount, vm.sp - argCount)) // don't update vm.sp yet!
                     return false;
                 vm.sp -= argCount;
 
