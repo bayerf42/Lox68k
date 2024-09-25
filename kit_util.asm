@@ -69,16 +69,14 @@ _isObjType:
        xdef      _push
 _push:
        lea       _vm.L,A1
-       move.l    A1,D1
-       add.l     #16380+4,D1   ; beyond end of value stack
-       cmp.l     (A1),D1
-       bhi.s     .push
-       st        20010(A1)     ; stack overflow
+       cmpi.l    #_vm+16388,(A1) ; beyond end of value stack
+       blo.s     .push
+       st        20011(A1)       ; stack overflow
        rts
 
-.push  move.l    (A1),A0       ; push actually
+.push  move.l    (A1),A0         ; push actually
        addq.l    #4,(A1)
-       move.l    4(A7),(A0)
+       move.l    (4,A7),(A0)
        rts
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
