@@ -54,6 +54,14 @@ int main() {
     for (;;) {
         putstr("> ");
         readLine();
+        if (!ON_KIT() && big_buffer[0] == '&') {
+            if (loadSource(big_buffer + 1) == 0) 
+                putstr("Source loaded.\n");
+            else {
+                putstr("Source not found.\n");
+                continue;
+            }
+        }    
         interpret(big_buffer);
     }
     return 0; // not reached

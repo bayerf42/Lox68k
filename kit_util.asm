@@ -91,31 +91,58 @@ _loadROM:
        trap      #15                       ; FOPEN
        dc.w      10 
        move.l    D0,-(A7)                  ; save file handle
-       blt.s     .error
+       blt.s     loadError
 
        move.l    (A7),D1                   ; file handle
        moveq.l   #0,D0                     ; seek from begin
        movea.l   #loxlibsrc-lorom,A0       ; seek position
        trap      #15                       ; FSEEK
        dc.w      14
-       blt.s     .error
+       blt.s     loadError
 
        move.l    (A7),D1                   ; file handle
        move.l    #hirom-loxlibsrc,D0       ; length
        movea.l   #loxlibsrc,A0             ; read destination
        trap      #15                       ; FREAD
        dc.w      12
-       blt.s     .error
+       blt.s     loadError
 
+loadClose:
        move.l    (A7),D1                   ; file handle
        trap      #15                       ; FCLOSE
        dc.w      16
-       blt.s     .error
-
+       blt.s     loadError
        clr.l     D0                        ; Success!
 
-.error addq.w    #4,A7
+loadError:
+       addq.w    #4,A7
        rts
          
 ROM_FILE_NAME
        dc.b      '../roms/mon_ffp_lox.bin',0
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; For Simulator only: Load source file <name> into input buffer
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; int loadSource(const char* name);
+       xdef      _loadSource
+_loadSource:
+       movea.l   (4,A7),A0                 ; file name
+       moveq     #1,D0                     ; mode read-only
+       trap      #15                       ; FOPEN
+       dc.w      10 
+       move.l    D0,-(A7)                  ; save file handle
+       blt.s     loadError
+
+       move.l    (A7),D1                   ; file handle
+       move.l    #16383,D0                 ; INPUT_SIZE-1
+       lea       _big_buffer,A0            ; read destination
+       trap      #15                       ; FREAD
+       dc.w      12
+       blt.s     loadError
+       lea       _big_buffer,A0
+       clr.b     (A0,D0.W)                 ; Terminate string with \0
+
+       bra.s     loadClose
+         

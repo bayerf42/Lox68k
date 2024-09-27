@@ -129,12 +129,12 @@ and doesn't support modern *C99*.
   [Listed here](operations.md)
 
 
-## The 3 varieties of Lox buildable
+## The 4 varieties of Lox buildable
 
 All varieties are compiled from the same source files as described in the following sections.
 
 
-### Lox compiled for the 68008 kit in ROM
+### Lox running on the actual 68008 kit
 The executable is burnt into ROM (together with the Monitor code and the FFP library)
 and can [utilize the entire RAM for data](memorymap.md) and the kit's hardware like LCD, keyboard,
 sound, and terminal communication via the serial port.
@@ -158,10 +158,22 @@ To interrupt long-running computations, press the **REP** key bringing you back 
 prompt. Be sure to put the interrupt source switch to *10ms TICK* to have an accurate timer.
 In versions before 1.4, the **IRQ** key was used for this purpose.
 
+
+### Lox running in the *IDE68K* emulator
 You can also run this version in the *IDE68K* emulator, but Kit's I/O (LCD, sound, keyboard)
 are not available. To use the Floating point and standard library, you must have built the
 ROM file as described above before starting the emulator.
 Just press the *RUN* icon and input Lox code into the console.
+
+To load a file into the REPL, input
+```
+&filepath
+```
+at the REPL prompt, just like Windows and Linux variants.
+
+Please note that the visual simulator of *IDE68K* may crash easily when outputting text
+at a high rate, the textual simulator is more stable.
+
 
 ### Lox compiled to a Windows executable.
 It actually uses the same memory model and restrictions as the 68008 version and also omits
@@ -195,6 +207,7 @@ You can also load a file from the REPL by inputting
 &filepath
 ```
 at the REPL prompt.
+
 
 ### Lox compiled to a Linux executable.
 Works exactly as the Windows version, but compiled with `GCC` on Linux.
