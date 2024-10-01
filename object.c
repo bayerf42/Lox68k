@@ -203,6 +203,8 @@ static void printInstance(ObjInstance* inst, int flags) {
     const char* sep = "";
     Entry*      entry;
 
+    CHECK_STACKOVERFLOW
+
     printf("%s(", inst->klass->name->chars);
     if (flags & PRTF_COMPACT)
         putstr("..");
@@ -212,9 +214,9 @@ static void printInstance(ObjInstance* inst, int flags) {
             if (IS_EMPTY(entry->key))
                 continue;
             putstr(sep);
-            printValue(entry->key, flags & PRTF_COMPACT); 
+            printValue(entry->key, flags | PRTF_COMPACT); 
             putstr(",");
-            printValue(entry->value, flags & PRTF_COMPACT); // don't recurse into sub-objects
+            printValue(entry->value, flags | PRTF_COMPACT); // don't recurse into sub-objects
             sep = ", ";
         }
     putstr(")");
