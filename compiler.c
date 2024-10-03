@@ -408,13 +408,16 @@ static void iter(bool canAssign) {
         emitByte(accessor == TOKEN_HAT ? OP_GET_ITVAL : OP_GET_ITKEY);
 }
 
-static void literal(bool canAssign) {
-    switch (parser.previous.type) {
-        case TOKEN_FALSE: emitByte(OP_FALSE); break;
-        case TOKEN_NIL:   emitByte(OP_NIL);   break;
-        case TOKEN_TRUE:  emitByte(OP_TRUE);  break;
-        default: return; // unreachable
-    }
+static void nil_(bool canAssign) {
+    emitByte(OP_NIL);
+}
+
+static void false_(bool canAssign) {
+    emitByte(OP_FALSE);
+}
+
+static void true_(bool canAssign) {
+    emitByte(OP_TRUE);
 }
 
 static void grouping(bool canAssign) {
@@ -743,13 +746,13 @@ static const ParseRule rules[] = {
     // non-syncing keywords *******************************************
     /* [TOKEN_AND]           = */ {NULL,     and_,   PREC_AND},
     /* [TOKEN_ELSE]          = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_FALSE]         = */ {literal,  NULL,   PREC_NONE},
+    /* [TOKEN_FALSE]         = */ {false_,   NULL,   PREC_NONE},
     /* [TOKEN_HANDLE]        = */ {handler,  NULL,   PREC_NONE},
-    /* [TOKEN_NIL]           = */ {literal,  NULL,   PREC_NONE},
+    /* [TOKEN_NIL]           = */ {nil_,     NULL,   PREC_NONE},
     /* [TOKEN_OR]            = */ {NULL,     or_,    PREC_OR},
     /* [TOKEN_SUPER]         = */ {super_,   NULL,   PREC_NONE},
     /* [TOKEN_THIS]          = */ {this_,    NULL,   PREC_NONE},
-    /* [TOKEN_TRUE]          = */ {literal,  NULL,   PREC_NONE},
+    /* [TOKEN_TRUE]          = */ {true_,    NULL,   PREC_NONE},
     /* [TOKEN_WHEN]          = */ {NULL,     NULL,   PREC_NONE},
 
     // syncing keywords ***********************************************
