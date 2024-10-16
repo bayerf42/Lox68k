@@ -68,7 +68,7 @@ _isObjType:
 ; void push(Value value);
        xdef      _push
 _push:
-       lea       _vm.L,A1
+       lea       _vm.W,A1
        cmpi.l    #_vm+16388,(A1) ; beyond end of value stack
        blo.s     .push
        st        20011(A1)       ; stack overflow

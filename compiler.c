@@ -633,21 +633,15 @@ static void or_(bool canAssign) {
     patchJump(endJump);
 }
 
-static void unary(bool canAssign) {
-    switch (parser.previous.type) {
-        case TOKEN_BANG:
-            parsePrecedence(PREC_UNARY);
-            emitByte(OP_NOT);
-            break;
+static void not(bool canAssign) {
+    parsePrecedence(PREC_UNARY);
+    emitByte(OP_NOT);
+}
 
-        case TOKEN_MINUS:
-            emitConstant(INT_VAL(0)); 
-            parsePrecedence(PREC_UNARY);
-            emitByte(OP_SUB);
-            break;
-
-        default: return; // Unreachable
-    }
+static void negative(bool canAssign) {
+    emitConstant(INT_VAL(0)); 
+    parsePrecedence(PREC_UNARY);
+    emitByte(OP_SUB);
 }
 
 static void lambda(bool canAssign) {
@@ -714,13 +708,13 @@ static const ParseRule rules[] = {
 
     // single character operators *************************************
     /* [TOKEN_PLUS]          = */ {NULL,     binary, PREC_TERM},
-    /* [TOKEN_MINUS]         = */ {unary,    binary, PREC_TERM},
+    /* [TOKEN_MINUS]         = */ {negative, binary, PREC_TERM},
     /* [TOKEN_STAR]          = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_SLASH]         = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_BACKSLASH]     = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_AT]            = */ {NULL,     iter,   PREC_POSTFIX},
     /* [TOKEN_HAT]           = */ {NULL,     iter,   PREC_POSTFIX},
-    /* [TOKEN_BANG]          = */ {unary,    NULL,   PREC_NONE},
+    /* [TOKEN_BANG]          = */ {not,      NULL,   PREC_NONE},
     /* [TOKEN_EQUAL]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_GREATER]       = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_LESS]          = */ {NULL,     binary, PREC_COMPARISON},
