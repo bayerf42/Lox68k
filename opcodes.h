@@ -31,6 +31,7 @@ typedef enum {
     OP_NOT,           // invert logical value of TOS
     OP_PRINT,         // print TOS
     OP_PRINTLN,       // print TOS, print newline
+    OP_PRINTQ,        // print TOS quoted, print newline
     OP_JUMP,          // jump forwards  by word0 bytes
     OP_JUMP_OR,       // jump forwards  by word0 bytes if TOS is true,  pop TOS otherwise 
     OP_JUMP_AND,      // jump forwards  by word0 bytes if TOS is false, pop TOS otherwise

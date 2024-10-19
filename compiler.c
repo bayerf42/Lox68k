@@ -984,7 +984,7 @@ static void varDeclaration(void) {
 static void expressionStatement(bool topLevel) {
     expression();
     if (topLevel)
-        emitByte(match(TOKEN_SEMICOLON) ? OP_POP : OP_PRINTLN);
+        emitByte(match(TOKEN_SEMICOLON) ? OP_POP : OP_PRINTQ);
     else {
         consumeExp(TOKEN_SEMICOLON, "expression");
         emitByte(OP_POP);

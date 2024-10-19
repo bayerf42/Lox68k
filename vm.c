@@ -751,6 +751,11 @@ nextInstNoSO:
             putstr("\n");
             goto nextInstNoSO;
 
+        case OP_PRINTQ:
+            printValue(pop(), PRTF_MACHINE | PRTF_EXPAND);
+            putstr("\n");
+            goto nextInstNoSO;
+
         case OP_JUMP:
             offset = READ_USHORT();
             frame->ip += offset;

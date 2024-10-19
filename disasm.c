@@ -107,6 +107,7 @@ static void disassembleIntern(void) {
         case OP_NOT:           simpleInst("NOT");       break;
         case OP_PRINT:         simpleInst("PRINT");     break;
         case OP_PRINTLN:       simpleInst("PRINTLN");   break;
+        case OP_PRINTQ:        simpleInst("PRINTQ");    break;
         case OP_JUMP:          jumpInst("JUMP", 1);     break;
         case OP_JUMP_OR:       jumpInst("JUMP_OR", 1);  break;
         case OP_JUMP_AND:      jumpInst("JUMP_AND", 1); break;
