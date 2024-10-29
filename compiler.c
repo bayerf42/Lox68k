@@ -275,8 +275,12 @@ static ObjFunction* endCompiler(bool addReturn) {
     if (addReturn)
         emitReturn();
     freezeChunk(currentChunk());
+
+#ifdef LOX_DBG
     if (vm.debug_print_code && !parser.hadError)
         disassembleChunk(currentChunk(), functionName(function));
+#endif
+
     currentComp = currentComp->enclosing;
     return function;
 }
@@ -1269,10 +1273,11 @@ ObjFunction* compile(const char* source) {
     Compiler     compiler;
     ObjFunction* function;
 
+#ifdef LOX_DBG
     STATIC_BREAKPOINT();
-
     vm.totallyAllocated = 0;
     vm.numGCs           = 0;
+#endif
 
     initScanner(source);
     initCompiler(&compiler, TYPE_SCRIPT);

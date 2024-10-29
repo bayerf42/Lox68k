@@ -25,11 +25,17 @@ typedef struct {
 
     bool        handleException;
     bool        hadStackoverflow;
-    bool        log_native_result;
     size_t      bytesAllocated;
     Obj*        objects;
     int         grayCount;
     Obj*        grayStack[GRAY_MAX];
+
+#ifndef KIT68K
+  volatile bool interrupted;
+#endif
+
+#ifdef LOX_DBG
+    bool        log_native_result;
     size_t      totallyAllocated;
     int         numGCs;
 
@@ -37,7 +43,6 @@ typedef struct {
     uint32_t    stepsExecuted;
     int32_t     started;
 #else
-  volatile bool interrupted;
     uint64_t    stepsExecuted;
     clock_t     started;
 #endif
@@ -48,6 +53,7 @@ typedef struct {
     bool        debug_trace_natives;
     int16_t     debug_log_gc;
     bool        debug_statistics;
+#endif
 } VM;
 
 typedef enum {

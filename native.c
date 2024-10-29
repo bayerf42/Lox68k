@@ -17,9 +17,11 @@ static const char* matchesType(Value value, int type) {
     switch (type) {
         case 'A': return                      NULL;  // any value
         case 'C': return IS_CLASS(value)    ? NULL : "a class";
+#ifdef LOX_DBG
         case 'F': return IS_CLOSURE(value)
                       || IS_BOUND(value)
                       || IS_FUNCTION(value) ? NULL : "a function";
+#endif
         case 'I': return IS_INSTANCE(value) ? NULL : "an instance";
         case 'L': return IS_LIST(value)     ? NULL : "a list";
         case 'N': return IS_INT(value)      ? NULL : "an int";
@@ -70,10 +72,24 @@ bool callNative(const Native* native, int argCount, Value* args) {
     return (*native->function)(argCount, args);
 }
 
-
 #define RESULT args[-1]
 #define NATIVE(fun) static bool fun(int argCount, Value* args)
 // Concatening fun name with ## crashes IDE68K compiler
+
+// Calling convention for natives:
+// ===============================
+//
+// 1st parameter is number of arguments (only useful for variadic arity)
+// 2nd parameter is pointer to call stack slice, arguments can be accessed by args[0], args[1], etc.
+//
+// basic arity and type checks are done via the signature string,
+// only in special cases you have to do further checks,
+// e.g. join, index, lcd_defchar
+//
+// result must be stored into args[-1] (or use macro RESULT)
+// to indicate success, return true, on error return false.
+// you have to call runtimeError(...) before returning false to provide a useful error message
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Arithmetics
@@ -540,8 +556,10 @@ NATIVE(seedRandNative) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Modifying debugging options
+// Modifying debugging options, disassembler
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef LOX_DBG
 
 static bool setVMFlag(Value* args, bool* flag) {
     *flag  = !IS_FALSEY(args[0]);
@@ -574,6 +592,24 @@ NATIVE(dbgGcNative) {
 NATIVE(dbgStatNative) {
     return setVMFlag(args, &vm.debug_statistics);
 }
+
+NATIVE(disasmNative) {
+    ObjFunction* fun = IS_FUNCTION(args[0]) ? AS_FUNCTION(args[0])
+                     : IS_BOUND(args[0])    ? AS_BOUND(args[0])->method->function
+                                            : AS_CLOSURE(args[0])->function;
+    Chunk* chunk     = &fun->chunk;
+    int offset       = AS_INT(args[1]);
+    if (offset < 0 || offset >= chunk->count) {
+        runtimeError("'%s' %s out of range.", "disasm", "offset");
+        return false;
+    }
+    offset = disassembleInst(chunk, offset);
+    RESULT = (offset < chunk->count) ? INT_VAL(offset) : NIL_VAL;
+    return true;
+}
+
+#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Machine code support
@@ -852,21 +888,6 @@ NATIVE(clockNative) {
     return true;
 }
 
-NATIVE(disasmNative) {
-    ObjFunction* fun = IS_FUNCTION(args[0]) ? AS_FUNCTION(args[0])
-                     : IS_BOUND(args[0])    ? AS_BOUND(args[0])->method->function
-                                            : AS_CLOSURE(args[0])->function;
-    Chunk* chunk     = &fun->chunk;
-    int offset       = AS_INT(args[1]);
-    if (offset < 0 || offset >= chunk->count) {
-        runtimeError("'%s' %s out of range.", "disasm", "offset");
-        return false;
-    }
-    offset = disassembleInst(chunk, offset);
-    RESULT = (offset < chunk->count) ? INT_VAL(offset) : NIL_VAL;
-    return true;
-}
-
 char* readLine() {
 #ifdef KIT68K
     return gets(big_buffer);
@@ -935,12 +956,14 @@ static const Native allNatives[] = {
     {"random",      "",     randomNative},
     {"seed_rand",   "N",    seedRandNative},
 
-    {"dbg_code",    "A",    dbgCodeNative},
-    {"dbg_step",    "A",    dbgStepNative},
-    {"dbg_call",    "A",    dbgCallNative},
-    {"dbg_nat",     "A",    dbgNatNative},
-    {"dbg_gc",      "N",    dbgGcNative},
-    {"dbg_stat",    "A",    dbgStatNative},
+    {"sleep",       "N",    sleepNative},
+    {"gc",          "",     gcNative},
+    {"type",        "A",    typeNative},
+    {"name",        "A",    nameNative},
+    {"parent",      "C",    parentNative},
+    {"class_of",    "A",    classOfNative},
+    {"error",       "A",    errorNative},
+    {"clock",       "",     clockNative},
 
     {"peek",        "N",    peekNative},
     {"poke",        "NN",   pokeNative},
@@ -958,15 +981,15 @@ static const Native allNatives[] = {
     {"trap",        "",     trapNative},
 #endif
 
-    {"sleep",       "N",    sleepNative},
-    {"gc",          "",     gcNative},
-    {"type",        "A",    typeNative},
-    {"name",        "A",    nameNative},
-    {"parent",      "C",    parentNative},
-    {"class_of",    "A",    classOfNative},
-    {"error",       "A",    errorNative},
-    {"clock",       "",     clockNative},
+#ifdef LOX_DBG
+    {"dbg_code",    "A",    dbgCodeNative},
+    {"dbg_step",    "A",    dbgStepNative},
+    {"dbg_call",    "A",    dbgCallNative},
+    {"dbg_nat",     "A",    dbgNatNative},
+    {"dbg_gc",      "N",    dbgGcNative},
+    {"dbg_stat",    "A",    dbgStatNative},
     {"disasm",      "FN",   disasmNative},
+#endif
 };
 
 void defineAllNatives() {

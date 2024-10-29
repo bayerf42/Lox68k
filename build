@@ -1,4 +1,6 @@
 #! /bin/bash
 # Build llox for Linux
+gcc -O3 -std=gnu89 -DLOX_DBG -Wall -lm -march=native -flto -o llox_dbg *.c 
 gcc -O3 -std=gnu89 -Wall -lm -march=native -flto -o llox *.c 
+strip llox_dbg
 strip llox

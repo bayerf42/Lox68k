@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#ifdef LOX_DBG
+
 #include "disasm.h"
 #include "object.h"
 
@@ -108,12 +110,12 @@ static void disassembleIntern(void) {
         case OP_PRINT:         simpleInst("PRINT");     break;
         case OP_PRINTLN:       simpleInst("PRINTLN");   break;
         case OP_PRINTQ:        simpleInst("PRINTQ");    break;
-        case OP_JUMP:          jumpInst("JUMP", 1);     break;
-        case OP_JUMP_OR:       jumpInst("JUMP_OR", 1);  break;
+        case OP_JUMP:          jumpInst("JUMP",     1); break;
+        case OP_JUMP_OR:       jumpInst("JUMP_OR",  1); break;
         case OP_JUMP_AND:      jumpInst("JUMP_AND", 1); break;
-        case OP_JUMP_TRUE:     jumpInst("JUMP_T", 1);   break;
-        case OP_JUMP_FALSE:    jumpInst("JUMP_F", 1);   break;
-        case OP_LOOP:          jumpInst("LOOP", -1);    break;
+        case OP_JUMP_TRUE:     jumpInst("JUMP_T",   1); break;
+        case OP_JUMP_FALSE:    jumpInst("JUMP_F",   1); break;
+        case OP_LOOP:          jumpInst("LOOP",    -1); break;
         case OP_CALL:          byteInst("CALL");        break;
         case OP_CALL0:         simpleInst("CALL0");     break;
         case OP_CALL1:         simpleInst("CALL1");     break;
@@ -146,3 +148,5 @@ static void disassembleIntern(void) {
     }
     putstr("\n");
 }
+
+#endif

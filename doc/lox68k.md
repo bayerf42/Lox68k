@@ -40,7 +40,7 @@ it as Windows/Linux executables, too.
 * To build the 68008 version of Lox, you need the
   *IDE68K suite* from https://kswichit.net/68008/ide68k30.zip
 * To build the Windows version of Lox, you need the
-  *Tiny C compiler* from https://bellard.org/tcc
+  *Tiny C compiler* from https://bellard.org/tcc or any other suitable 32 bit C compiler
 * To build the Linux version of Lox, you need nothing but standard *gcc*.
 * For building the ROM image and running the special Lox terminal emulation,
   you need Python 3, available at https://www.python.org/ and the `pyserial` and `bincopy`
@@ -133,15 +133,21 @@ and doesn't support modern *C99*.
 
 All varieties are compiled from the same source files as described in the following sections.
 
+Depending on the `LOX_DBG` symbol, two versions of Lox are compiled:
+  1. Debug version including various debug and disassembly natives
+  2. A smaller and (about 10%) faster version without those natives
+
 
 ### Lox running on the actual 68008 kit
 The executable is burnt into ROM (together with the Monitor code and the FFP library)
 and can [utilize the entire RAM for data](memorymap.md) and the kit's hardware like LCD, keyboard,
 sound, and terminal communication via the serial port.
 
-To build this version, load project `clox_rom.prj` in *IDE68K* and build it.
-A hex file `clox_rom.hex` is generated, which is then combined with the Monitor
-by executing 
+To build this version, load project `clox.prj` in *IDE68K* and build it.
+A hex file `clox.hex` is generated. Do the same with project `clox_dbg.prj` generating
+hex file `clox_dbg.hex`.
+
+Combine both hex files with the Monitor by executing 
 ```sh
 python makerom.py
 ```
@@ -151,8 +157,9 @@ To start it, start a terminal emulation, either from *IDE68K*, or preferrably by
 ```sh
 python terminal.py
 ```
-press **ADDR**, input address `$44000` or `$44008` [(what's the difference)](stdlib.md)
-and press **GO**. Now you can send commands to the REPL running at the Kit via the terminal.
+press **ADDR**, input one of the start address `$44000`, `$44008`, `$52000`, or `$52008`
+[(what's the difference)](stdlib.md) and press **GO**.
+Now you can send commands to the REPL running at the Kit via the terminal.
 
 To interrupt long-running computations, press the **REP** key bringing you back to the input
 prompt. Be sure to put the interrupt source switch to *10ms TICK* to have an accurate timer.
@@ -183,6 +190,7 @@ To build it on Windows, execute
 ```sh
 build
 ```
+to generate both `wlox.exe` and `wlox_dbg.exe`.
 
 To start Lox interactively (aka. the REPL), execute
 ```sh

@@ -7,7 +7,11 @@
 #include "memory.h"
 #include "vm.h"
 
-#define VERSION "V1.5"
+#ifdef LOX_DBG
+#define VERSION_STRING "Lox68k V1.5 [debug] by Fred Bayer\n"
+#else
+#define VERSION_STRING "Lox68k V1.5 [no debug] by Fred Bayer\n"
+#endif
 
 #ifdef KIT68K
 
@@ -35,16 +39,16 @@ int main() {
 
         // Load ROM file with FFP lib and Lox standard lib.
         if (loadROM() == 0)
-            putstr("ROM loaded.\n");
+            printf("%s loaded.\n", "ROM");
         else {
-            putstr("ROM not found.\n");
+            printf("%s not found.\n", "ROM");
             loxLibSrc = NULL;
         }  
     }
 
     init_freelist();
     initVM();
-    printf("Lox68k %s by Fred Bayer\n", VERSION);
+    putstr(VERSION_STRING);
     if (loxLibSrc) {
         putstr("Loading standard library.\n");
         interpret(loxLibSrc);
@@ -56,9 +60,9 @@ int main() {
         readLine();
         if (!ON_KIT() && big_buffer[0] == '&') {
             if (loadSource(big_buffer + 1) == 0) 
-                putstr("Source loaded.\n");
+                printf("%s loaded.\n", "File");
             else {
-                putstr("Source not found.\n");
+                printf("%s not found.\n", "File");
                 continue;
             }
         }    
@@ -136,7 +140,7 @@ int main(int argc, const char* argv[]) {
     init_freelist();
     initVM();
 
-    printf("Lox68k %s by Fred Bayer\n", VERSION);
+    putstr(VERSION_STRING);
     if (argc == 1)
         repl();
     else {

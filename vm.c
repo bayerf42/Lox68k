@@ -19,6 +19,8 @@ static void resetStack(void) {
 
 static void closeUpvalues(Value* last);
 
+#ifdef LOX_DBG
+
 static void indentCallTrace(void) {
     int depth = vm.frameCount;
     while (depth--)
@@ -44,6 +46,8 @@ static void printStack(void) {
     putstr("\n");
 }
 
+#endif
+
 static void printBacktrace(void) {
     int          i;
     size_t       instruction;
@@ -68,19 +72,23 @@ void runtimeError(const char* format, ...) {
     vsprintf(big_buffer, format, args);
     va_end(args);
 
+#ifdef LOX_DBG
     if (vm.log_native_result) {
         printf("/!\\ \"%s\"\n", big_buffer);
         vm.log_native_result = false;
     }
+#endif
 
     // search for handler in frames
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
         if (AS_OBJ(frame->handler)) {
+#ifdef LOX_DBG
             if (vm.debug_trace_calls) {
                 indentCallTrace();
                 printf("<== \"%s\"\n", big_buffer);
             }
+#endif
             closeUpvalues(frame->fp);
             vm.sp         = frame->fp;
             vm.frameCount = i;
@@ -100,23 +108,27 @@ void userError(Value exception) {
     int        i;
     CallFrame* frame;
 
+#ifdef LOX_DBG
     if (vm.log_native_result) {
         putstr("/!\\ ");
         printValue(exception, PRTF_MACHINE | PRTF_EXPAND);
         putstr("\n");
         vm.log_native_result = false;
     }
+#endif
 
     // search for handler in frames
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
         if (AS_OBJ(frame->handler)) {
+#ifdef LOX_DBG
             if (vm.debug_trace_calls) {
                 indentCallTrace();
                 putstr("<== ");
                 printValue(exception, PRTF_MACHINE | PRTF_EXPAND);
                 putstr("\n");
             }
+#endif
             closeUpvalues(frame->fp);
             vm.sp         = frame->fp;
             vm.frameCount = i;
@@ -189,12 +201,14 @@ static bool call(ObjClosure* closure, int argCount) {
         return false;
     }
 
+#ifdef LOX_DBG
     if (vm.debug_trace_calls) {
         indentCallTrace();
         printf("--> %s (", functionName(closure->function));
         printArgList(argCount);
         putstr(")\n");
     }
+#endif
 
     arity = closure->function->arity & ARITY_MASK;
     if (closure->function->arity & REST_PARM_MASK) {
@@ -229,10 +243,12 @@ static bool callWithHandler(ObjClosure* closure) {
         return false;
     }
 
+#ifdef LOX_DBG
     if (vm.debug_trace_calls) {
         indentCallTrace();
         printf("==> %s ()\n", functionName(closure->function));
     }
+#endif
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
@@ -273,6 +289,7 @@ static bool callValue(Value callee, int argCount) {
             case OBJ_NATIVE:
                 native = AS_NATIVE(callee);
 
+#ifdef LOX_DBG
                 if (vm.debug_trace_natives) {
                     if (vm.debug_trace_calls)
                         indentCallTrace();
@@ -281,16 +298,19 @@ static bool callValue(Value callee, int argCount) {
                     putstr(") -> ");
                     vm.log_native_result = true;
                 }
+#endif
 
                 if (!callNative(native, argCount, vm.sp - argCount)) // don't update vm.sp yet!
                     return false;
                 vm.sp -= argCount;
 
+#ifdef LOX_DBG
                 if (vm.log_native_result) {
                     printValue(vm.sp[-1], PRTF_MACHINE | PRTF_EXPAND);
                     putstr("\n");
                     vm.log_native_result = false;
                 } 
+#endif
                 return true;
         }
     }
@@ -410,10 +430,12 @@ static InterpretResult run(void) {
 
     vm.hadStackoverflow  = false;
     vm.handleException   = false;
+
+#ifdef LOX_DBG
     vm.log_native_result = false;
     vm.stepsExecuted     = 0;
-
     STATIC_BREAKPOINT();
+#endif
 
 updateFrame:
     // Last op changed call frame, update cached values
@@ -436,13 +458,15 @@ nextInstNoSO:
         return INTERPRET_INTERRUPTED;
     }
 
+#ifdef LOX_DBG
     if (vm.debug_trace_steps) {
         printStack();
         disassembleInst(&frame->closure->function->chunk,
                         (int)(frame->ip - frame->closure->function->chunk.code));
     }
-
     ++vm.stepsExecuted;
+#endif
+
     switch (READ_BYTE()) {
         case OP_CONSTANT:
             index = READ_BYTE();
@@ -884,12 +908,14 @@ nextInstNoSO:
             closeUpvalues(frame->fp);
             vm.frameCount--;
 
+#ifdef LOX_DBG
             if (vm.debug_trace_calls) {
                 indentCallTrace();
                 printf("<-- %s ", functionName(frame->closure->function));
                 printValue(resVal, PRTF_MACHINE | PRTF_EXPAND);
                 putstr("\n");
             }
+#endif
 
             if (vm.frameCount == 0) {
                 drop();
@@ -1138,13 +1164,15 @@ InterpretResult interpret(const char* source) {
     call(closure, 0);
 
     RESET_INTERRUPTED();
+#ifdef LOX_DBG
     vm.started = clock();
+#endif
     handleInterrupts(true);
     result = run();
     handleInterrupts(false);
 
+#ifdef LOX_DBG
     STATIC_BREAKPOINT();
-
     if (vm.debug_statistics) {
 #ifdef KIT68K
         printf("[%d.%02d sec; %u steps; %d bytes; %d GCs]\n",
@@ -1156,5 +1184,6 @@ InterpretResult interpret(const char* source) {
                vm.stepsExecuted, vm.totallyAllocated, vm.numGCs);
 #endif
     }
+#endif
     return result;
 }

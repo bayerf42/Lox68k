@@ -28,8 +28,10 @@ static Obj* allocateObject(size_t size, ObjType type) {
     object->nextObj  = vm.objects;
     vm.objects       = object;
 
+#ifdef LOX_DBG
     if (vm.debug_log_gc & DBG_GC_ALLOC)
         printf("GC %05x aloc %d %s\n", (int32_t)object, size, typeName(type));
+#endif
 
     return object;
 }

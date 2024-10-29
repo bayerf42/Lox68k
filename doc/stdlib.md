@@ -6,9 +6,11 @@ for 68k and Intel/ARM architectures, files `lox/stdlib_68k.lox` and `lox/stdlib.
 
 You can start Lox68k with or without the standard library:
 
-* On the Kit start at `$44000` for Lox *with* the standard library, or at `$44008` for Lox
+* On the Kit start at `$44000` for Lox [debug] *with* the standard library, or at `$44008` for Lox
   *without* the standard library. The standard library is bundled automatically when
   building the ROM image.
+
+* If you want the faster non-debug version, start it at `$52000`, or at `$52008` likewise.
 
 * On the 68k Simulator the standard library is loaded from the ROM image `../roms/mon_ffp_lox.bin`
   on start-up. You can use either start address like above or just press the *RUN* icon.

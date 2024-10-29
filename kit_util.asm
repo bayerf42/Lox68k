@@ -103,6 +103,8 @@ _loadROM:
        move.l    (A7),D1                   ; file handle
        move.l    #hirom-loxlibsrc,D0       ; length
        movea.l   #loxlibsrc,A0             ; read destination
+       clr.b     (A0)                      ; simulator bug, make sure read destination
+                                           ; memory block is mapped by writing to it before FREAD
        trap      #15                       ; FREAD
        dc.w      12
        blt.s     loadError

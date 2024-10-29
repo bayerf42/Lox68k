@@ -26,15 +26,15 @@ Trailing `?` at return type means that the native may return `nil`.
 | clock       | -                      | int         | all          | runtime in milliseconds after start                                               |  
 | cos         | num                    | real        | all          | cosine                                                                            |  
 | cosh        | num                    | real        | all          | hyperbolic cosine                                                                 |  
-| dbg_call    | any                    | nil         | all          | trace call/return Lox functions/methods, including arguments and return value     |  
-| dbg_code    | any                    | nil         | all          | prints byte code after compiling (argument treated as bool, like other dbg funs)  |  
-| dbg_gc      | int                    | nil         | all          | prints garbage collection diagnostics according to bit flags *int*, see `memory.h`|  
-| dbg_nat     | any                    | nil         | all          | trace calling Lox natives, including arguments and return value                   |  
-| dbg_stat    | any                    | nil         | all          | print statistics (time, steps, allocations, GCs) after execution                  |  
-| dbg_step    | any                    | nil         | all          | trace each VM instruction executed, prints stack                                  |  
+| dbg_call    | any                    | nil         | all/debug    | trace call/return Lox functions/methods, including arguments and return value     |  
+| dbg_code    | any                    | nil         | all/debug    | prints byte code after compiling (argument treated as bool, like other dbg funs)  |  
+| dbg_gc      | int                    | nil         | all/debug    | prints garbage collection diagnostics according to bit flags *int*, see `memory.h`|  
+| dbg_nat     | any                    | nil         | all/debug    | trace calling Lox natives, including arguments and return value                   |  
+| dbg_stat    | any                    | nil         | all/debug    | print statistics (time, steps, allocations, GCs) after execution                  |  
+| dbg_step    | any                    | nil         | all/debug    | trace each VM instruction executed, prints stack                                  |  
 | dec         | num                    | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int              | nil         | all          | deletes element at *int* from *list*                                              |
-| disasm      | fun, int               | int?        | all          | prints VM code of *fun* at offset *int*, returns next offset or nil at end        |
+| disasm      | fun, int               | int?        | all/debug    | prints VM code of *fun* at offset *int*, returns next offset or nil at end        |
 | equal       | any, any               | bool        | all          | more lenient than ==, numbers compared numerically, iterators for same position   |  
 | error       | any                    | *no return* | all          | throws an error with exception *any*. Can be caught with `handle` expression.     |  
 | exec        | int, any?, any?, any?  | any         | all          | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  

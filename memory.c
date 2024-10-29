@@ -11,11 +11,12 @@ char big_buffer[INPUT_SIZE];
 void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     void* result;
 
+#ifdef LOX_DBG
     if (vm.debug_log_gc & DBG_GC_STRESS) {
         if (newSize > oldSize)
             collectGarbage(false);
     }
-
+#endif
     vm.bytesAllocated += newSize - oldSize;
 
     if (newSize == 0) {
@@ -27,8 +28,10 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     result = nano_malloc(newSize);
 
     if (result == NULL) {
+#ifdef LOX_DBG
         if (vm.debug_log_gc & DBG_GC_GENERAL)
             putstr("GC -- malloc failed, now trying gc.\n");
+#endif
 
         collectGarbage(true);
 
@@ -38,7 +41,10 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
             exit(1);
         }
     }
+
+#ifdef LOX_DBG
     vm.totallyAllocated += newSize;
+#endif
 
     if (oldSize != 0) {
         fix_memcpy(result, pointer, (oldSize < newSize) ? oldSize : newSize);
@@ -51,11 +57,13 @@ void markObject(Obj* object) {
     if (object == NULL || object->isMarked)
         return;
 
+#ifdef LOX_DBG
     if (vm.debug_log_gc & DBG_GC_MARK) {
         printf("GC %05x mark ", (int32_t)object);
         printValue(OBJ_VAL(object), PRTF_MACHINE | PRTF_COMPACT);
         putstr("\n");
     }
+#endif
 
     object->isMarked = true;
 
@@ -89,11 +97,13 @@ static void markArray(ValueArray* array) {
 static void blackenObject(Obj* object) {
     int16_t i;
 
+#ifdef LOX_DBG
     if (vm.debug_log_gc & DBG_GC_BLACK) {
         printf("GC %05x blak ", (int32_t)object);
         printValue(OBJ_VAL(object), PRTF_MACHINE | PRTF_COMPACT);
         putstr("\n");
     }
+#endif
 
     switch (object->type) {
         case OBJ_BOUND:
@@ -140,8 +150,10 @@ static void blackenObject(Obj* object) {
 
 static void freeObject(Obj* object) {
 
+#ifdef LOX_DBG
     if (vm.debug_log_gc & DBG_GC_FREE)
         printf("GC %05x free %s\n", (int32_t)object, typeName(object->type));
+#endif
 
     switch (object->type) {
         case OBJ_BOUND:
@@ -249,12 +261,14 @@ static void sweep(void) {
 void collectGarbage(bool checkReclaim) {
     size_t before = vm.bytesAllocated;
 
+#ifdef LOX_DBG
     if (vm.debug_log_gc & DBG_GC_GENERAL)
         putstr("GC >>> begin\n");
+#endif
 
     markRoots();
     traceReferences();
-    tableRemoveWhite(&vm.strings);
+    tableRemoveWhite(&vm.strings); // making vm.strings a weak hash-table
     sweep();
 
     if (checkReclaim && before == vm.bytesAllocated) {
@@ -262,15 +276,22 @@ void collectGarbage(bool checkReclaim) {
         exit(1);
     }
 
+#ifdef LOX_DBG
     if (vm.debug_log_gc & DBG_GC_GENERAL) {
         putstr("GC <<< ended\n");
         printf("GC collected %d bytes (from %d to %d)\n",
                before - vm.bytesAllocated, before, vm.bytesAllocated);
     }
+#endif
 
+#ifdef LOX_DBG
     if (!(vm.debug_log_gc & DBG_GC_STRESS)) // Avoid endless recursion
         tableShrink(&vm.strings);
     vm.numGCs++;
+#else
+    tableShrink(&vm.strings);
+#endif
+
 }
 
 void freeObjects(void) {

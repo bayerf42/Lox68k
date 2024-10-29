@@ -13,8 +13,9 @@ lib_max  = 0x5f000 # maximum address of library, math FFP starts here
 rom = bincopy.BinFile()
 rom.add_binary_file(rom_path + "mon_ffp.bin", rom_base)
 
-## Add Lox68k binary.
-rom.add_file("clox_rom.hex", overwrite = True)
+## Add Lox68k binaries.
+rom.add_file("clox.hex", overwrite = True)
+rom.add_file("clox_dbg.hex", overwrite = True)
 
 ## Add Lox standard library source
 lib_size = 0
