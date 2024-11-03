@@ -147,33 +147,27 @@ static Token identifier(int32_t trie) {
 
     // Disambiguate possible keywords starting with same letter.
     if (trie == AMBIGUOUS) {
-        trie = 0;   
-        if (c == 'c') {
-            if (id_length > 1) {
+        trie = 0;
+        if (id_length > 1) {   
+            if (c == 'c') {
                 c = scanner.start[1];
-                if      (c == 'a')         trie = WRAP(2, 2, 14, TOKEN_CASE);
-                else if (c == 'l')         trie = WRAP(2, 3,  9, TOKEN_CLASS);
-            }
-        } else if (c == 'f') {
-            if (id_length > 1) {
+                if      (c == 'a')     trie = WRAP(2, 2, 14, TOKEN_CASE);
+                else if (c == 'l')     trie = WRAP(2, 3,  9, TOKEN_CLASS);
+            } else if (c == 'f') {
                 c = scanner.start[1];
-                if      (c == 'a')         trie = WRAP(2, 3, 13, TOKEN_FALSE);
-                else if (c == 'o')         trie = WRAP(2, 1,  7, TOKEN_FOR);
-                else if (c == 'u')         trie = WRAP(2, 1,  1, TOKEN_FUN);
-            }
-        } else if (c == 't') {
-            if (id_length > 1) {
+                if      (c == 'a')     trie = WRAP(2, 3, 13, TOKEN_FALSE);
+                else if (c == 'o')     trie = WRAP(2, 1,  7, TOKEN_FOR);
+                else if (c == 'u')     trie = WRAP(2, 1,  1, TOKEN_FUN);
+            } else if (c == 't') {
                 c = scanner.start[1];
-                if      (c == 'h')         trie = WRAP(2, 2, 29, TOKEN_THIS);
-                else if (c == 'r')         trie = WRAP(2, 2, 31, TOKEN_TRUE);
-            }
-        } else { // if (c == 'w') always true
-            if (id_length > 1 &&
-                scanner.start[1] == 'h' &&
-                id_length > 2) {
-                c = scanner.start[2];
-                if      (c == 'e')         trie = WRAP(3, 1,  1, TOKEN_WHEN);
-                else if (c == 'i')         trie = WRAP(3, 2,  3, TOKEN_WHILE);
+                if      (c == 'h')     trie = WRAP(2, 2, 29, TOKEN_THIS);
+                else if (c == 'r')     trie = WRAP(2, 2, 31, TOKEN_TRUE);
+            } else { // if (c == 'w') always true
+                if (scanner.start[1] == 'h' && id_length > 2) {
+                    c = scanner.start[2];
+                    if      (c == 'e') trie = WRAP(3, 1,  1, TOKEN_WHEN);
+                    else if (c == 'i') trie = WRAP(3, 2,  3, TOKEN_WHILE);
+                }
             }
         }
     }
