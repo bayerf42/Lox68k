@@ -16,6 +16,8 @@ typedef unsigned int   uint32_t;
 typedef short          int16_t;
 typedef int            int32_t;
 typedef short          bool;
+typedef int            clock_t;
+typedef unsigned int   steps_t;
 
 #define true       1
 #define false      0
@@ -79,6 +81,8 @@ extern void rte(void);         // in cstart_lox_rom.asm
 #include <string.h>
 #include <errno.h>
 #include <time.h>
+
+typedef uint64_t steps_t;
 
 // Real number implementation
 #include <math.h>

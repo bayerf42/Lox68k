@@ -38,14 +38,8 @@ typedef struct {
     bool        log_native_result;
     size_t      totallyAllocated;
     int         numGCs;
-
-#ifdef KIT68K
-    uint32_t    stepsExecuted;
-    int32_t     started;
-#else
-    uint64_t    stepsExecuted;
+    steps_t     stepsExecuted;
     clock_t     started;
-#endif
 
     bool        debug_print_code;
     bool        debug_trace_steps;
