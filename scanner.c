@@ -138,6 +138,7 @@ static Token identifier(int32_t trie) {
     int16_t    id_length;
     const char *src;
     char       c         = scanner.start[0];
+    char       c1;
     TokenType  tokenType = TOKEN_IDENTIFIER; 
 
     while (isalnum(peek()) || peek() == '_')
@@ -149,24 +150,22 @@ static Token identifier(int32_t trie) {
     if (trie == AMBIGUOUS) {
         trie = 0;
         if (id_length > 1) {   
+            c1 = scanner.start[1];
             if (c == 'c') {
-                c = scanner.start[1];
-                if      (c == 'a')     trie = WRAP(2, 2, 14, TOKEN_CASE);
-                else if (c == 'l')     trie = WRAP(2, 3,  9, TOKEN_CLASS);
+                if      (c1 == 'a')     trie = WRAP(2, 2, 14, TOKEN_CASE);
+                else if (c1 == 'l')     trie = WRAP(2, 3,  9, TOKEN_CLASS);
             } else if (c == 'f') {
-                c = scanner.start[1];
-                if      (c == 'a')     trie = WRAP(2, 3, 13, TOKEN_FALSE);
-                else if (c == 'o')     trie = WRAP(2, 1,  7, TOKEN_FOR);
-                else if (c == 'u')     trie = WRAP(2, 1,  1, TOKEN_FUN);
+                if      (c1 == 'a')     trie = WRAP(2, 3, 13, TOKEN_FALSE);
+                else if (c1 == 'o')     trie = WRAP(2, 1,  7, TOKEN_FOR);
+                else if (c1 == 'u')     trie = WRAP(2, 1,  1, TOKEN_FUN);
             } else if (c == 't') {
-                c = scanner.start[1];
-                if      (c == 'h')     trie = WRAP(2, 2, 29, TOKEN_THIS);
-                else if (c == 'r')     trie = WRAP(2, 2, 31, TOKEN_TRUE);
+                if      (c1 == 'h')     trie = WRAP(2, 2, 29, TOKEN_THIS);
+                else if (c1 == 'r')     trie = WRAP(2, 2, 31, TOKEN_TRUE);
             } else { // if (c == 'w') always true
-                if (scanner.start[1] == 'h' && id_length > 2) {
-                    c = scanner.start[2];
-                    if      (c == 'e') trie = WRAP(3, 1,  1, TOKEN_WHEN);
-                    else if (c == 'i') trie = WRAP(3, 2,  3, TOKEN_WHILE);
+                if (c1 == 'h' && id_length > 2) {
+                    c1 = scanner.start[2];
+                    if      (c1 == 'e') trie = WRAP(3, 1,  1, TOKEN_WHEN);
+                    else if (c1 == 'i') trie = WRAP(3, 2,  3, TOKEN_WHILE);
                 }
             }
         }
