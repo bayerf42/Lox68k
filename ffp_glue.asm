@@ -17,20 +17,11 @@ _fabs
        move.l  (a7)+,d7
        rts
 
-_sqrt
-       movem.l d3-d7,-(a7)
-       move.l  (24,a7),d7
-       jsr     ffp_sqrt
-       bvc.s   .ok
-       st      _errno.W
-.ok    move.l  d7,d0
-       movem.l (a7)+,d3-d7
-       rts
-
 _sin
        move.l  d7,-(a7)
        move.l  (8,a7),d7
        jsr     ffp_sin
+tail_trig                    ; Common clean-up code for sin, cos, tan, exp, log 
        bvc.s   .ok
        st      _errno.W
 .ok    move.l  d7,d0
@@ -41,26 +32,32 @@ _cos
        move.l  d7,-(a7)
        move.l  (8,a7),d7
        jsr     ffp_cos
-       bvc.s   .ok
-       st      _errno.W
-.ok    move.l  d7,d0
-       move.l  (a7)+,d7
-       rts
+       bra.s   tail_trig
 
 _tan
        move.l  d7,-(a7)
        move.l  (8,a7),d7
        jsr     ffp_tan
-       bvc.s   .ok
-       st      _errno.W
-.ok    move.l  d7,d0
-       move.l  (a7)+,d7
-       rts
+       bra.s   tail_trig
+
+_exp
+       move.l  d7,-(a7)
+       move.l  (8,a7),d7
+       jsr     ffp_exp
+       bra.s   tail_trig
+
+_log
+       move.l  d7,-(a7)
+       move.l  (8,a7),d7
+       jsr     ffp_log
+       bra.s   tail_trig
+
 
 _sinh
        movem.l d3-d5/d7,-(a7)
        move.l  (20,a7),d7
        jsr     ffp_sinh
+tail_hyp                     ; Common clean-up code for sinh, cosh, tanh 
        bvc.s   .ok
        st      _errno.W
 .ok    move.l  d7,d0
@@ -71,45 +68,20 @@ _cosh
        movem.l d3-d5/d7,-(a7)
        move.l  (20,a7),d7
        jsr     ffp_cosh
-       bvc.s   .ok
-       st      _errno.W
-.ok    move.l  d7,d0
-       movem.l (a7)+,d3-d5/d7
-       rts
+       bra.s   tail_hyp
 
 _tanh
        movem.l d3-d5/d7,-(a7)
        move.l  (20,a7),d7
        jsr     ffp_tanh
-       move.l  d7,d0
-       movem.l (a7)+,d3-d5/d7
-       rts
+       bra.s   tail_hyp
+
 
 _atan
        move.l  d7,-(a7)
        move.l  (8,a7),d7
        jsr     ffp_atan
        move.l  d7,d0
-       move.l  (a7)+,d7
-       rts
-
-_exp
-       move.l  d7,-(a7)
-       move.l  (8,a7),d7
-       jsr     ffp_exp
-       bvc.s   .ok
-       st      _errno.W
-.ok    move.l  d7,d0
-       move.l  (a7)+,d7
-       rts
-
-_log
-       move.l  d7,-(a7)
-       move.l  (8,a7),d7
-       jsr     ffp_log
-       bvc.s   .ok
-       st      _errno.W
-.ok    move.l  d7,d0
        move.l  (a7)+,d7
        rts
 
@@ -129,6 +101,7 @@ _add
        move.l  (24,a7),d7
        move.l  (28,a7),d6
        jsr     ffp_add
+tail_base                    ; Common clean-up code for add, sub, mul, div, sqrt 
        bvc.s   .ok
        st      _errno.W
 .ok    move.l  d7,d0
@@ -140,33 +113,27 @@ _sub
        move.l  (24,a7),d7
        move.l  (28,a7),d6
        jsr     ffp_sub
-       bvc.s   .ok
-       st      _errno.W
-.ok    move.l  d7,d0
-       movem.l (a7)+,d3-d7
-       rts
+       bra.s   tail_base
 
 _mul
        movem.l d3-d7,-(a7)
        move.l  (24,a7),d7
        move.l  (28,a7),d6
        jsr     ffp_mul
-       bvc.s   .ok
-       st      _errno.W
-.ok    move.l  d7,d0
-       movem.l (a7)+,d3-d7
-       rts
+       bra.s   tail_base
 
 _div
        movem.l d3-d7,-(a7)
        move.l  (24,a7),d7
        move.l  (28,a7),d6
        jsr     ffp_div
-       bvc.s   .ok
-       st      _errno.W
-.ok    move.l  d7,d0
-       movem.l (a7)+,d3-d7
-       rts
+       bra.s   tail_base
+
+_sqrt
+       movem.l d3-d7,-(a7)
+       move.l  (24,a7),d7
+       jsr     ffp_sqrt
+       bra.s   tail_base
 
 _less
        movem.l d6-d7,-(a7)
@@ -223,4 +190,3 @@ _realToStr
        clr.b   (a0)            ; Terminate string
        move.l  (a7)+,d7
        rts
-
