@@ -191,10 +191,11 @@ if (errno != 0) {                               \
 }
 
 static bool call(ObjClosure* closure, int argCount) {
-    CallFrame*  frame;
-    ObjList*    args;
-    int         itemCount;
-    int         arity;
+    CallFrame*   frame;
+    ObjFunction* function;
+    ObjList*     args;
+    int          itemCount;
+    int          arity;
 
     if (vm.frameCount == FRAMES_MAX) {
         runtimeError("Lox call stack overflow.");
@@ -204,17 +205,18 @@ static bool call(ObjClosure* closure, int argCount) {
 #ifdef LOX_DBG
     if (vm.debug_trace_calls) {
         indentCallTrace();
-        printf("--> %s (", functionName(closure->function));
+        printf("--> %s (", functionName(function));
         printArgList(argCount);
         putstr(")\n");
     }
 #endif
 
-    arity = closure->function->arity & ARITY_MASK;
-    if (closure->function->arity & REST_PARM_MASK) {
+    function = closure->function;;
+    arity    = function->arity & ARITY_MASK;
+    if (function->arity & REST_PARM_MASK) {
         if (argCount < arity - 1) {
             runtimeError("'%s' expected %s%d arguments but got %d.",
-                         functionName(closure->function), "at least ", arity - 1, argCount);
+                         functionName(function), "at least ", arity - 1, argCount);
             return false;
         }
         itemCount = argCount - arity + 1;
@@ -223,20 +225,21 @@ static bool call(ObjClosure* closure, int argCount) {
     }
     else if (argCount != arity) {
         runtimeError("'%s' expected %s%d arguments but got %d.",
-                     functionName(closure->function), "", arity, argCount);
+                     functionName(function), "", arity, argCount);
         return false;
     }
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
     frame->handler = NIL_VAL;
-    frame->ip      = closure->function->chunk.code;
+    frame->ip      = function->chunk.code;
     frame->fp      = vm.sp - arity - 1;
     return true;
 }
 
 static bool callWithHandler(ObjClosure* closure) {
-    CallFrame*  frame;
+    CallFrame*   frame;
+    ObjFunction* function = closure->function;
 
     if (vm.frameCount == FRAMES_MAX) {
         runtimeError("Lox call stack overflow.");
@@ -246,14 +249,14 @@ static bool callWithHandler(ObjClosure* closure) {
 #ifdef LOX_DBG
     if (vm.debug_trace_calls) {
         indentCallTrace();
-        printf("==> %s ()\n", functionName(closure->function));
+        printf("==> %s ()\n", functionName(function));
     }
 #endif
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
     frame->handler = pop();
-    frame->ip      = closure->function->chunk.code;
+    frame->ip      = function->chunk.code;
     frame->fp      = vm.sp - 1;
     return true;
 }
