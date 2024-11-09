@@ -192,7 +192,7 @@ if (errno != 0) {                               \
 
 static bool call(ObjClosure* closure, int argCount) {
     CallFrame*   frame;
-    ObjFunction* function;
+    ObjFunction* function = closure->function;
     ObjList*     args;
     int          itemCount;
     int          arity;
@@ -211,7 +211,6 @@ static bool call(ObjClosure* closure, int argCount) {
     }
 #endif
 
-    function = closure->function;;
     arity    = function->arity & ARITY_MASK;
     if (function->arity & REST_PARM_MASK) {
         if (argCount < arity - 1) {
