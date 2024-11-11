@@ -74,6 +74,7 @@ bool callNative(const Native* native, int argCount, Value* args) {
 
 #define RESULT args[-1]
 #define NATIVE(fun) static bool fun(int argCount, Value* args)
+
 // Concatening fun name with ## crashes IDE68K compiler
 
 // Calling convention for natives:
@@ -94,7 +95,6 @@ bool callNative(const Native* native, int argCount, Value* args) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Arithmetics
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 #define CHECK_ARITH_ERROR(op)                       \
     if (errno != 0) {                               \
@@ -122,59 +122,35 @@ NATIVE(truncNative) {
 
 typedef Real (*RealFun)(Real);
 
+#define NUMERIC_ARG(name,n) \
+    Real name = (IS_INT(args[n])) ? intToReal(AS_INT(args[n])) : AS_REAL(args[n])
+
 static bool transcendentalNative(Value* args, RealFun fun, const char* funName) {
-    Real x = (IS_INT(args[0])) ? intToReal(AS_INT(args[0])) : AS_REAL(args[0]);
+    NUMERIC_ARG(x, 0);
     errno  = 0;
     RESULT = makeReal((*fun)(x));
     CHECK_ARITH_ERROR(funName)
     return true;
 }
 
-#define TRANS_NATIVE(fun) return transcendentalNative(args, fun, #fun);
+// The power of C macros...
+#define TRANS_NATIVE(fun) \
+    { return transcendentalNative(args, fun, #fun); }
 
-NATIVE(sqrtNative) {
-    TRANS_NATIVE(sqrt)
-}
-
-NATIVE(sinNative) {
-    TRANS_NATIVE(sin)
-}
-
-NATIVE(cosNative) {
-    TRANS_NATIVE(cos)
-}
-
-NATIVE(tanNative) {
-    TRANS_NATIVE(tan)
-}
-
-NATIVE(sinhNative) {
-    TRANS_NATIVE(sinh)
-}
-
-NATIVE(coshNative) {
-    TRANS_NATIVE(cosh)
-}
-
-NATIVE(tanhNative) {
-    TRANS_NATIVE(tanh)
-}
-
-NATIVE(expNative) {
-    TRANS_NATIVE(exp)
-}
-
-NATIVE(logNative) {
-    TRANS_NATIVE(log)
-}
-
-NATIVE(atanNative) {
-    TRANS_NATIVE(atan)
-}
+NATIVE(sqrtNative)  TRANS_NATIVE(sqrt)
+NATIVE(sinNative)   TRANS_NATIVE(sin)
+NATIVE(cosNative)   TRANS_NATIVE(cos)
+NATIVE(tanNative)   TRANS_NATIVE(tan)
+NATIVE(sinhNative)  TRANS_NATIVE(sinh)
+NATIVE(coshNative)  TRANS_NATIVE(cosh)
+NATIVE(tanhNative)  TRANS_NATIVE(tanh)
+NATIVE(expNative)   TRANS_NATIVE(exp)
+NATIVE(logNative)   TRANS_NATIVE(log)
+NATIVE(atanNative)  TRANS_NATIVE(atan)
 
 NATIVE(powNative) {
-    Real x = (IS_INT(args[0])) ? intToReal(AS_INT(args[0])) : AS_REAL(args[0]);
-    Real y = (IS_INT(args[1])) ? intToReal(AS_INT(args[1])) : AS_REAL(args[1]);
+    NUMERIC_ARG(x, 0);
+    NUMERIC_ARG(y, 1);
     errno  = 0;
     RESULT = makeReal(pow(x,y));
     CHECK_ARITH_ERROR("pow")
