@@ -67,19 +67,12 @@ void markObject(Obj* object) {
 
     object->isMarked = true;
 
-    switch (object->type) {
-        case OBJ_NATIVE:
-        case OBJ_REAL:
-        case OBJ_STRING:
-            // Leaf object, nothing to do
-            break;
-
-        default:
-            if (vm.grayCount + 1 > GRAY_MAX) {
-                putstr("Gray stack size exceeded, exiting.\n");
-                exit(1);
-            }
-            vm.grayStack[vm.grayCount++] = object;
+    if (object->type < (uint8_t)OBJ_NATIVE) { // Not a leaf object
+        if (vm.grayCount >= GRAY_MAX) {
+            putstr("Gray stack size exceeded, exiting.\n");
+            exit(1);
+        }
+        vm.grayStack[vm.grayCount++] = object;
     }
 }
 

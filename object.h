@@ -44,10 +44,10 @@ typedef enum {
     OBJ_INSTANCE,
     OBJ_ITERATOR,
     OBJ_LIST,
-    OBJ_NATIVE,
+    OBJ_UPVALUE,
+    OBJ_NATIVE,    // Leaf objects (without GCed sub-objects) start here
     OBJ_REAL,
     OBJ_STRING,
-    OBJ_UPVALUE
 } ObjType;
 
 // The IDE68K C compiler doesn't seem to like including struct Obj in the following structures
