@@ -24,7 +24,7 @@ typedef enum {
     PREC_TERM,       // + -
     PREC_FACTOR,     // * \ / 
     PREC_UNARY,      // ! -
-    PREC_POSTFIX     // . () [] @ ^
+    PREC_POSTFIX,    // . () [] @ ^
 } Precedence;
 
 typedef void (*ParseFn)(bool canAssign);
@@ -43,11 +43,11 @@ typedef struct {
 } Local;
 
 typedef enum {
-    TYPE_FUN,
-    TYPE_INIT,
-    TYPE_METHOD,
     TYPE_SCRIPT,
-    TYPE_LAMBDA
+    TYPE_FUN,
+    TYPE_LAMBDA,
+    TYPE_METHOD,     // allowed in classes only 
+    TYPE_INIT,
 } FunctionType;
 
 typedef struct LoopInfo {
@@ -261,7 +261,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     local = &currentComp->locals[currentComp->localCount++];
     local->depth = 0;
     local->isCaptured = false;
-    if (type == TYPE_METHOD || type == TYPE_INIT) {
+    if (type >= TYPE_METHOD) {
         local->name.start  = "this";
         local->name.length = 4;
     } else {

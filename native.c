@@ -14,24 +14,26 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static const char* matchesType(Value value, int type) {
+    const char* NULLPTR = 0; // Using NULL constant in next statements creates inefficient code???
+
     switch (type) {
-        case 'A': return                      NULL;  // any value
-        case 'C': return IS_CLASS(value)    ? NULL : "a class";
+        case 'A': return                      NULLPTR;  // any value
+        case 'C': return IS_CLASS(value)    ? NULLPTR : "a class";
 #ifdef LOX_DBG
         case 'F': return IS_CLOSURE(value)
                       || IS_BOUND(value)
-                      || IS_FUNCTION(value) ? NULL : "a function";
+                      || IS_FUNCTION(value) ? NULLPTR : "a function";
 #endif
-        case 'I': return IS_INSTANCE(value) ? NULL : "an instance";
-        case 'L': return IS_LIST(value)     ? NULL : "a list";
-        case 'N': return IS_INT(value)      ? NULL : "an int";
+        case 'I': return IS_INSTANCE(value) ? NULLPTR : "an instance";
+        case 'L': return IS_LIST(value)     ? NULLPTR : "a list";
+        case 'N': return IS_INT(value)      ? NULLPTR : "an int";
         case 'Q': return IS_STRING(value)
-                      || IS_LIST(value)     ? NULL : "a sequence";
+                      || IS_LIST(value)     ? NULLPTR : "a sequence";
         case 'R': return IS_INT(value)
-                      || IS_REAL(value)     ? NULL : "a number";
-        case 'S': return IS_STRING(value)   ? NULL : "a string";
-        case 'T': return IS_ITERATOR(value) ? NULL : "an iterator";
-        default : return                             "an unknown type";
+                      || IS_REAL(value)     ? NULLPTR : "a number";
+        case 'S': return IS_STRING(value)   ? NULLPTR : "a string";
+        case 'T': return IS_ITERATOR(value) ? NULLPTR : "an iterator";
+        default : return                                "an unknown type";
     }
 }
 
@@ -63,7 +65,7 @@ bool callNative(const Native* native, int argCount, Value* args) {
 
     for (i = 0; i < argCount; i++) {
         expected = matchesType(args[i], signature[i] & ~LOWER_CASE_MASK);
-        if (expected != NULL) {
+        if (expected) {
             runtimeError("'%s' type mismatch at argument %d, expected %s but got %s.",
                          native->name, i + 1, expected, valueType(args[i]));
             return false;
