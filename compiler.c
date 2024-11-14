@@ -652,14 +652,11 @@ static void lambda(bool canAssign) {
     function(TYPE_LAMBDA);
 }
 
-static void handler(bool canAssign) {
+static void buildThunk(void) {
     Compiler     compiler;
     ObjFunction* function;
     int          i;
 
-    consumeExp(TOKEN_LEFT_PAREN, "thunk");
-
-    // Build a thunk around expression
     initCompiler(&compiler, TYPE_LAMBDA);
     beginScope();
     expression();
@@ -669,7 +666,12 @@ static void handler(bool canAssign) {
     emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
     for (i = 0; i < function->upvalueCount; i++) 
         emitByte(compiler.upvalues[i]);
-    consumeExp(TOKEN_COLON, "thunk");
+}
+
+static void handler(bool canAssign) {
+    consumeExp(TOKEN_LEFT_PAREN, "expression");
+    buildThunk();
+    consumeExp(TOKEN_COLON, "expression");
 
     expression();
     consumeExp(TOKEN_RIGHT_PAREN, "handler");
@@ -695,27 +697,18 @@ static void ifExpr(bool canAssign) {
 }
 
 static void dynvar(bool canAssign) {
-    int          vname, i;
-    Compiler     compiler;
-    ObjFunction* function;
+    int vname;
 
     consumeExp(TOKEN_LEFT_PAREN, "variable");
     consume(TOKEN_IDENTIFIER, "Expect variable.");
+
     vname = identifierConstant(&parser.previous);
-    consumeExp(TOKEN_EQUAL, "identifier");
-    expression();
-    consumeExp(TOKEN_COLON, "variable");
+    consumeExp(TOKEN_EQUAL, "variable");
 
-    // Build a thunk around expression
-    initCompiler(&compiler, TYPE_LAMBDA);
-    beginScope();
     expression();
-    emitByte(OP_RETURN);
-    function = endCompiler(false);
+    consumeExp(TOKEN_COLON, "binding");
 
-    emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
-    for (i = 0; i < function->upvalueCount; i++) 
-        emitByte(compiler.upvalues[i]);
+    buildThunk();
     consumeExp(TOKEN_RIGHT_PAREN, "expression");
     emit2Bytes(OP_CALL_BIND, vname);
 }
