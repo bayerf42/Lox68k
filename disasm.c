@@ -121,6 +121,7 @@ static void disassembleIntern(void) {
         case OP_CALL1:         simpleInst("CALL1");     break;
         case OP_CALL2:         simpleInst("CALL2");     break;
         case OP_CALL_HAND:     simpleInst("CALL_HAND"); break;
+        case OP_CALL_BIND:     constInst("CALL_BIND");  break;
         case OP_INVOKE:        invokeInst("INVOKE");    break;
         case OP_SUPER_INVOKE:  invokeInst("SUP_INV");   break;
         case OP_CLOSURE:       closureInst("CLOSURE");  break; 

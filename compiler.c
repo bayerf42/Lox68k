@@ -694,6 +694,33 @@ static void ifExpr(bool canAssign) {
     consumeExp(TOKEN_RIGHT_PAREN, "alternative");
 }
 
+static void dynvar(bool canAssign) {
+    int          vname, i;
+    Compiler     compiler;
+    ObjFunction* function;
+
+    consumeExp(TOKEN_LEFT_PAREN, "variable");
+    consume(TOKEN_IDENTIFIER, "Expect variable.");
+    vname = identifierConstant(&parser.previous);
+    consumeExp(TOKEN_EQUAL, "identifier");
+    expression();
+    consumeExp(TOKEN_COLON, "variable");
+
+    // Build a thunk around expression
+    initCompiler(&compiler, TYPE_LAMBDA);
+    beginScope();
+    expression();
+    emitByte(OP_RETURN);
+    function = endCompiler(false);
+
+    emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
+    for (i = 0; i < function->upvalueCount; i++) 
+        emitByte(compiler.upvalues[i]);
+    consumeExp(TOKEN_RIGHT_PAREN, "expression");
+    emit2Bytes(OP_CALL_BIND, vname);
+}
+
+
 static const ParseRule rules[] = {
     // Keep same order as TokenType enum values in scanner.h
     // since C89 doesn't support array init by index values.
@@ -709,6 +736,7 @@ static const ParseRule rules[] = {
     /* [TOKEN_DOT]           = */ {NULL,     dot,    PREC_POSTFIX},
     /* [TOKEN_SEMICOLON]     = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_COLON]         = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_EQUAL]         = */ {NULL,     NULL,   PREC_NONE},
 
     // single character operators *************************************
     /* [TOKEN_PLUS]          = */ {NULL,     binary, PREC_TERM},
@@ -719,7 +747,6 @@ static const ParseRule rules[] = {
     /* [TOKEN_AT]            = */ {NULL,     iter,   PREC_POSTFIX},
     /* [TOKEN_HAT]           = */ {NULL,     iter,   PREC_POSTFIX},
     /* [TOKEN_BANG]          = */ {not,      NULL,   PREC_NONE},
-    /* [TOKEN_EQUAL]         = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_GREATER]       = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_LESS]          = */ {NULL,     binary, PREC_COMPARISON},
 
@@ -743,6 +770,7 @@ static const ParseRule rules[] = {
 
     // non-syncing keywords *******************************************
     /* [TOKEN_AND]           = */ {NULL,     and_,   PREC_AND},
+    /* [TOKEN_DYNVAR]        = */ {dynvar,   NULL,   PREC_NONE},
     /* [TOKEN_ELSE]          = */ {NULL,     NULL,   PREC_NONE},
     /* [TOKEN_FALSE]         = */ {false_,   NULL,   PREC_NONE},
     /* [TOKEN_HANDLE]        = */ {handler,  NULL,   PREC_NONE},

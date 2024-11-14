@@ -87,6 +87,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * `handle` expression to establish a dynamic exception handler
 * `if` expression, in addition to `if` statement 
 * expressions entered at top-value are evaluated and printed 
+* dynamic re-binding of global variables via the `dynvar` expression
 
 ### Omissions
 

@@ -55,6 +55,7 @@ primary        ::= literal
                  | "fun" function
                  | "if" "(" expression ":" expression ":" expression ")"
                  | "handle" "(" expression ":" expression ")"
+                 | "dynvar" "(" IDENTIFIER "=" expression ":" expression ")"
 literal        ::= "nil" | "true" | "false" | NUMBER | STRING
 function       ::= "(" parameters ")" (block | "->" expression)
 parameters     ::= (".." IDENTIFIER | IDENTIFIER ("," IDENTIFIER)* ("," ".." IDENTIFIER)?)?

@@ -116,6 +116,11 @@ static void blackenObject(Obj* object) {
                 markObject((Obj*)((ObjClosure*)object)->upvalues[i]);
             break;
 
+        case OBJ_DYNVAR:
+            markValue(((ObjDynvar*)object)->current);
+            markValue(((ObjDynvar*)object)->previous);
+            break;
+
         case OBJ_FUNCTION:
             markValue(((ObjFunction*)object)->name);
             markObject((Obj*)((ObjFunction*)object)->klass);
@@ -161,6 +166,10 @@ static void freeObject(Obj* object) {
         case OBJ_CLOSURE:
             reallocate(object, sizeof(ObjClosure)  +
                                sizeof(ObjUpvalue*) * ((ObjClosure*)object)->upvalueCount, 0);  
+            break;
+
+        case OBJ_DYNVAR:
+            FREE(ObjDynvar, object);
             break;
 
         case OBJ_FUNCTION:

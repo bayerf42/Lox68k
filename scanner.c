@@ -112,12 +112,13 @@ typedef struct {
 static Token identifier(int32_t trie) {
     // Compressed keyword postfixes in single string
     const char* rest =
-              "andleturnassilsefarintupereakisue";
-    //         012345678901234567890123456789012
+              "andleturnassilsefynvarintupereakisue";
+    //         012345678901234567890123456789012345
     // And      ##
-    // Break                            ####
+    // Break                               ####
     // CAse                  ##
     // CLass            ###
+    // Dynvar                   #####    
     // Else                 ###               
     // FAlse                ###               
     // FOr            #
@@ -126,12 +127,12 @@ static Token identifier(int32_t trie) {
     // If                      #
     // Nil                 ##
     // Or             #
-    // Print                     ####
+    // Print                        ####
     // Return      #####
-    // Super                         ####             
-    // THis                                 ##
-    // TRue                                   ##
-    // Var                      ##
+    // Super                            ####             
+    // THis                                    ##
+    // TRue                                      ##
+    // Var                         ##
     // WHEn     #
     // WHIle      ##
     //         012345678901234567890123456789012
@@ -159,8 +160,8 @@ static Token identifier(int32_t trie) {
                 else if (c1 == 'o')     trie = WRAP(2, 1,  7, TOKEN_FOR);
                 else if (c1 == 'u')     trie = WRAP(2, 1,  1, TOKEN_FUN);
             } else if (c == 't') {
-                if      (c1 == 'h')     trie = WRAP(2, 2, 29, TOKEN_THIS);
-                else if (c1 == 'r')     trie = WRAP(2, 2, 31, TOKEN_TRUE);
+                if      (c1 == 'h')     trie = WRAP(2, 2, 32, TOKEN_THIS);
+                else if (c1 == 'r')     trie = WRAP(2, 2, 34, TOKEN_TRUE);
             } else { // if (c == 'w') always true
                 if (c1 == 'h' && id_length > 2) {
                     c1 = scanner.start[2];
@@ -262,29 +263,30 @@ Token scanToken(void) {
             return number(c);
 
         // can't start keywords
-        case 'd': case 'g': case 'j': case 'k': case 'l':
-        case 'm': case 'q': case 'u': case 'x': case 'y':
+        case 'g': case 'j': case 'k': case 'l': case 'm':
+        case 'q': case 'u': case 'x': case 'y': case 'z':
         case 'A': case 'B': case 'C': case 'D': case 'E':
         case 'F': case 'G': case 'H': case 'I': case 'J':
         case 'K': case 'L': case 'M': case 'N': case 'O':
         case 'P': case 'Q': case 'R': case 'S': case 'T':
         case 'U': case 'V': case 'W': case 'X': case 'Y':
-        case 'Z': case '_': case 'z':
+        case 'Z': case '_':
         ident: 
             return identifier(trie);
 
         // possibly starting unique keyword
         case 'a': trie = WRAP(1, 2,  1, TOKEN_AND);    goto ident;
-        case 'b': trie = WRAP(1, 4, 25, TOKEN_BREAK);  goto ident;
+        case 'b': trie = WRAP(1, 4, 28, TOKEN_BREAK);  goto ident;
+        case 'd': trie = WRAP(1, 5, 17, TOKEN_DYNVAR); goto ident;
         case 'e': trie = WRAP(1, 3, 13, TOKEN_ELSE);   goto ident;
         case 'h': trie = WRAP(1, 5,  0, TOKEN_HANDLE); goto ident;
         case 'i': trie = WRAP(1, 1, 16, TOKEN_IF);     goto ident;
         case 'n': trie = WRAP(1, 2, 12, TOKEN_NIL);    goto ident;
         case 'o': trie = WRAP(1, 1,  7, TOKEN_OR);     goto ident;
-        case 'p': trie = WRAP(1, 4, 18, TOKEN_PRINT);  goto ident; 
+        case 'p': trie = WRAP(1, 4, 21, TOKEN_PRINT);  goto ident; 
         case 'r': trie = WRAP(1, 5,  4, TOKEN_RETURN); goto ident;
-        case 's': trie = WRAP(1, 4, 22, TOKEN_SUPER);  goto ident;
-        case 'v': trie = WRAP(1, 2, 17, TOKEN_VAR);    goto ident;
+        case 's': trie = WRAP(1, 4, 25, TOKEN_SUPER);  goto ident;
+        case 'v': trie = WRAP(1, 2, 20, TOKEN_VAR);    goto ident;
 
         // possibly starting several keywords
         case 'c': case 'f': case 't': case 'w':

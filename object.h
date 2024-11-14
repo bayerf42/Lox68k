@@ -14,16 +14,19 @@
 #define IS_BOUND(value)        isObjType(value, OBJ_BOUND)
 #define IS_CLASS(value)        isObjType(value, OBJ_CLASS)
 #define IS_CLOSURE(value)      isObjType(value, OBJ_CLOSURE)
+#define IS_DYNVAR(value)       isObjType(value, OBJ_DYNVAR)
 #define IS_FUNCTION(value)     isObjType(value, OBJ_FUNCTION)
 #define IS_INSTANCE(value)     isObjType(value, OBJ_INSTANCE)
 #define IS_ITERATOR(value)     isObjType(value, OBJ_ITERATOR)
 #define IS_LIST(value)         isObjType(value, OBJ_LIST)
+#define IS_NATIVE(value)       isObjType(value, OBJ_NATIVE)
 #define IS_REAL(value)         isObjType(value, OBJ_REAL)
 #define IS_STRING(value)       isObjType(value, OBJ_STRING)
 
 #define AS_BOUND(value)        ((ObjBound*)AS_OBJ(value))
 #define AS_CLASS(value)        ((ObjClass*)AS_OBJ(value))
 #define AS_CLOSURE(value)      ((ObjClosure*)AS_OBJ(value))
+#define AS_DYNVAR(value)       ((ObjDynvar*)AS_OBJ(value))
 #define AS_FUNCTION(value)     ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value)     ((ObjInstance*)AS_OBJ(value))
 #define AS_ITERATOR(value)     ((ObjIterator*)AS_OBJ(value))
@@ -36,18 +39,19 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object types 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef enum {
-    OBJ_BOUND,
-    OBJ_CLASS,
-    OBJ_CLOSURE,
-    OBJ_FUNCTION,
-    OBJ_INSTANCE,
-    OBJ_ITERATOR,
-    OBJ_LIST,
-    OBJ_UPVALUE,
-    OBJ_NATIVE,    // Leaf objects (without GCed sub-objects) start here
-    OBJ_REAL,
-    OBJ_STRING,
+typedef enum {     //  callable  leaf object (keep enum order for type tests)
+    OBJ_DYNVAR,    //
+    OBJ_FUNCTION,  //
+    OBJ_INSTANCE,  //
+    OBJ_ITERATOR,  // 
+    OBJ_LIST,      //
+    OBJ_UPVALUE,   //
+    OBJ_BOUND,     //  X       
+    OBJ_CLASS,     //  X
+    OBJ_CLOSURE,   //  X
+    OBJ_NATIVE,    //  X         X
+    OBJ_REAL,      //            X
+    OBJ_STRING,    //            X
 } ObjType;
 
 // The IDE68K C compiler doesn't seem to like including struct Obj in the following structures
@@ -80,6 +84,12 @@ struct ObjClosure {
     int16_t      upvalueCount; // too big, but keep alignment
     ObjFunction* function;
     ObjUpvalue*  upvalues[];   // array embedded in structure
+};
+
+struct ObjDynvar {
+    OBJ_HEADER
+    Value        current;
+    Value        previous;     // can also be an ObjDynvar to build a stack
 };
 
 struct ObjFunction {
@@ -140,6 +150,7 @@ struct ObjUpvalue {
 ObjBound*    makeBound(Value receiver, ObjClosure* method);
 ObjClass*    makeClass(ObjString* name);
 ObjClosure*  makeClosure(ObjFunction* function);
+ObjDynvar*   makeDynvar(Value current, Value previous);
 ObjFunction* makeFunction(void);
 ObjInstance* makeInstance(ObjClass* klass);
 ObjIterator* makeIterator(Table* table, ObjInstance* instance);

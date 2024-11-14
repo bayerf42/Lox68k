@@ -83,6 +83,10 @@ void runtimeError(const char* format, ...) {
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
         if (AS_OBJ(frame->handler)) {
+            if (IS_STRING(frame->handler)) {
+                popGlobal(frame->handler);
+                continue;
+            }  
 #ifdef LOX_DBG
             if (vm.debug_trace_calls) {
                 indentCallTrace();
@@ -121,6 +125,10 @@ void userError(Value exception) {
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
         if (AS_OBJ(frame->handler)) {
+            if (IS_STRING(frame->handler)) {
+                popGlobal(frame->handler);
+                continue;
+            }  
 #ifdef LOX_DBG
             if (vm.debug_trace_calls) {
                 indentCallTrace();
@@ -211,7 +219,7 @@ static bool call(ObjClosure* closure, int argCount) {
     }
 #endif
 
-    arity    = function->arity & ARITY_MASK;
+    arity = function->arity & ARITY_MASK;
     if (function->arity & REST_PARM_MASK) {
         if (argCount < arity - 1) {
             runtimeError("'%s' expected %s%d arguments but got %d.",
@@ -236,8 +244,52 @@ static bool call(ObjClosure* closure, int argCount) {
     return true;
 }
 
-static bool callWithHandler(ObjClosure* closure) {
+static bool isCallable(Value value) {
+    uint8_t type;
+    if (IS_OBJ(value)) {
+        type = AS_OBJ(value)->type;
+        return type >= (uint8_t)OBJ_BOUND && 
+               type <= (uint8_t)OBJ_NATIVE;
+    }
+    else
+        return false;
+}
+
+static bool callWithHandler(void) {
     CallFrame*   frame;
+    ObjClosure*  closure  = AS_CLOSURE(peek(1));
+    ObjFunction* function = closure->function;
+
+    if (vm.frameCount == FRAMES_MAX) {
+        runtimeError("Lox call stack overflow.");
+        return false;
+    }
+
+    if (!IS_NIL(peek(0)) && !isCallable(peek(0))) {
+        runtimeError("Can't %s type %s.", "handle with", valueType(peek(0)));
+        return false;
+    }
+
+#ifdef LOX_DBG
+    if (vm.debug_trace_calls) {
+        indentCallTrace();
+        printf("==> %s () handler ", functionName(function));
+        printValue(peek(0), PRTF_MACHINE | PRTF_EXPAND);
+        putstr("\n");
+    }
+#endif
+
+    frame = &vm.frames[vm.frameCount++];
+    frame->closure = closure;
+    frame->handler = pop();
+    frame->ip      = function->chunk.code;
+    frame->fp      = vm.sp - 1;
+    return true;
+}
+
+static bool callBinding(Value varName) {
+    CallFrame*   frame;
+    ObjClosure*  closure  = AS_CLOSURE(peek(0));
     ObjFunction* function = closure->function;
 
     if (vm.frameCount == FRAMES_MAX) {
@@ -248,13 +300,18 @@ static bool callWithHandler(ObjClosure* closure) {
 #ifdef LOX_DBG
     if (vm.debug_trace_calls) {
         indentCallTrace();
-        printf("==> %s ()\n", functionName(function));
+        printf("~~> %s () %s = ", functionName(function), AS_CSTRING(varName));
+        printValue(peek(1), PRTF_MACHINE | PRTF_EXPAND);
+        putstr("\n");
     }
 #endif
 
+    pushGlobal(varName, peek(1));
+    dropNpush(2, OBJ_VAL(closure));
+
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
-    frame->handler = pop();
+    frame->handler = varName;
     frame->ip      = function->chunk.code;
     frame->fp      = vm.sp - 1;
     return true;
@@ -503,7 +560,7 @@ nextInstNoSO:
         case OP_GET_GLOBAL:
             index    = READ_BYTE();
             constant = consts[index];
-            if (!tableGet(&vm.globals, constant, &aVal)) {
+            if (!getGlobal(constant, &aVal)) {
                 runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
                 goto handleError;
             }
@@ -513,15 +570,14 @@ nextInstNoSO:
         case OP_DEF_GLOBAL:
             index    = READ_BYTE();
             constant = consts[index];
-            tableSet(&vm.globals, constant, peek(0));
+            tableSet(&vm.globals, constant, peek(0)); // not pushGlobal to avoid chains when redefining
             drop();
             goto nextInstNoSO;
 
         case OP_SET_GLOBAL:
             index    = READ_BYTE();
             constant = consts[index];
-            if (tableSet(&vm.globals, constant, peek(0))) {
-                tableDelete(&vm.globals, constant);
+            if (!setGlobal(constant, peek(0))) {
                 runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
                 goto handleError;
             }
@@ -844,7 +900,14 @@ nextInstNoSO:
             goto cont_call;
 
         case OP_CALL_HAND:
-            if (!callWithHandler(AS_CLOSURE(peek(1))))
+            if (!callWithHandler())
+                goto handleError;
+            goto updateFrame;
+
+        case OP_CALL_BIND:
+            index    = READ_BYTE();
+            constant = consts[index];
+            if (!callBinding(constant))
                 goto handleError;
             goto updateFrame;
 
@@ -908,6 +971,10 @@ nextInstNoSO:
             resVal = pop();
         cont_ret:
             closeUpvalues(frame->fp);
+
+            if (IS_STRING(frame->handler))
+                popGlobal(frame->handler);
+
             vm.frameCount--;
 
 #ifdef LOX_DBG

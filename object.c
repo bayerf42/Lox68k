@@ -75,6 +75,13 @@ ObjClosure* makeClosure(ObjFunction* function) {
     return closure;
 }
 
+ObjDynvar* makeDynvar(Value current, Value previous) {
+    ObjDynvar* dynvar = ALLOCATE_OBJ(ObjDynvar, OBJ_DYNVAR);
+    dynvar->current   = current;
+    dynvar->previous  = previous;
+    return dynvar;
+}
+
 ObjFunction* makeFunction() {
     ObjFunction* function  = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
     function->arity        = 0;
@@ -229,6 +236,7 @@ const char* typeName(ObjType type) {
         case OBJ_BOUND:    return "bound";
         case OBJ_CLASS:    return "class";
         case OBJ_CLOSURE:  return "closure";
+        case OBJ_DYNVAR:   return "dynvar";   // internal
         case OBJ_FUNCTION: return "fun";      // internal
         case OBJ_INSTANCE: return "instance";
         case OBJ_ITERATOR: return "iterator";
@@ -253,6 +261,12 @@ void printObject(Value value, int flags) {
 
         case OBJ_CLOSURE:
             printf("<closure %s>", functionName(AS_CLOSURE(value)->function));
+            break;
+
+        case OBJ_DYNVAR:
+            putstr("<dynvar ");
+            printValue(AS_DYNVAR(value)->current, flags);
+            putstr(">");
             break;
 
         case OBJ_FUNCTION:

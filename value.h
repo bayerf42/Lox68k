@@ -11,6 +11,7 @@ typedef struct Obj         Obj;
 typedef struct ObjBound    ObjBound;
 typedef struct ObjClass    ObjClass;
 typedef struct ObjClosure  ObjClosure;
+typedef struct ObjDynvar   ObjDynvar;
 typedef struct ObjFunction ObjFunction;
 typedef struct ObjInstance ObjInstance;
 typedef struct ObjIterator ObjIterator;

@@ -54,6 +54,21 @@ bool tableGet(Table* table, Value key, Value* value) {
     return true;
 }
 
+
+static bool tableGetRef(Table* table, Value key, Value** valueRef) {
+    Entry* entry;
+
+    if (table->count == 0)
+        return false;
+
+    entry = findEntry(table->entries, table->capacity, key);
+    if (IS_EMPTY(entry->key))
+        return false;
+
+    *valueRef = &entry->value;
+    return true;
+}
+
 static void adjustCapacity(Table* table, int capacity) {
     Entry*  entries = ALLOCATE(Entry, capacity);
     Entry*  entry;
@@ -245,4 +260,50 @@ void setIterator(ObjIterator* iter, Value value) {
     // Valid iterator has already been checked
     Entry* entry = &iter->table->entries[iter->position];
     entry->value = value;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Re-bindable global variables  
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool getGlobal(Value name, Value* result) {
+    Value value = NIL_VAL;
+    bool  found = tableGet(&vm.globals, name, &value);
+
+    if (found) 
+        *result = IS_DYNVAR(value) ? AS_DYNVAR(value)->current : value;
+    return found;
+}
+
+bool setGlobal(Value name, Value newValue) {
+    Value* valPtr = NULL;
+    bool   found  = tableGetRef(&vm.globals, name, &valPtr);
+
+    if (found) {
+        if (IS_DYNVAR(*valPtr))
+            AS_DYNVAR(*valPtr)->current = newValue;
+        else 
+            *valPtr = newValue;
+    }
+    return found;
+}
+
+void pushGlobal(Value name, Value newValue) {
+    Value* valPtr = NULL;
+
+    if (tableGetRef(&vm.globals, name, &valPtr)) 
+        *valPtr = OBJ_VAL(makeDynvar(newValue, *valPtr));
+    else
+        tableSet(&vm.globals, name, newValue);
+}
+
+void popGlobal(Value name) {
+    Value* valPtr = NULL;
+
+    if (tableGetRef(&vm.globals, name, &valPtr)) {
+        if (IS_DYNVAR(*valPtr)) 
+            *valPtr = AS_DYNVAR(*valPtr)->previous;
+        else
+            tableDelete(&vm.globals, name);
+    }
 }

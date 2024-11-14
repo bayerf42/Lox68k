@@ -9,10 +9,11 @@ typedef enum {
     TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
     TOKEN_LEFT_BRACKET, TOKEN_RIGHT_BRACKET,
     TOKEN_COMMA, TOKEN_DOT, TOKEN_SEMICOLON, TOKEN_COLON,
+    TOKEN_EQUAL,
 
     // single character operators
     TOKEN_PLUS, TOKEN_MINUS, TOKEN_STAR, TOKEN_SLASH, TOKEN_BACKSLASH,
-    TOKEN_AT, TOKEN_HAT, TOKEN_BANG, TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
+    TOKEN_AT, TOKEN_HAT, TOKEN_BANG, TOKEN_GREATER, TOKEN_LESS,
 
     // double character operators
     TOKEN_BANG_EQUAL, TOKEN_EQUAL_EQUAL, TOKEN_GREATER_EQUAL, TOKEN_LESS_EQUAL,
@@ -25,7 +26,7 @@ typedef enum {
     TOKEN_ERROR, TOKEN_EOF,
 
     // keywords not starting declarations
-    TOKEN_AND, TOKEN_ELSE, TOKEN_FALSE, TOKEN_HANDLE, TOKEN_NIL,
+    TOKEN_AND, TOKEN_DYNVAR, TOKEN_ELSE, TOKEN_FALSE, TOKEN_HANDLE, TOKEN_NIL,
     TOKEN_OR, TOKEN_SUPER, TOKEN_THIS, TOKEN_TRUE, TOKEN_WHEN,
 
     // keywords starting declarations or statements allowing to sync parser after syntax error
@@ -34,7 +35,7 @@ typedef enum {
 } TokenType;
 
 // For printing syntax errors in consumeExp(), first group of TokenType
-#define TOKEN_CHARS "(){}[],.;:"
+#define TOKEN_CHARS "(){}[],.;:="
 
 // The IDE68K compiler has a bug when returning structs by value, which are smaller
 // than 3 longs. In this case, very strange FMOVE instructions are generated, which

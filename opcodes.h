@@ -43,6 +43,7 @@ typedef enum {
     OP_CALL1,         // call a value with 1 arguments on stack
     OP_CALL2,         // call a value with 2 arguments on stack
     OP_CALL_HAND,     // install TOS as exception handler, call TOS-1 thunk (0 arguments)
+    OP_CALL_BIND,     // re-bind global variable named str0, initialized by TOS-1, call TOS thunk (0 arguments)
     OP_INVOKE,        // invoke method str0 with byte1 arguments on stack
     OP_SUPER_INVOKE,  // invoke method str0 in class TOS with byte1 arguments on stack 
     OP_CLOSURE,       // build a closure from template fun0 with variable number of upvalues

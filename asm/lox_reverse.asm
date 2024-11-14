@@ -16,7 +16,7 @@ reverse     move.l  4(sp),d1         ; First parameter
             bls.s   .wrong_type      ; it's a special value (nil, false, true)
 
             movea.l 4(sp),a1         ; Load first parameter (address of Lox list object)
-            cmpi.b  #6,4(a1)         ; test for list subtype
+            cmpi.b  #4,4(a1)         ; test for list subtype
             bne.s   .wrong_type
 
             move.w  6(a1),d0         ; length of list

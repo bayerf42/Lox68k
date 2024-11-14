@@ -85,7 +85,8 @@ primary        → "true" | "false" | "nil" | "this"
                | "[" arguments "]" | "super" "." IDENTIFIER
                | "fun" function
                | "handle" "(" expression ":" expression ")"
-               | "if" "(" expression ":" expression ":" expression ")" ;
+               | "if" "(" expression ":" expression ":" expression ")"
+               | "dynvar" "(" IDENTIFIER "=" expression ":" expression ")" ;
 
 function       → "(" parameters ")" (block | "->" expression) ;
 parameters     → ( rest_parameter | IDENTIFIER ( "," IDENTIFIER )* ( "," rest_parameter )? )? ;
