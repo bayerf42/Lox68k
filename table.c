@@ -221,8 +221,9 @@ void markTable(Table* table) {
 // Hashtable iterators 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int firstIterator(Table* table) {
-    int i;
+int firstIterator(ObjInstance* instance) {
+    int16_t i;
+    Table*  table = &instance->fields;
     if (table->count > 0)
         for (i = 0; i < table->capacity; i++)
             if (!IS_EMPTY(table->entries[i].key))
@@ -232,7 +233,7 @@ int firstIterator(Table* table) {
 
 void nextIterator(ObjIterator* iter) {
     int16_t i;
-    Table*  table = iter->table;
+    Table*  table = &iter->instance->fields;
     if (iter->position >= 0) {
         for (i = iter->position + 1; i < table->capacity; i++)
             if (!IS_EMPTY(table->entries[i].key)) {
@@ -244,21 +245,22 @@ void nextIterator(ObjIterator* iter) {
 }
 
 bool isValidIterator(ObjIterator* iter) {
-    bool valid = iter->position >= 0            &&
-         iter->position < iter->table->capacity &&
-         !IS_EMPTY(iter->table->entries[iter->position].key);
+    Table*  table = &iter->instance->fields;
+    bool valid    = iter->position >= 0              &&
+                    iter->position < table->capacity &&
+                    !IS_EMPTY(table->entries[iter->position].key);
     return valid;
 }
 
 Value getIterator(ObjIterator* iter, bool wantKey) {
     // Valid iterator has already been checked
-    Entry* entry = &iter->table->entries[iter->position];
+    Entry* entry = &iter->instance->fields.entries[iter->position];
     return wantKey ? entry->key : entry->value;
 }
 
 void setIterator(ObjIterator* iter, Value value) {
     // Valid iterator has already been checked
-    Entry* entry = &iter->table->entries[iter->position];
+    Entry* entry = &iter->instance->fields.entries[iter->position];
     entry->value = value;
 }
 
@@ -266,14 +268,15 @@ void setIterator(ObjIterator* iter, Value value) {
 // Re-bindable global variables  
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#if 0
+// Inlined in OP_GET_GLOBAL in vm.c for better performance
 bool getGlobal(Value name, Value* result) {
-    Value value = NIL_VAL;
-    bool  found = tableGet(&vm.globals, name, &value);
-
-    if (found) 
-        *result = IS_DYNVAR(value) ? AS_DYNVAR(value)->current : value;
+    bool found = tableGet(&vm.globals, name, result);
+    if (found && IS_DYNVAR(*result)) 
+        *result = AS_DYNVAR(*result)->current;
     return found;
 }
+#endif
 
 bool setGlobal(Value name, Value newValue) {
     Value* valPtr = NULL;

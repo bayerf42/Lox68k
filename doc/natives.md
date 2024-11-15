@@ -40,7 +40,6 @@ Trailing `?` at return type means that the native may return `nil`.
 | exec        | int, any?, any?, any?  | any         | all          | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
 | exp         | num                    | real        | all          | exponential                                                                       |  
 | gc          | -                      | int         | all          | forces garbage collection, returns size of allocated memory                       |  
-| globals     | -                      | iterator    | all          | iterator over all global variables                                                |  
 | heap        | int                    | any         | all          | Lox value stored at address *int* in heap                                         |
 | hex         | int                    | string      | all          | *int* as hexadecimal string                                                       |
 | index       | any, list, int?        | int?        | all          | search *any* in *list*, returns index where found, optional search start *int*    |  

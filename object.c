@@ -99,11 +99,10 @@ ObjInstance* makeInstance(ObjClass* klass) {
     return instance;
 }
 
-ObjIterator* makeIterator(Table* table, ObjInstance* instance) {
+ObjIterator* makeIterator(ObjInstance* instance) {
     ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
-    iter->table    = table;
     iter->instance = instance;
-    iter->position = firstIterator(table);
+    iter->position = firstIterator(instance);
     return iter;
 }
 

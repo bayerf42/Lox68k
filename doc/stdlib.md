@@ -36,7 +36,6 @@ You can start Lox68k with or without the standard library:
 | filter       | fun, seq              | list        | filter all items of *seq* which satisfy predicate *fun*                           |  
 | id           | any                   | any         | returns its argument                                                              |  
 | instance     | any, class            | bool        | true, if *any* is an instance of *class*                                          |  
-| list_globals | -                     | nil         | prints all global variables                                                       |  
 | map          | fun, seq              | list        | apply *fun* to every item in *seq*, return list of results.                       |  
 | max          | num, num              | num         | maximum of arguments                                                              |  
 | max          | string, string        | string      | maximum of arguments                                                              |  

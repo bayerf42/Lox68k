@@ -52,7 +52,7 @@ parse_real upper`
 
 
 ### Iterator
-`@ ^ globals it_clone next slots valid`
+`@ ^ it_clone next slots valid`
 
 
 ## Topics
@@ -61,7 +61,7 @@ parse_real upper`
 `addr exec heap peek peekl peekw poke pokel pokew trap`
 
 ### Input/output
-`input keycode list_globals print sound`
+`input keycode print sound`
 
 ### System
 `clock disasm gc globals sleep`
@@ -76,14 +76,14 @@ parse_real upper`
 `dbg_call dbg_code dbg_gc dbg_nat dbg_stat dbg_step disasm`
 
 ## Some numbers
-* 20 keywords
-* 72 native functions
-* 62 VM opcodes
+* 21 keywords
+* 71 native functions
+* 63 VM opcodes
 * 12 data types
 * about 6000 lines source code
 * 52 k bytes code size on 68008 kit
 * Performance
-  * 8k ops on 68008 kit
+  * 9k ops on 68008 kit
   * 60M ops on Raspberry 4 Linux
   * 230M ops on Intel i7 Laptop Windows 11
 

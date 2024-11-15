@@ -111,7 +111,6 @@ struct ObjIterator {
     OBJ_HEADER
     int16_t      position;     // -1 means invalid
     ObjInstance* instance;     // for GC
-    Table*       table;
 };
 
 struct ObjList {
@@ -153,7 +152,7 @@ ObjClosure*  makeClosure(ObjFunction* function);
 ObjDynvar*   makeDynvar(Value current, Value previous);
 ObjFunction* makeFunction(void);
 ObjInstance* makeInstance(ObjClass* klass);
-ObjIterator* makeIterator(Table* table, ObjInstance* instance);
+ObjIterator* makeIterator(ObjInstance* instance);
 ObjList*     makeList(int len, Value* items, int numCopy, int stride);
 ObjNative*   makeNative(const Native* native);
 Value        makeReal(Real val);

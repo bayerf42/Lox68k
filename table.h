@@ -25,7 +25,7 @@ void       tableRemoveWhite(Table* table);
 void       tableShrink(Table* table);
 void       markTable(Table* table);
 
-int        firstIterator(Table* table);
+int        firstIterator(ObjInstance* instance);
 void       nextIterator(ObjIterator* iter);
 bool       isValidIterator(ObjIterator* iter);
 Value      getIterator(ObjIterator* iter, bool wantKey);

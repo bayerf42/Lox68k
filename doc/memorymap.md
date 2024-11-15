@@ -17,8 +17,7 @@ All addresses are specified with 5 hex digits, covering the 1 MB address range o
 | `$1c000`      | `$1ffff`       |  16 k | RAM  | processor stack                      |
 | `$20000`      | `$3ffff`       | 128 k | -    | unassigned                           |
 | `$40000`      | `$43fff`       |  16 k | ROM  | Monitor code                         |
-| `$44000`      | `$50fff`       |  52 k | ROM  | Lox code [debug]                     |
-| `$51000`      | `$51fff`       |   4 k | ROM  | free                                 |
+| `$44000`      | `$51fff`       |  56 k | ROM  | Lox code [debug]                     |
 | `$52000`      | `$5dfff`       |  48 k | ROM  | Lox code [no debug]                  |
 | `$5e000`      | `$5efff`       |   4 k | ROM  | Lox standard library source code     |
 | `$5f000`      | `$5ffff`       |   4 k | ROM  | Motorola FFP library                 |

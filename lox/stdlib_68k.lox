@@ -109,7 +109,3 @@ class Set<Object {
   return this;
  }
 }
-fun list_globals() {
- for (var it=globals();valid(it);next(it))
-  print it@," - ",it^;
-}

@@ -307,7 +307,7 @@ NATIVE(equalNative) {
     } else if (IS_ITERATOR(a) && IS_ITERATOR(b)) {
         ait = AS_ITERATOR(a);  
         bit = AS_ITERATOR(b);  
-        res = ait->table == bit->table && ait->position == bit->position;
+        res = ait->instance == bit->instance && ait->position == bit->position;
     } else
         res = a == b;
     RESULT = BOOL_VAL(res);
@@ -368,14 +368,9 @@ Overflow:
 // Iterators
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-NATIVE(globalsNative) {
-    RESULT = OBJ_VAL(makeIterator(&vm.globals, NULL));
-    return true;
-}
-
 NATIVE(slotsNative) {
     ObjInstance* instance = AS_INSTANCE(args[0]);
-    RESULT = OBJ_VAL(makeIterator(&instance->fields, instance));
+    RESULT = OBJ_VAL(makeIterator(instance));
     return true;
 }
 
@@ -394,7 +389,7 @@ NATIVE(nextNative) {
 
 NATIVE(itCloneNative) {
     ObjIterator* src  = AS_ITERATOR(args[0]);
-    ObjIterator* dest = makeIterator(src->table, src->instance);
+    ObjIterator* dest = makeIterator(src->instance);
     dest->position = src->position;
     RESULT = OBJ_VAL(dest);
     return true;
@@ -911,7 +906,6 @@ static const Native allNatives[] = {
     {"upper",       "S",    upperNative},
     {"join",        "Lsss", joinNative},
 
-    {"globals",     "",     globalsNative},
     {"slots",       "I",    slotsNative},
     {"valid",       "T",    validNative},
     {"next",        "T",    nextNative},

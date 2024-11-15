@@ -560,10 +560,12 @@ nextInstNoSO:
         case OP_GET_GLOBAL:
             index    = READ_BYTE();
             constant = consts[index];
-            if (!getGlobal(constant, &aVal)) {
+            if (!tableGet(&vm.globals, constant, &aVal)) {
                 runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
                 goto handleError;
             }
+            if (IS_DYNVAR(aVal)) 
+                aVal = AS_DYNVAR(aVal)->current;
             push(aVal);
             goto nextInst;
 
