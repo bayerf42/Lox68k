@@ -64,7 +64,7 @@ parse_real upper`
 `input keycode print sound`
 
 ### System
-`clock disasm gc globals sleep`
+`clock disasm gc sleep`
 
 ### Exceptions
 `error handle`
@@ -81,7 +81,7 @@ parse_real upper`
 * 63 VM opcodes
 * 12 data types
 * about 6000 lines source code
-* 52 k bytes code size on 68008 kit
+* 52 k bytes code size on 68008 kit (48 k without debugging functions)
 * Performance
   * 9k ops on 68008 kit
   * 60M ops on Raspberry 4 Linux

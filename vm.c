@@ -82,7 +82,7 @@ void runtimeError(const char* format, ...) {
     // search for handler in frames
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
-        if (AS_OBJ(frame->handler)) {
+        if (!IS_NIL(frame->handler)) {
             if (IS_STRING(frame->handler)) {
                 popGlobal(frame->handler);
                 continue;
@@ -124,7 +124,7 @@ void userError(Value exception) {
     // search for handler in frames
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
-        if (AS_OBJ(frame->handler)) {
+        if (!IS_NIL(frame->handler)) {
             if (IS_STRING(frame->handler)) {
                 popGlobal(frame->handler);
                 continue;
@@ -198,7 +198,7 @@ if (errno != 0) {                               \
     goto handleError;                           \
 }
 
-static bool call(ObjClosure* closure, int argCount) {
+static bool callClosure(ObjClosure* closure, int argCount) {
     CallFrame*   frame;
     ObjFunction* function = closure->function;
     ObjList*     args;
@@ -244,17 +244,6 @@ static bool call(ObjClosure* closure, int argCount) {
     return true;
 }
 
-static bool isCallable(Value value) {
-    uint8_t type;
-    if (IS_OBJ(value)) {
-        type = AS_OBJ(value)->type;
-        return type >= (uint8_t)OBJ_BOUND && 
-               type <= (uint8_t)OBJ_NATIVE;
-    }
-    else
-        return false;
-}
-
 static bool callWithHandler(void) {
     CallFrame*   frame;
     ObjClosure*  closure  = AS_CLOSURE(peek(1));
@@ -265,8 +254,8 @@ static bool callWithHandler(void) {
         return false;
     }
 
-    if (!IS_NIL(peek(0)) && !isCallable(peek(0))) {
-        runtimeError("Can't %s type %s.", "handle with", valueType(peek(0)));
+    if (!isCallable(peek(0))) {
+        runtimeError("Handler must be callable.");
         return false;
     }
 
@@ -328,13 +317,13 @@ static bool callValue(Value callee, int argCount) {
             case OBJ_BOUND:
                 bound = AS_BOUND(callee);
                 vm.sp[-argCount - 1] = bound->receiver;
-                return call(bound->method, argCount);
+                return callClosure(bound->method, argCount);
 
             case OBJ_CLASS:
                 klass = AS_CLASS(callee);
                 vm.sp[-argCount - 1] = OBJ_VAL(makeInstance(klass));
                 if (tableGet(&klass->methods, OBJ_VAL(vm.initString), &initializer))
-                    return call(AS_CLOSURE(initializer), argCount);
+                    return callClosure(AS_CLOSURE(initializer), argCount);
                 else if (argCount != 0) {
                     runtimeError("'%s' expected %s%d arguments but got %d.",
                                  AS_CSTRING(klass->name), "", 0, argCount);
@@ -343,7 +332,7 @@ static bool callValue(Value callee, int argCount) {
                 return true;
 
             case OBJ_CLOSURE:
-                return call(AS_CLOSURE(callee), argCount);
+                return callClosure(AS_CLOSURE(callee), argCount);
 
             case OBJ_NATIVE:
                 native = AS_NATIVE(callee);
@@ -383,7 +372,7 @@ static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
         runtimeError("Undefined property '%s'.", name->chars);
         return false;
     }
-    return call(AS_CLOSURE(method), argCount);
+    return callClosure(AS_CLOSURE(method), argCount);
 }
 
 static bool invoke(ObjString* name, int argCount) {
@@ -1232,7 +1221,7 @@ InterpretResult interpret(const char* source) {
     closure = makeClosure(function);
     dropNpush(1, OBJ_VAL(closure));
     
-    call(closure, 0);
+    callClosure(closure, 0);
 
     RESET_INTERRUPTED();
 #ifdef LOX_DBG

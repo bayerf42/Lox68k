@@ -270,9 +270,11 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     }
 }
 
-static ObjFunction* endCompiler(bool addReturn) {
+static ObjFunction* endCompiler(bool returnExpr) {
     ObjFunction* function = currentComp->target;
-    if (addReturn)
+    if (returnExpr)
+        emitByte(OP_RETURN);
+    else
         emitReturn();
     freezeChunk(currentChunk());
 
@@ -660,8 +662,7 @@ static void buildThunk(void) {
     initCompiler(&compiler, TYPE_LAMBDA);
     beginScope();
     expression();
-    emitByte(OP_RETURN);
-    function = endCompiler(false);
+    function = endCompiler(true);
 
     emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
     for (i = 0; i < function->upvalueCount; i++) 
@@ -908,12 +909,11 @@ static void function(FunctionType type) {
         if (type == TYPE_INIT)
             error("Can't return a value from an initializer.");
         expression();
-        emitByte(OP_RETURN);
-        function = endCompiler(false);
+        function = endCompiler(true);
     } else {
         consumeExp(TOKEN_LEFT_BRACE, "function body");
         block();
-        function = endCompiler(true);
+        function = endCompiler(false);
     }
 
     emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
@@ -1311,7 +1311,7 @@ ObjFunction* compile(const char* source) {
     while (!match(TOKEN_EOF))
         declaration(true);
 
-    function = endCompiler(true);
+    function = endCompiler(false);
     return parser.hadError ? NULL : function;
 }
 

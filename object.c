@@ -18,6 +18,17 @@ bool isObjType(Value value, ObjType type) {
 }
 #endif
 
+bool isCallable(Value value) {
+    uint8_t type;
+    if (IS_OBJ(value)) {
+        type = AS_OBJ(value)->type;
+        return type >= (uint8_t)OBJ_BOUND && 
+               type <= (uint8_t)OBJ_NATIVE;
+    }
+    else
+        return false;
+}
+
 #define ALLOCATE_OBJ(type, objectType) \
     (type*)allocateObject(sizeof(type), objectType)
 

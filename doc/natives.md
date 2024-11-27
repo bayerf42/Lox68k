@@ -67,7 +67,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | pow         | num, num               | real        | all          | power                                                                             |  
 | random      | -                      | int         | all          | a pseudo-random positive integer                                                  |
 | remove      | instance, any          | bool        | all          | removes a field name/dictionary key from an instance, true if it existed before   |
-| reverse     | list                   | list        | all          | creates a list initialized by *list* in reverse order                             |
+| reverse     | list                   | list        | all          | creates a new list from *list* in reverse order                                   |
 | seed_rand   | int                    | int         | all          | set seed for random number generator, returns current state                       |
 | sin         | num                    | real        | all          | sine                                                                              |  
 | sinh        | num                    | real        | all          | hyperbolic sine                                                                   |  

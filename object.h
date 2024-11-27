@@ -89,7 +89,7 @@ struct ObjClosure {
 struct ObjDynvar {
     OBJ_HEADER
     Value        current;
-    Value        previous;     // can also be an ObjDynvar to build a stack
+    Value        previous;     // can also be an ObjDynvar building a stack
 };
 
 struct ObjFunction {
@@ -110,7 +110,7 @@ struct ObjInstance {
 struct ObjIterator {
     OBJ_HEADER
     int16_t      position;     // -1 means invalid
-    ObjInstance* instance;     // for GC
+    ObjInstance* instance;
 };
 
 struct ObjList {
@@ -163,6 +163,7 @@ ObjUpvalue*  makeUpvalue(Value* slot);
 void         printObject(Value value, int flags);
 const char*  typeName(ObjType type);
 bool         isObjType(Value value, ObjType type);
+bool         isCallable(Value value);
 
 void         insertIntoList(ObjList* list, Value value, int index);
 void         storeToList(ObjList* list, int index, Value value);

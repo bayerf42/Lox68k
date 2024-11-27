@@ -22,7 +22,7 @@ var all_types = [
   Spam,       // a Lox class
   inst,       // an instance of a Lox class
   inst.test,  // a method bound to an instance
-  slots(inst) // an iterator over all entries of a hash table (instance or global variables)
+  slots(inst) // an iterator over all slots of an instance
 ]; 
 
 print all_types;

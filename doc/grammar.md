@@ -22,7 +22,8 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * superclass can be any expression
 * `handle` expression to establish a dynamic exception handler
 * `if` expression
-* expressions at top-level 
+* expressions at top-level
+* `dynvar` expression to dynamically rebind global variables
 
 View this grammar as a [railroad diagram](grammar.html).
 
@@ -114,10 +115,10 @@ BINDIGIT       → "0" ... "1" ;
 * `#` illegal
 * `$` begin hexadecimal number literal
 * `%` begin binary number literal
-* `&` illegal on Kit, load a file on Windows/Linux
+* `&` illegal on Kit, load a file on Windows/Linux/Simulator
 * `'` illegal
-* `(` begin grouping, begin call
-* `)` end grouping, end call
+* `(` begin grouping, call
+* `)` end grouping, call
 * `*` multiplication
 * `+` addition
 * `,` list separator
@@ -125,7 +126,7 @@ BINDIGIT       → "0" ... "1" ;
 * `.` decimal point, property access, `..` unpack list, rest argument
 * `/` division, `//` comment until end of line
 * `0-9` digit
-* `:` case branch separator, splice separator, separator in `if` and `handle` expressions
+* `:` case branch separator, splice separator, separator in special forms (`if`, `handle`, `dynvar`)
 * `;` statement terminator
 * `<` less than, subclass, `<=` less or equal
 * `=` assignment, `==` equals
@@ -133,14 +134,14 @@ BINDIGIT       → "0" ... "1" ;
 * `?` shorthand for `print`
 * `@` key of iterator
 * `A-Z` letter
-* `[` begin list, begin subscript
-* `\` modulo operator
-* `]` end list, end subscript
+* `[` begin list, index
+* `\` modulo
+* `]` end list, index
 * `^` value of iterator
 * `_` letter
 * `` ` `` illegal
 * `a-z` letter
-* `{` begin code block
+* `{` begin code block, class body, case clauses
 * `|` illegal
-* `}` end code block
+* `}` end code block, class body, case clauses
 * `~` illegal

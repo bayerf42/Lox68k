@@ -6,9 +6,8 @@
 
 It is a high-level interpreted programming language in the spirit of Python, Lua, or Javascript.
 Lox is dynamically typed, has garbage collection and supports functional programming idioms with
-closures and first-class functions. It also includes a simple class-based object system,
-featuring single inheritance, constructors and super calls. Lox is controlled by a
-read-eval-print loop (*REPL*).
+closures and first-class functions. It also includes a simple class-based object system.
+Lox is controlled by a read-eval-print loop (*REPL*).
 Here is an [overview of the Lox language](https://craftinginterpreters.com/the-lox-language.html).
 
 
@@ -56,7 +55,7 @@ in the release. Just burn it into an EPROM or flash chip.
 
 ## Differences to the [original Lox language](https://craftinginterpreters.com/the-lox-language.html)
 
-### Extensions
+### [Extensions](extensions.md)
 
 * A list datatype with according primitives.
 * Indexing composite data with `[]` [operator](operators.md), by number (strings and lists) or any value (instances)
@@ -181,6 +180,15 @@ at the REPL prompt, just like Windows and Linux variants.
 
 Please note that the visual simulator of *IDE68K* may crash easily when outputting text
 at a high rate, the textual simulator is more stable.
+
+You can also configure the Visual Simulator's peripherals to behave quite like the actual Kit:
+
+  * **Switches**: Set to `00080000` Now bit 6 controls the running flag, set it to `1` before
+    starting an evaluation and set it to `0` to interrupt it.
+  * **LEDs**: Set to `000F0000` to simulate the Kit's LEDs.
+  * **Timer**: Set to `00000268` to count 10 Hz ticks, which is 10 times slower
+    than the Kit's 100 Hz ticks, so all timings measured (via `clock()` or `dbg_stat()`)
+    have to be multiplied by 10.  
 
 
 ### Lox compiled to a Windows executable.
