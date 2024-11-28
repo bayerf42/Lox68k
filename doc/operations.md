@@ -24,11 +24,11 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 ### String
 `+ < <= > >= [] [:] asc bin chr dec hex index input join length lower max min parse_int
-parse_real upper`
+parse_real split upper`
 
 
 ### List
-`+ [] [:] .. append delete filter index insert join length list map reduce reverse`
+`+ [] [:] .. append delete filter index insert join length list map reduce reverse split`
 
 
 ### Class
@@ -77,13 +77,13 @@ parse_real upper`
 
 ## Some numbers
 * 21 keywords
-* 71 native functions
+* 72 native functions
 * 63 VM opcodes
 * 12 data types
 * about 6000 lines source code
-* 52 k bytes code size on 68008 kit (48 k without debugging functions)
+* 56 k bytes code size on 68008 kit (48 k without debugging functions)
 * Performance
   * 9k ops on 68008 kit
-  * 60M ops on Raspberry 4 Linux
-  * 230M ops on Intel i7 Laptop Windows 11
+  * 70M ops on Raspberry 4 Linux
+  * 300M ops on Intel i7 Laptop Windows 11
 

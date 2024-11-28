@@ -74,6 +74,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | sleep       | int *dur*              | nil         | all          | busy waits for *dur* milliseconds                                                 |  
 | slots       | instance               | iterator    | all          | iterator over all slots in *instance*                                             |
 | sound       | int *rate*, int *dur*  | nil         | Kit          | plays a sound on speaker, cycle length *rate*, for *dur* milliseconds             |  
+| split       | string, string *sep*   | list        | all          | splits first string into a list of strings at separators from set *sep*           |  
 | sqrt        | num                    | real        | all          | square root                                                                       |  
 | tan         | num                    | real        | all          | tangent                                                                           |  
 | tanh        | num                    | real        | all          | hyperbolic tangent                                                                |  

@@ -364,6 +364,29 @@ Overflow:
     return false;
 }
 
+NATIVE(splitNative) {
+    ObjList*    list  = makeList(0, NULL, 0, 0);
+    const char* curr  = AS_CSTRING(args[0]);
+    const char* sepas = AS_CSTRING(args[1]);
+    size_t      len;
+
+    curr += strspn(curr, sepas);
+    push(OBJ_VAL(list)); // protect result list from GC
+    push(NIL_VAL);       // protect each string from GC
+    while (*curr) {
+        len     = strcspn(curr, sepas);
+        peek(0) = OBJ_VAL(makeString(curr, len));
+        appendValueArray(&list->arr, peek(0));
+        curr += len;
+        curr += strspn(curr, sepas);
+    }
+
+    RESULT = OBJ_VAL(list);
+    drop();
+    drop();
+    return true;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Iterators
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -905,6 +928,7 @@ static const Native allNatives[] = {
     {"lower",       "S",    lowerNative},
     {"upper",       "S",    upperNative},
     {"join",        "Lsss", joinNative},
+    {"split",       "SS",   splitNative},
 
     {"slots",       "I",    slotsNative},
     {"valid",       "T",    validNative},
