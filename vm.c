@@ -77,6 +77,11 @@ void runtimeError(const char* format, ...) {
         printf("/!\\ \"%s\"\n", big_buffer);
         vm.log_native_result = false;
     }
+
+    if (vm.debug_trace_calls) {
+        indentCallTrace();
+        printf("<== \"%s\"\n", big_buffer);
+    }
 #endif
 
     // search for handler in frames
@@ -87,12 +92,6 @@ void runtimeError(const char* format, ...) {
                 popGlobal(frame->handler);
                 continue;
             }  
-#ifdef LOX_DBG
-            if (vm.debug_trace_calls) {
-                indentCallTrace();
-                printf("<== \"%s\"\n", big_buffer);
-            }
-#endif
             closeUpvalues(frame->fp);
             vm.sp         = frame->fp;
             vm.frameCount = i;
@@ -119,6 +118,13 @@ void userError(Value exception) {
         putstr("\n");
         vm.log_native_result = false;
     }
+
+    if (vm.debug_trace_calls) {
+        indentCallTrace();
+        putstr("<== ");
+        printValue(exception, PRTF_MACHINE | PRTF_EXPAND);
+        putstr("\n");
+    }
 #endif
 
     // search for handler in frames
@@ -129,14 +135,6 @@ void userError(Value exception) {
                 popGlobal(frame->handler);
                 continue;
             }  
-#ifdef LOX_DBG
-            if (vm.debug_trace_calls) {
-                indentCallTrace();
-                putstr("<== ");
-                printValue(exception, PRTF_MACHINE | PRTF_EXPAND);
-                putstr("\n");
-            }
-#endif
             closeUpvalues(frame->fp);
             vm.sp         = frame->fp;
             vm.frameCount = i;
