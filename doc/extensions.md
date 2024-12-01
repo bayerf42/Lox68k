@@ -1,9 +1,10 @@
-# Lox68k extensions to the original Lox language definition
+# Lox68k extensions and changes to the original Lox language definition
 
 ### Glossary
 
   * → means *successfully evaluates to*
   * ⟿ means *raises exception*
+  * ⇒ means *prints to terminal*
 
 
 ## List datatype
@@ -147,6 +148,11 @@ hashtable of the instance. But in contrast to the `.` property access, it can ac
 not only strings. Also the access with the indexing operator `[]` doesn't default to the class's
 methods when a slot doesn't exist.
 
+You shouldn't use a real number as an index (see below at *Equality vs. Identity*)
+
+To remove a slot, use the `remove` native function, assigning `nil` to a slot (like in Lua)
+doesn't remove it.
+
 ```javascript
   var map = Map("foo",42, "bar",38, true,666);
 
@@ -179,11 +185,12 @@ An iterator is a new Lox builtin type allowing iterating over all slots of an in
   for (var iter = slots(map); valid(iter); next(iter)) {
       print iter@;  // the @ operator accesses the key, read-only
       print iter^;  // the ^ operator accesses the value, may assign to it
+      remove(map, iter@); // removing the current item is allowed
   }
 ```
-
-
-
+You can clone an iterator which moves independently from its origin with `it_clone()`. This
+may be useful for some quadratic algorithms.
+ 
 ## Functions
 
 ### Variadic functions
@@ -204,7 +211,7 @@ only required that it accepts the number of arguments it is called with.
   foo(1, 2, 3)       → [2, 0]
   foo(1, 2)          ⟿ "'foo' expected at least 3 arguments but got 2."
   foo(1, ..list(4), 4, 5, ..list(3), 6, 7) → [nil, 9] // 5 fixed args, 7 args from lists
-                                                      // 3 comsumed by fixed parameters, 9 left
+                                                      // 3 consumed by fixed parameters, 9 left
 
   [1, 2, ..list(4, 3), 6, 7, ..list(2, 9), list(2, 11), 14] → [1, 2, 3, 3, 3, 3, 6, 7, 9, 9, [11, 11], 14]
   // .. splicing works the same way in list constructors
@@ -214,22 +221,69 @@ only required that it accepts the number of arguments it is called with.
 Named function parameters are not allowed.
 
 ### Anonymous functions (lambdas)
-### Shorthand
+An anonymous function is written like a normal function declaration, but omitting the name.
+It can be used anywhere an expression is allowed. Its value is a closure capturing variables
+from its lexical environment (just like a named function) and gets a sequential number for its
+name. The body can either be a block or (more frequently) the `->` shorthand described below.
 
+```javascript
+  map(fun (x) -> x*x, [2,3,4]) → [4, 9, 16]
+```
 
-## Native functions protocol
+### Shorthand ->
+If a function body just returns an expression, the whole body can be abbreviated with an arrow.
+```javascript
+  fun cube(x) {
+    return x*x*x;
+  }
+  // can also be written
+  fun cube(x) -> x*x*x
+```
+This concept is orthogonal to lambdas, it can be used for function and method definitions, too.
 
+### Native functions protocol
 
+There is a standard protocol for calling native (implemented in C) functions from Lox which
+cares for argument count and types checking and signalling success or failure to the Lox VM.
+See `native.c` for details.
 
+## `if` expression
+An `if` expression works exactly like the ternary operator `?:` from C or Javascript (which
+is clumsy IMHO, so I changed the syntax here), but is written in a function-like syntax. To
+emphasize the special evaluation order, the arguments are separated by colons instead of commas.
 
-
-## `case` statement
-The `case` statement provides a multi-way branch. It evaluates an expression and compares its value
-to a list of other values and selects the first matching branch.
+```javascript
+  fun max(a, b) -> if(a>b : a : b)
+```
 
 ## `break` statement
 The `break` statement is very simple. It leaves the innermost `for` or `while` loop immediately
 cleaning up all lexical variables and jumps to the statement following the loop.
+
+
+## `case` statement
+The `case` statement provides a multi-way branch. It evaluates an expression and selects
+the first matching branch.
+
+A branch is introduced by `when` and followed by a comma-seperated list of comparison values
+(needn't be constant). When a branch is selected, all following statements are executed and
+the `case` statement is left. No `break` statement is needed to leave it, in fact, `break` would
+leave a loop containing the `case` statement. 
+
+When no branch matches the `case` expression, nothing is executed, unless there is a
+final `else` branch.
+
+```javascript
+  fun daysInMonth(month, year) {
+    case (lower(month)) {
+      when "feb":                      return if(year\4 == 0 : 29 : 28); // simplified
+      when "jan", "mar", "may", "jul",
+            "aug", "oct", "dec":       return 31;
+      when "apr", "jun", "sep", "nov": return 30;
+      else                             error("Invalid month name " + month);
+    }
+  }
+```
 
 
 ## Exception handling
@@ -239,17 +293,76 @@ There is no sophisticated exception class hierarchy, all Lox runtime errors are 
 
 
 ## Debugging utilities
+All debugging utilities are only available when Lox68k is compiled with the symbol `LOX_DBG`
+defined. Then they include the ones given in the book and a few more, but all debugging options
+are separately switchable by calling the corresponding function with a truish or falsey argument.
 
 ### Bytecode disassembler
-### Execution statistics
-### Tracing calls
+Control disassembling the generated byte code after compilation with the switch
+`dbg_code(arg)`.
+
+### Execution statistics (*new*)
+Control printing execution statistic after an evaluation with the switch
+`dbg_stat(arg)`. Printed are
+  * real time used 
+  * number of virtual machine instructions 
+  * number of bytes allocated
+  * number of garbage collections
+
+### Tracing calls (*new*)
+Control tracing of calls to closures with the switch `dbg_call(arg)`. Each entry to a closure
+is logged with all arguments in a single line, which is prefixed by `-->` and indented according
+to the call nesting.
+
+On closure exit, `<--` and the returned value are printed, also indented.
+
+To control tracing of calls to native functions, use the switch `dbg_nat(arg)`.
+Arguments and results of every call to a native functions are printed in a single line,
+starting with `---`, only indented when also tracing closure calls.
+
+Summary of tracing indicators:
+  * `-->` call a closure
+  * `<--` return from a closure call
+  * `==>` establish an exception handler
+  * `<==` an exception has been raised
+  * `~~>` bind a dynamic variable
+  * `---` call a native function, `->` result, *unless:*
+  * `/!\` native function raised exception
+
 ### Tracing VM steps
+Control tracing every VM step with the switch `dbg_step(arg)`. This is like in the book
+and creates huge amount of output.
+
 ### Tracing garbage collection
-
+`dbg_gc(bits)` in contrast expects a bit mask (see `memory.h` for details) to select logging
+several garbage collector messages. This may also create  lots of output.
  
-## Minor extensions
 
-### Equality vs. Identity
+## Equality vs. Identity
+The original Lox `number` type has been split into `int` and `real`, since the 68k chip only
+supports hardware integers and floating point numbers have to be emulated in software which is
+quite slow.
+
+Logically, the types `nil`, `bool`, `int`, `real`, `string`, and `native` are value types,
+they have no identity and can't be modified. All other types (`list`, `closure`, `class`, `instance`,
+`bound`, `iterator`) are reference types with an identity and are modifiable.
+
+The `==` operator compares value types via their values and reference types via their identity,
+which is in fact a simple 32 bit comparison. (This comparison applies also to `case` branch
+selection and instance keys.)
+
+Implementation-wise, natives, strings and reals are objects in the heap, but (mostly)
+behave like value types, since:
+  * Natives are constants (pointers into ROM), there's no way to create a new native besides
+    the predefined ones.
+  * Strings are always interned, so a duplicate string is in fact the *identical* object.
+  * Reals are not interned, so `1.2 == 1.2` is false (two distinct objects),
+    but *reals shouldn't be compared for equality anyway*. 
+
+However, if you really want to compare reals for numeric equality, you can use the `equal`
+native, which also does type conversion, so `equal(3, 3.0)` is true.
+
+## Minor extensions
 
 ### Numeric literals
 
@@ -284,4 +397,23 @@ Real numbers can have a decimal exponent in a standard way
   23e ⟿ "Empty exponent in number."
 ```
 
-### Print lists
+### Printing
+`print` remains a statement, not a native function, so some syntactic variants are possible.
+`print` allows any number of expressions to be printed, if they are separated by a single comma,
+their values are printed without space, if separated by two commas 3 spaces are inserted between.
+Strings are printed without quotes. All values are printed in a single line. If the list ends
+with a comma, the newline is suppressed and the next `print` statement continues at the same line.
+`print` may be abbreviated by `?`
+
+```javascript
+  print "Result is",7; ⇒ Result is7
+  print "Result is",,7,,11; ⇒ Result is   7   11
+  ? 42; ⇒ 42
+
+```
+
+### Declaring multiple variables
+Multiple variables can be declared and initialized in a single `var` declaration.
+```javascript
+  var a=5, b=2+a, c, d=14-b; // Later variables may refer to earlier ones.
+```
