@@ -2,20 +2,18 @@
 
 Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.html) are:
 * `print` can be abbreviated by `?` and allows a list of expressions, printed on one line
-* Expressions in `print` may be separated by two commas, inserting some spaces into the output.
+* Expressions in `print` may be separated by two commas.
 * Ending a `print` list with one or two commas suppresses printing the linefeed.
 * `[` ... `]` syntax for building lists
 * `[ exp ]` as string, list, or instance index to access elements
 * `[ exp? : exp? ]` as list or string slice to extract subsequence
 * operator `\` for division remainder
-* `$` prefix for hexadecimal integer literals
-* `%` prefix for binary integer literals
+* `$` and `%` prefix for integer literals
 * anonymous functions as expressions `fun (params*) {block}`
 * prefix `..` before last parameter name for rest parameter in function declaration
 * prefix `..` before argument to unpack list into arguments in function call
 * Real numbers with exponential part
-* postfix `@` to read key part of a hashtable iterator entry
-* postfix `^` to read/write value part of a hashtable iterator entry
+* postfix `@` and `^` operators for iterators
 * function body `{ return expr;}` can be abbreviated by `-> expr`.
 * `case` statement for multiway branch
 * `break` statement in loops

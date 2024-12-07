@@ -83,16 +83,30 @@ bool callNative(const Native* native, int argCount, Value* args) {
 // ===============================
 //
 // 1st parameter is number of arguments (only useful for variadic arity)
-// 2nd parameter is pointer to call stack slice, arguments can be accessed by args[0], args[1], etc.
+// 2nd parameter is pointer to call stack slice, arguments can be accessed by
+// args[0], args[1], etc.
 //
-// basic arity and type checks are done via the signature string,
+// Basic arity and type checks already have been done via the signature string,
 // only in special cases you have to do further checks,
 // e.g. join, index, lcd_defchar
 //
-// result must be stored into args[-1] (or use macro RESULT)
-// to indicate success, return true, on error return false.
+// Each char in the signature strings stands for the allowed argument type at the
+// corresponding position. See matchesType() above for possible types.
+// Uppercase means required parameter, lower case optional parameter (must be trailing).
+// Test argCount for actual number in this case. 
+//
+// If you allocate heap objects, you have to ensure that prior objects are not
+// garbage collected, so you have to add them to the root set of reachable objects.
+// The easiest way to do this is to push() every allocated object and drop() before returning. 
+//
+// Make sure that the stack level is the same after calling your native or terrible things
+// may happen.
+//
+// The result is stored into args[-1] (or use macro RESULT)
+//
+// To indicate success, return true, on error return false.
 // you have to call runtimeError(...) before returning false to provide a useful error message
-
+// and setup possible exception handling.
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Arithmetics

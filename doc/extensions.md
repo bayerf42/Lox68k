@@ -1,10 +1,27 @@
 # Lox68k extensions and changes to the original Lox language definition
 
+### Goals
+These were my goals, in decreasing order of importance.
+
+  * Have fun
+  * Build a modern dynamic scripting language implementation for a 45 year old architecture
+  * Make it run on a [Motorola 68008 SBC](https://kswichit.net/68008/68008.htm)
+  * Keep it small, simple, and elegant; stay below 64k code size
+  * Improve my compiler/interpreter knowledge 
+  * Focus on functional style more than OOP
+  * Make it useful
+  * Make it fast on 68000
+  * Improve my Github portfolio
+  * Make it run on other platforms, currently for testing and comparison only.   
+
 ### Glossary
 
   * → means *successfully evaluates to*
   * ⟿ means *raises exception*
   * ⇒ means *prints to terminal*
+
+Note that keyword highlighting in the code samples is not correct, since there is no Lox
+predefined syntax highlighter and the JS one has been used, which is close but not 100% correct.
 
 
 ## List datatype
@@ -27,7 +44,7 @@ terminated by `]`.
 ```
 
 Lists can be both treated in a functional way creating new lists with `+`, `list`, `reverse`
-and by modifying existings lists: `append`, `delete`, `insert`, assigning to an index.
+and by modifying existings lists: `append`, `delete`, `insert`, and assigning to an index.
 
 ```javascript
   lst + reverse([1, 2, 3]) → [2, 5, nil, "foo", <native sinh>, 3, 2, 1];
@@ -35,13 +52,12 @@ and by modifying existings lists: `append`, `delete`, `insert`, assigning to an 
   insert(lst, 2, "bar") → nil
   lst → [2, 5, "bar", nil, "foo", <native sinh>]
 
-  delete(lst, -2) → nil
+  delete(lst, -2) → nil // see below for negative index
   lst → [2, 5, "bar", nil, <native sinh>]
 
   append(lst, "last") → nil
   lst → [2, 5, "bar", nil, <native sinh>, "last"]
 ```
-
 
 
 ## Indexing lists and strings
@@ -80,7 +96,7 @@ and yields the error message `index out of range`.
 
 ## Slicing lists and strings
 Additionally to indexing, you can extract subsequences of Lox68'x sequence types (lists and strings)
-by giving lower and upper limits in slice syntax `[` lower `:` upper`]`. The lower limit is
+by giving lower and upper limits in slice syntax `[` *lower* `:` *upper*`]`. The lower limit is
 inclusive, the upper is exclusive. If a limit is omitted, it defaults to the beginning or end of the
 sequence.
 
@@ -154,6 +170,8 @@ To remove a slot, use the `remove` native function, assigning `nil` to a slot (l
 doesn't remove it.
 
 ```javascript
+  // The class Map in the standard library may be called with an even number of arguments
+  // building a map from key,value pairs.
   var map = Map("foo",42, "bar",38, true,666);
 
   map.bar → 38
@@ -161,39 +179,46 @@ doesn't remove it.
   map[bar] ⟿ "Undefined variable 'bar'."
 
   map.zyz ⟿ "Undefined property 'zyz'."
-  map["zyz"] → nil
+  map["zyz"] → nil // but index returns nil, not an error!
   map["zyz"] = 111 → 111 // assignment always works
   map.zyz → 111
 
   map.string → <bound Map.string> // a method of the class (defined in stdlib.lox) 
-  map["string"] → nil // but not in the instance
+  map.clone → <bound Object.clone> // another method, but defined in the superclass 'Object' 
+  map["string"] → nil // method is not defined in instance
 
   map.true ⟿ "Expect property name after '.'." // true is a keyword, not an identifier
   map[true] → 666 // key is bool true
-  map["true"] → nil // key is not the string "true"
+  map["true"] → nil // key is not the string "true", no value found
 
   map → Map("foo",42, "bar",38, "zyz",111, true,666) // 'zyz' property has been added in 2nd block
+  // Note the spacing indicating key,value pairs. This output is valid input to the REPL
+  // recreating an equal Map.
 ```
 
 ## Iterators
 An iterator is a new Lox builtin type allowing iterating over all slots of an instance.
 
 ```javascript
-  var map = Map("foo",42, "bar",38, true,666);
+  var m = Map("foo",42, "bar",38, true,666);
 
-  // this is the standard idiom to iterate over all items in a dictionary.
-  for (var iter = slots(map); valid(iter); next(iter)) {
-      print iter@;  // the @ operator accesses the key, read-only
-      print iter^;  // the ^ operator accesses the value, may assign to it
-      remove(map, iter@); // removing the current item is allowed
+  // this is the standard idiom to iterate over all slots in an instance.
+  for (var iter = slots(m); valid(iter); next(iter)) {
+      print iter@,,;     // the @ operator accesses the key, read-only
+      print iter^;       // the ^ operator accesses the value, may assign to it
+      remove(m, iter@);  // removing the current item is allowed
   }
+  ⇒ bar   38    // iteration order depends on key hash, consider it random
+  ⇒ true   666
+  ⇒ foo   42
+  m → Map()   // empty, all items have been removed in loop
 ```
 You can clone an iterator which moves independently from its origin with `it_clone()`. This
 may be useful for some quadratic algorithms.
  
 ## Functions
 
-### Variadic functions
+### Variadic functions, rest parameter, argument list splicing
 The last parameter name of a function may be prefixed by `..` indicating that this is a
 rest parameter, collecting all function arguments into a list.
 
@@ -203,7 +228,7 @@ list and may even occur several times. The called function does not need to be v
 only required that it accepts the number of arguments it is called with.
 
 ```javascript
-  fun foo(a, b, c, ..more) {
+  fun foo(a, b, c, ..more) { // 4 parameters, but actually accepts at least 3, ..more may be empty
     return [b, length(more)];
   }
 
@@ -228,9 +253,13 @@ name. The body can either be a block or (more frequently) the `->` shorthand des
 
 ```javascript
   map(fun (x) -> x*x, [2,3,4]) → [4, 9, 16]
+
+  (fun (a,b) {}) → <closure #7> // must put lambda expression in parentheses; otherwise
+                                // the compiler would expect a function declaration after
+                                // the keyword 'fun' and complain about missing function name
 ```
 
-### Shorthand ->
+### Shorthand syntax ->
 If a function body just returns an expression, the whole body can be abbreviated with an arrow.
 ```javascript
   fun cube(x) {
@@ -239,12 +268,11 @@ If a function body just returns an expression, the whole body can be abbreviated
   // can also be written
   fun cube(x) -> x*x*x
 ```
-This concept is orthogonal to lambdas, it can be used for function and method definitions, too.
+This syntax is orthogonal to lambdas, it can be used for named functions and methods, too.
 
 ### Native functions protocol
-
 There is a standard protocol for calling native (implemented in C) functions from Lox which
-cares for argument count and types checking and signalling success or failure to the Lox VM.
+cares for argument count and type checking, signalling success or failure to the Lox VM.
 See `native.c` for details.
 
 ## `if` expression
@@ -268,7 +296,7 @@ the first matching branch.
 A branch is introduced by `when` and followed by a comma-seperated list of comparison values
 (needn't be constant). When a branch is selected, all following statements are executed and
 the `case` statement is left. No `break` statement is needed to leave it, in fact, `break` would
-leave a loop containing the `case` statement. 
+leave the loop containing the `case` statement. 
 
 When no branch matches the `case` expression, nothing is executed, unless there is a
 final `else` branch.
@@ -278,7 +306,7 @@ final `else` branch.
     case (lower(month)) {
       when "feb":                      return if(year\4 == 0 : 29 : 28); // simplified
       when "jan", "mar", "may", "jul",
-            "aug", "oct", "dec":       return 31;
+           "aug", "oct", "dec":        return 31;
       when "apr", "jun", "sep", "nov": return 30;
       else                             error("Invalid month name " + month);
     }
@@ -287,9 +315,106 @@ final `else` branch.
 
 
 ## Exception handling
-There is no sophisticated exception class hierarchy, all Lox runtime errors are simple strings.
+When (original) Lox encounters a run-time error, the error message including a backtrace of
+function names and line numbers is printed and the evaluation is aborted.
+
+Lox68k allows handling these errors with the `handle` expression. The first sub-expression is evaluated
+in a context where any exception raised calls the other expression (the error handler)
+with the error message as its single argument.
+Like in the `if` expression, a colon must be written between the expressions to
+emphasize the special evaluation order.
+
+```javascript
+  handle(5/0 : upper) → "DIV BY ZERO."
+```
+One can also manually raise an exception with the `error` native whose argument can have any
+type. This argument is passed unchanged to an active handler, but system errors have always
+type `string`. Grep Lox68k sources for `runtimeError` to see all possible system errors.
+
+The value of a `handle` expression is the value of its first argument if no exception
+has been raised, or the value returned from the error handler otherwise.
+
+If you want to discriminate between errors, you have to analyse the error string yourself, or
+raise exceptions of non-string type. You can re-raise the exception in the handler, which causes
+searching the next handler up the call stack.
+
+To keep things simple, there is no sophisticated class hierarchy for exceptions
+like in other languages, the first handler encountered is called always.
+
+For the same reason, exception handling is implemented for expressions, not for statements
+(`try/catch`), since statements complicate the control flow in exception handling. 
+
+
+```javascript
+// Implement even/odd by mutual recursion, give back result via exception handling
+fun makeEven() {
+  var even, odd; // forward declarations
+  odd  = fun (n) -> if(n==0 : error(false) : even(n-1));
+  even = fun (n) -> if(n==0 : error(true)  : odd(n-1));
+  return fun (n) -> handle(even(n) : fun (exc) -> if(type(exc)=="bool" : exc : error(exc)));
+}
+
+var even = makeEven();
+
+// You may want to trace call frames by setting dbg_call(true) here
+
+even(8)      → true  // from deep call via exception, where bools are handled and returned. 
+even(9)      → false // same.
+even(1000)   ⟿ "Lox call stack overflow."             // System error, re-raised in handler
+even("bla")  ⟿ "Can't subtract types string and int." // same.
+```
+
 
 ## Dynamic variables
+Inspired by Common Lisp's special variables:
+* Lexical variables have **lexical scope**, they are visible in certain program regions only,
+  determined  at compile time, but exist for **indefinite extent** during run time 
+  (even when the defining function has returned, so-called *upvalue*)
+* Dynamic variables have **indefinite scope**, they are visible anywhere in the program,
+  but exist only for a limited time period (**dynamic extent**) during run time
+
+A Lox variable is resolved lexically, if it is declared locally or in an enclosing function.
+If it isn't found at compile time, it is assumed to be a global variable, which is resolved
+dynamically at runtime. To define a global variable in Lox, a `var` statement must be
+executed at top level in a script. Global variables exists forever until the REPL is terminated.
+
+Lox68k extends this scheme, a dynamic variable can be defined in a `dynvar` expression and
+then exists during evaluation of the following expression, automatically being removed afterwards.
+When there already is a global variable with the same name, the new value temporarily shadows
+the original during evaluation. Of course those shadowings may be nested.
+
+```javascript
+  // Physics: Compute altitude in free fall.
+  fun s(t) -> 0.5 * g * t * t        // t is lexical (parameter), g is dynamic
+  s(3) ⟿ "Undefined variable 'g'." // Acceleration 'g' not yet defined
+  var g = 9.81;                      // Make Earth's acceleration the default.
+  s(3)                  → 44.145     // Altitude after 3s fall.
+  dynvar(g=1.62 : s(3)) →  7.29      // Temporarily falling on the moon.
+  s(3)                  → 44.145     // We are back on earth.
+```
+Another application of dynamic variables is instrumentation of code:
+
+```javascript
+  // define a wrapper to log function calls
+  fun logging(f) -> 
+    fun(..args) {
+      print "Calling ", f, " with args ", args,;
+      var res = f(..args);
+      print " gives ", res;
+      return res;
+    }
+
+  fun hypot(a,b) -> sqrt(pow(a,2)+pow(b,2)) // 'pow' is a native function, defined globally
+
+  // Rebind 'pow' to its logging version during testing 
+  fun test(a,b) -> dynvar(pow=logging(pow) : hypot(a,b)) 
+
+  test(5,12) ⇒ Calling <native pow> with args [5, 2] gives 25.0
+             ⇒ Calling <native pow> with args [12, 2] gives 144.0
+             → 13.0
+```
+Lexical variables are the default and usually better than dynamic variables, but dynamic variables
+are occasionally useful and elegant. 
 
 
 ## Debugging utilities
@@ -321,12 +446,12 @@ Arguments and results of every call to a native functions are printed in a singl
 starting with `---`, only indented when also tracing closure calls.
 
 Summary of tracing indicators:
-  * `-->` call a closure
-  * `<--` return from a closure call
-  * `==>` establish an exception handler
-  * `<==` an exception has been raised
-  * `~~>` bind a dynamic variable
-  * `---` call a native function, `->` result, *unless:*
+  * `-->` calling a closure
+  * `<--` returning from a closure call
+  * `==>` established an exception handler
+  * `<==` an exception is being raised
+  * `~~>` binding a dynamic variable
+  * `---` calling a native function, `->` result, *unless:*
   * `/!\` native function raised exception
 
 ### Tracing VM steps
@@ -348,16 +473,16 @@ they have no identity and can't be modified. All other types (`list`, `closure`,
 `bound`, `iterator`) are reference types with an identity and are modifiable.
 
 The `==` operator compares value types via their values and reference types via their identity,
-which is in fact a simple 32 bit comparison. (This comparison applies also to `case` branch
-selection and instance keys.)
+which is actually a simple 32 bit comparison (`valuesEqual()` macro).
+This comparison applies also to `case` branch selection and instance keys.
 
 Implementation-wise, natives, strings and reals are objects in the heap, but (mostly)
 behave like value types, since:
-  * Natives are constants (pointers into ROM), there's no way to create a new native besides
-    the predefined ones.
+  * Natives are constants (pointers into ROM), there's no way to create a new native from Lox.
   * Strings are always interned, so a duplicate string is in fact the *identical* object.
   * Reals are not interned, so `1.2 == 1.2` is false (two distinct objects),
-    but *reals shouldn't be compared for equality anyway*. 
+    but **reals shouldn't be compared for equality anyway**. And don't use reals as instance
+    keys or `case` branch selectors. 
 
 However, if you really want to compare reals for numeric equality, you can use the `equal`
 native, which also does type conversion, so `equal(3, 3.0)` is true.

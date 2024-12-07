@@ -55,30 +55,22 @@ in the release. Just burn it into an EPROM or flash chip.
 
 ## Differences to the [original Lox language](https://craftinginterpreters.com/the-lox-language.html)
 
-### [Extensions](extensions.md)
+### Summary of [Extensions](extensions.md), [Syntax](grammar.md)
 
 * A list datatype with according primitives.
-* Indexing composite data with `[]` [operator](operators.md), by number (strings and lists) or any value (instances)
-* [Slicing syntax](grammar.md) to extract subsequences from strings or lists,
-  including negative indices to index from the end of the list or string,
-  [like in Python](https://www.w3schools.com/python/python_strings_slicing.asp).
-* 72 [native functions](natives.md) for type conversion, collections, math, 
-  and [low-level functions](assembly.md) on the 68008 kit.
-* The compile-time debugging options are now selectable at runtime via the `dbg_*` native functions.
+* Indexing composite data with `[]` [operator](operators.md).
+* Slicing to extract subsequences from strings or lists.
+* 72 [native functions](natives.md) for type conversion, collections, math and [low-level functions](assembly.md) on the 68008 kit.
+* Debugging options selectable via the `dbg_*` native functions.
 * Runtime statistics, trace calls and returns.
-* Hexadecimal literals via the `$` prefix, like `$ff` == `255`.
-* Binary literals via the `%` prefix, like `%1110` == `14`.
-* Modulo [operator](operators.md) `\` for both ints and reals.
-* Interrupting long-running computations with **REP** key (or `ctrl-C` in Windows/Linux versions).
-* `print` allows list of expression, all printed on one line. With trailing comma,
-  no line feed is printed. When expressions are separated by two commas, 3 spaces are inserted.
+* Hexadecimal and binary literals.
+* Interrupting long-running computations.
+* `print` syntax extension.
 * Anonymous functions (*lambdas*) as expressions.
-* Functions can have a rest parameter packing all additional arguments into a list.
-* Lists can be unpacked as arguments into a function/method call or list constructor.
+* Variadic arguments for functions.
 * Real number arithmetic and native transcendental functions.
-* Hashtable iterators, created with `slots()`, iterate with `valid()` and `next()`, access key
-  with `it@` and value with `it^`.
-* Function body `{ return expr;}` can be abbreviated by `-> expr`. 
+* Hashtable iterators.
+* Function body can be abbreviated by `-> expr`. 
 * A [standard library](stdlib.md) written in Lox68k.
 * `case` statement for multiway branch.
 * `break` statement to leave loops early.
@@ -86,7 +78,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * `handle` expression to establish a dynamic exception handler
 * `if` expression, in addition to `if` statement 
 * expressions entered at top-value are evaluated and printed 
-* dynamic re-binding of global variables via the `dynvar` expression
+* `dynvar` expression allowing re-binding of global variables
 
 ### Omissions
 

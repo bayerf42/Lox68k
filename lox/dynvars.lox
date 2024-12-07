@@ -1,0 +1,16 @@
+// Some examples how to use dynamic variables
+
+// 1. Logging calls
+
+fun logging(f) ->
+    fun(..args) {
+        print "Calling ", f, " with args ", args,;
+        var res = f(..args);
+        print " gives ", res;
+        return res;
+    }
+
+
+fun hypot(a,b) -> sqrt(pow(a,2)+pow(b,2))
+
+fun test(a,b) -> dynvar(pow=logging(pow) : hypot(a,b))
