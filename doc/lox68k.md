@@ -13,8 +13,8 @@ Here is an [overview of the Lox language](https://craftinginterpreters.com/the-l
 
 ### What is the Sirichote 68008 Kit?
 
-It is an educational single-board computer using the ancient Motorola 68008 CPU,
-designed by Wichit Sirichote, [described here](https://kswichit.net/68008/68008.htm).
+It is an [educational single-board computer](https://kswichit.net/68008/68008.htm),
+designed by Wichit Sirichote, using the ancient Motorola 68008 CPU.
 It is mainly intended to learn programming the 68k in machine language. It has no operating
 system, just a little monitor program and communicates with a terminal (emulator) via RS232.
 If you want to buy/build one, contact Wichit via his web site.
@@ -26,12 +26,11 @@ Lox was designed as a toy language to study the implementation of interpreters, 
 due to its small size and simplicity it's very well suited as a scripting language for a
 single board computer with very restricted resources.
 
-The Lox68K port also contains several [native functions](natives.md) to access the
-Kit peripherals and to integrate machine level coding. I wish I had such a system in the 80ies
-when learning computing, but had to use stupid BASIC...
+The Lox68K port contains [many extensions](extensions.md) to make it a useful programming
+system including access to the Kit's peripherals and integrating machine level coding.
+I wish I had such a system in the 80ies when learning computing, but had to use stupid BASIC...
 
-For testing and comparison, I also added a few `#ifdef`s to the source to be able to compile
-it as Windows/Linux executables, too.
+For testing and comparison, Lox68k compiles to Windows/Linux executables, too.
 
 
 ## Prerequisites
@@ -57,28 +56,27 @@ in the release. Just burn it into an EPROM or flash chip.
 
 ### Summary of [Extensions](extensions.md), [Syntax](grammar.md)
 
-* A list datatype with according primitives.
-* Indexing composite data with `[]` [operator](operators.md).
-* Slicing to extract subsequences from strings or lists.
-* 72 [native functions](natives.md) for type conversion, collections, math and [low-level functions](assembly.md) on the 68008 kit.
-* Debugging options selectable via the `dbg_*` native functions.
-* Runtime statistics, trace calls and returns.
-* Hexadecimal and binary literals.
-* Interrupting long-running computations.
-* `print` syntax extension.
-* Anonymous functions (*lambdas*) as expressions.
-* Variadic arguments for functions.
-* Real number arithmetic and native transcendental functions.
-* Hashtable iterators.
-* Function body can be abbreviated by `-> expr`. 
-* A [standard library](stdlib.md) written in Lox68k.
-* `case` statement for multiway branch.
-* `break` statement to leave loops early.
-* superclass in class declaration may be any expression evaluating to a class
-* `handle` expression to establish a dynamic exception handler
-* `if` expression, in addition to `if` statement 
-* expressions entered at top-value are evaluated and printed 
-* `dynvar` expression allowing re-binding of global variables
+* A [list datatype](extensions.md#list) with according primitives
+* [Indexing](extensions.md#index) and [slicing](extensions.md#slice)
+  composite data with `[]` [operator](operators.md)
+* 72 [native functions](natives.md) for type conversion, collections, math
+  and [low-level functions](assembly.md) on the 68008 Kit
+* [Debugging options](extensions.md#debug) selectable at runtime
+* [Hexadecimal](extensions.md#hex) and [binary](extensions.md#bin) literals
+* [Interrupting](extensions.md#interrupt) evaluation
+* [`print`](extensions.md#print) syntax extension
+* [Anonymous functions (*lambdas*)](extensions.md#lambda)
+* [Variadic](extensions.md#variadic) arguments for functions
+* Instance slots [iterators](extensions.md#iterator)
+* Function body can be abbreviated by [`-> expr`](extensions.md#arrow) 
+* [Standard library](stdlib.md) written in Lox68k
+* [`case`](extensions.md#case) for multiway branch
+* [`break`](extensions.md#break) to leave loops early
+* Some [class extensions](extensions.md#class)
+* [`handle`](extensions.md#exception) for exception handling
+* [`if` expression](extensions.md#if_expr), in addition to `if` statement 
+* expressions at [top-level](extensions.md#toplevel) 
+* [`dynvar`](extensions.md#dynvar) allows re-binding of global variables
 
 ### Omissions
 
@@ -121,7 +119,7 @@ and doesn't support modern *C99*.
   [Listed here](operations.md)
 
 
-## The 4 varieties of Lox buildable
+## <a id="varieties"></a>The 4 varieties of Lox buildable
 
 All varieties are compiled from the same source files as described in the following sections.
 

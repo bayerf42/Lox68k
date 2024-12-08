@@ -1,4 +1,4 @@
-# Lox68k operators, natives, and library functions
+# Lox68k data types, operators, natives, and library functions
 
 ## Types
 
