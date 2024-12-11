@@ -124,7 +124,7 @@ static void repl(void) {
     }
 }
 
-// Usage: [lw]lox(_dbg)? [ <source>* [-]]
+// Usage: [lw]loxd? [ <source>* [-]]
 // - starts REPL after loading all sources.
 //
 
