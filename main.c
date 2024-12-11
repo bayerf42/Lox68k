@@ -7,10 +7,12 @@
 #include "memory.h"
 #include "vm.h"
 
+#define VERSION "Lox68k 1.6"
+#define AUTHOR  "by Fred Bayer"
 #ifdef LOX_DBG
-#define VERSION_STRING "Lox68k V1.5 [debug] by Fred Bayer\n"
+#define DBG_STR "debug"
 #else
-#define VERSION_STRING "Lox68k V1.5 [no debug] by Fred Bayer\n"
+#define DBG_STR "nodeb"
 #endif
 
 #ifdef KIT68K
@@ -22,10 +24,9 @@ const char* loxLibSrc;
 int main() {
     if (ON_KIT()) { // Running on actual 68008 Kit
         // Welcome message on LCD
-        lcd_clear();
-        lcd_puts("Use terminal for");
-        lcd_goto(0,1);
-        lcd_puts("Lox68k REPL");
+        lcd_clear();    lcd_puts(VERSION);
+        lcd_goto(11,0); lcd_puts(DBG_STR);
+        lcd_goto(0,1);  lcd_puts(AUTHOR);
 
         // init 100 Hz ticker
         clock()     = 0;
@@ -48,7 +49,7 @@ int main() {
 
     init_freelist();
     initVM();
-    putstr(VERSION_STRING);
+    printf("%s [%s] %s\n", VERSION, DBG_STR, AUTHOR);
     if (loxLibSrc) {
         putstr("Loading standard library.\n");
         interpret(loxLibSrc);
@@ -123,14 +124,7 @@ static void repl(void) {
     }
 }
 
-// To compile Lox68k for Windows, install Tiny C compiler from
-// https://bellard.org/tcc/ and run
-//   tcc *.c -o wlox.exe -m32
-//
-// To compile it for Linux, invoke
-//   gcc -O2 -std=gnu89 -o llox -m32 -lm *.c
-//
-// Usage: [lw]lox [ <source>* [-]]
+// Usage: [lw]lox(_dbg)? [ <source>* [-]]
 // - starts REPL after loading all sources.
 //
 
@@ -140,7 +134,7 @@ int main(int argc, const char* argv[]) {
     init_freelist();
     initVM();
 
-    putstr(VERSION_STRING);
+    printf("%s [%s] %s\n", VERSION, DBG_STR, AUTHOR);
     if (argc == 1)
         repl();
     else {
@@ -160,4 +154,3 @@ int main(int argc, const char* argv[]) {
 }
 
 #endif
-

@@ -7,7 +7,7 @@
 It is a high-level interpreted programming language in the spirit of Python, Lua, or Javascript.
 Lox is dynamically typed, has garbage collection and supports functional programming idioms with
 closures and first-class functions. It also includes a simple class-based object system.
-Lox is controlled by a read-eval-print loop (*REPL*).
+Lox provides a read-eval-print loop (*REPL*) for user interaction.
 Here is an [overview of the Lox language](https://craftinginterpreters.com/the-lox-language.html).
 
 
@@ -83,7 +83,7 @@ in the release. Just burn it into an EPROM or flash chip.
 The original C implementation of Lox is aimed towards a modern 64 bit architecture
 including plenty of RAM and a FPU where the principal `Value` type is
 [IEEE-754 double precision floating point](https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
-(pretty much like in Lua, Python and Javascript) and other values are embedded as NANs.
+(pretty much like in Lua and Javascript) and other values are embedded as NANs.
 
 For the 68008 port the `Value` type has been shrunk to 32 bit, where numbers
 are 31 bit signed integers, using 1 bit to discriminate from pointers or special values.
@@ -95,7 +95,7 @@ is adequate for the Sirichote Kit.
 mixed with integers in calculations. Also a standard set of transcendental functions has been
 added. 
 
-Don't forget we're targetting an architecture 40 years old, which runs about 20000 times
+Don't forget we're targetting an architecture 45 years old, which runs about 30000 times
 slower than contemporary CPUs. Also the IDE68K C compiler has [several bugs](porting.md)
 and doesn't support modern *C99*. 
 
@@ -129,9 +129,9 @@ Depending on the `LOX_DBG` symbol, two versions of Lox are compiled:
 
 
 ### Lox running on the actual 68008 kit
-The executable is burnt into ROM (together with the Monitor code and the FFP library)
-and can [utilize the entire RAM for data](memorymap.md) and the kit's hardware like LCD, keyboard,
-sound, and terminal communication via the serial port.
+Both (debug and non-debug) executables are burnt into ROM (together with the Monitor code and
+the FFP library) and can [utilize the entire RAM for data](memorymap.md) and the
+kit's hardware like LCD, keyboard, sound, and terminal communication via the serial port.
 
 To build this version, load project `clox.prj` in *IDE68K* and build it.
 A hex file `clox.hex` is generated. Do the same with project `clox_dbg.prj` generating
@@ -166,16 +166,17 @@ To load a file into the REPL, input
 ```
 &filepath
 ```
-at the REPL prompt, just like Windows and Linux variants.
+at the REPL prompt, just like in Windows and Linux variants.
 
-Please note that the visual simulator of *IDE68K* may crash easily when outputting text
-at a high rate, the textual simulator is more stable.
+Please note that the Visual simulator of *IDE68K* may crash when outputting text
+at a high rate (like in the `mandelbrot.lox` sample program), the textual simulator is more stable.
 
 You can also configure the Visual Simulator's peripherals to behave quite like the actual Kit:
 
   * **Switches**: Set to `00080000` Now bit 6 controls the running flag, set it to `1` before
-    starting an evaluation and set it to `0` to interrupt it.
-  * **LEDs**: Set to `000F0000` to simulate the Kit's LEDs.
+    starting an evaluation and set it to `0` to interrupt it (simulating the **REP** key from
+    the actual Kit)
+  * **LEDs**: Set to `000F0000` to simulate the Kit's debug LEDs above the keyboard.
   * **Timer**: Set to `00000268` to count 10 Hz ticks, which is 10 times slower
     than the Kit's 100 Hz ticks, so all timings measured (via `clock()` or `dbg_stat()`)
     have to be multiplied by 10.  
@@ -189,7 +190,7 @@ To build it on Windows, execute
 ```sh
 build
 ```
-to generate both `wlox.exe` and `wlox_dbg.exe`.
+to generate both `wlox.exe` and `wloxd.exe`.
 
 To start Lox interactively (aka. the REPL), execute
 ```sh
@@ -223,6 +224,7 @@ To build it, execute
 ```sh
 build
 ```
+to generate both `llox` and `lloxd`.
 
 Be sure to compile it for 32 bit architecture, Lox68k assumes 32 bit `int`, `long` and pointers.
 
@@ -243,7 +245,7 @@ inputting the file name. Or you can upload Motorola HEX files by pressing the **
 on the kit, pressing **F3** in the terminal and input a hex file name.
 
 Since Lox reads the entire input (file) into RAM, the maximum file size is limited by the
-input buffer size, which is 16 kB for the ROM version of Lox68k.
+input buffer size, which is 16 kB.
 
 When inputting Lox code, **ENTER** sends your input to the Lox REPL and interprets it. When
 you want to input a line feed without starting interpretation, press **Ctrl-ENTER** instead.

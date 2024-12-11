@@ -7,7 +7,7 @@
 It is a high-level interpreted programming language in the spirit of Python, Lua, or Javascript.
 Lox is dynamically typed, has garbage collection and supports functional programming idioms with
 closures and first-class functions. It also includes a simple class-based object system.
-Lox is controlled by a read-eval-print loop (*REPL*).
+Lox provides a read-eval-print loop (*REPL*) for user interaction.
 Here is an [overview of the Lox language](https://craftinginterpreters.com/the-lox-language.html).
 
 

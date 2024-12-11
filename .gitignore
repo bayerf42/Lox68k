@@ -19,9 +19,9 @@
 *.ini
 
 wlox.exe
-wlox_dbg.exe
+wloxd.exe
 llox
-llox_dbg
+lloxd
 
 # assembler demos
 !asm/*.asm

@@ -18,12 +18,24 @@ These were my goals, in decreasing order of importance.
 
 ### Glossary
 
-  * → means *successfully evaluates to*
+  * → means *successfully evaluates to* and prints implicitly
   * ✪ means *compiler error*
   * ⚠ means *runtime exception*
-  * ✎ means *prints to terminal*
+  * ✎ means *prints to terminal* by an explicit `print` statement
 
-*Lox* refers to te original language definition, *Lox68k* to my extended version.
+Lox68k allows evaluating both declarations/statements and expressions at top-level,
+see [below for details.](#toplevel)
+
+```javascript
+  6*7;        // interpreted as an expression statement, result is ignored, nothing printed
+  6*7   → 42  // without trailing ';' it is an expression, printing its value implicitly
+  print 6*7;  // a statement printing the expression value explicitly
+    ✎ 42
+  6*+   ✪ "Error at '+': Expect expression."  // Syntax error detected by compiler
+  6*nil ⚠ "Can't multiply types int and nil." // Runtime error detected by VM 
+```
+
+*Lox* refers to the original language definition, *Lox68k* to my extended version.
 
 Note that keyword highlighting in the code samples is not correct, since there is no Lox
 predefined syntax highlighter and the JS one has been used, which is close but not 100% correct.
@@ -32,8 +44,8 @@ In the samples below, it is assumed that the [standard library](stdlib.md) has b
 
 ## <a id="list"></a>List datatype
 A new data type List has been added. It is a dynamic array of any Lox values, which is indexed
-by a numeric index ranging from 0 to the length of the array minus 1. Since lists are mutable
-values, you can assign to an indexed location in a list.
+by an integer index. Since lists are mutable values, you can assign to an indexed location
+in a list.
 
 Lists can be created in several ways, by the `list` native which creates a list of *n* elements
 optionally initializing it with a value. 
@@ -67,7 +79,7 @@ and by modifying existings lists: `append`, `delete`, `insert`, and assigning to
 
 
 ## <a id="index"></a>Indexing lists and strings
-Both Lox68k's sequence types (lists and strings) can be indexed by a numerical index, with either
+Both Lox68k's sequence types (lists and strings) can be indexed by an integer index, with either
 goes from 0 to the length of the sequence minus one (when indexing from the left), or from
 minus 1 to minus the length (when indexing from the right). So index 0 is the first element, and
 index -1 is the last element of the sequence. It is an error when an index is beyond those limits
@@ -77,7 +89,7 @@ and yields the error message `index out of range`.
   var text = "Hello, world";
 
   length(text)  → 12
-  text[4]       → "o" // There is no char type, represent chars are strings of length 1,
+  text[4]       → "o" // There is no char type, represent chars as strings of length 1,
   text[-3]      → "r" // just like in Python
   text[15]      ⚠ "String index out of range."
   text[true]    ⚠ "String index is not an integer."
@@ -113,8 +125,8 @@ default to the maxima.
 ```javascript
   var text = "Hello, world";
 
-  text[2:5]       → "llo"          // start at (2+1) upto 5th
-  text[:5]        → "Hello"        // first 5 first characters
+  text[2:5]       → "llo"          // start at 2 upto (excluding) 5th
+  text[:5]        → "Hello"        // first 5 characters
   text[-3:]       → "rld"          // last 3 characters
   text[:]         → "Hello, world" // a copy, but actually identical due to string interning
   text == text[:] → true           // verification of previous claim
@@ -148,11 +160,11 @@ fun counted(clazz) {
 
         num_instances() -> num  // method shorthand (see below) returning number of instances
     }
-    return Deco;                // returned class includes everything from class and counts
+    return Deco;                // returned class includes everything from clazz and counts
                                 // its instances
 }
 
-var CountedSample = counted(Sample); // Assume Sample is a class, create a counted variant of it.
+var CountedSample = counted(Sample); // Assume Sample is a class, create a counted variant.
 
 var s1 = CountedSample(4);      // create an instance, automatically incrementing counter
 var s2 = CountedSample(5);      // dito
@@ -172,7 +184,7 @@ methods when a slot doesn't exist.
 
 You shouldn't use a real number as an index (see below at *Equality vs. Identity*)
 
-To remove a slot, use the `remove` native function, assigning `nil` to a slot (like in Lua)
+To remove a slot, use the `remove` native function; assigning `nil` to a slot (like in Lua)
 doesn't remove it.
 
 ```javascript
@@ -180,8 +192,8 @@ doesn't remove it.
   // building a map from key,value pairs.
   var map = Map("foo",42, "bar",38, true,666);
 
-  map.bar          → 38
-  map["bar"]       → 38
+  map.bar          → 38 // like in 
+  map["bar"]       → 38 // Lua and JavaScript
   map[bar]         ⚠ "Undefined variable 'bar'."
 
   map.zyz          ⚠ "Undefined property 'zyz'."
@@ -189,9 +201,9 @@ doesn't remove it.
   map["zyz"] = 111 → 111 // assignment always works
   map.zyz          → 111
 
-  map.string       → <bound Map.string> // a method of the class (defined in stdlib.lox) 
-  map.clone        → <bound Object.clone> // another method, but defined in the superclass 'Object' 
-  map["string"]    → nil // method is not defined in instance
+  map.string       → <bound Map.string>   // a method of the class 
+  map["string"]    → nil                  // method is not defined in instance
+  map.clone        → <bound Object.clone> // another method, but defined in superclass 
 
   map.true         ✪ "Expect property name after '.'." // true is a keyword, not an identifier
   map[true]        → 666 // key is bool true
@@ -204,7 +216,7 @@ doesn't remove it.
 ```
 
 ## <a id="iterator"></a>Iterators
-An iterator is a new Lox builtin type allowing iterating over all slots of an instance.
+An iterator is a new Lox builtin type allowing traversing all slots of an instance.
 
 ```javascript
   var m = Map("foo",42, "bar",38, true,666);
@@ -220,7 +232,7 @@ An iterator is a new Lox builtin type allowing iterating over all slots of an in
     ✎ foo   42
   m → Map()              // empty, all items have been removed in loop
 ```
-You can clone an iterator which moves independently from its origin with `it_clone()`. This
+You can clone an iterator which moves independently from the original with `it_clone()`. This
 may be useful for some quadratic algorithms.
  
 ## Functions
@@ -243,8 +255,9 @@ only required that it accepts the number of arguments it is called with.
   foo(1, 2, 3, 4, 5) → [2, 2]
   foo(1, 2, 3)       → [2, 0]
   foo(1, 2)          ⚠ "'foo' expected at least 3 arguments but got 2."
-  foo(1, ..list(4), 4, 5, ..list(3), 6, 7)
-    → [nil, 9] // 5 fixed args, 7 sliced args, 3 consumed by fixed parameters, 9 left
+  foo(1, ..list(4, true), 4, 5, ..list(3), 6, 7)
+    → [true, 9] // 5 fixed args, 7 spliced args,
+                // 3 consumed by fixed parameters, 9 left for rest parameter
 
   // '..' splicing works the same way in list constructors
   [1, 2, ..list(4, 3), 6, 7, ..list(2, 9), list(2, 11), 14]
@@ -257,8 +270,9 @@ Named function parameters are not allowed.
 ### <a id="lambda"></a>Anonymous functions (lambdas)
 An anonymous function is written like a normal function declaration, but omitting the name.
 It can be used anywhere an expression is allowed. Its value is a closure capturing variables
-from its lexical environment (just like a named function) and gets a sequential number for its
-name. The body can either be a block or (more frequently) the `->` shorthand described below.
+from its lexical environment (just like a named function) and gets a sequential number as its
+name (for printing).
+The body can either be a block or (more frequently) the `->` shorthand described below.
 
 ```javascript
   map(fun (x) -> x*x, [2,3,4]) → [4, 9, 16]
@@ -292,15 +306,16 @@ emphasize the special evaluation order, the arguments are separated by colons in
 ```javascript
   fun max(a, b) -> if(a>b : a : b)
 ```
+As you see here, it combines nicely with the `->` syntax.
 
 ## <a id="break"></a>`break` statement
 The `break` statement is very simple. It leaves the innermost `for` or `while` loop immediately
-cleaning up all lexical variables and jumps to the statement following the loop.
+closing open scopes and jumps to the statement following the loop.
 
 
 ## <a id="case"></a>`case` statement
-The `case` statement provides a multi-way branch. It evaluates an expression and selects
-the first matching branch.
+The `case` statement provides a multi-way branch. It evaluates an expression (only once)
+and selects the first matching branch.
 
 A branch is introduced by `when` and followed by a comma-separated list of comparison values
 (needn't be constant). When a branch is selected, all following statements are executed and
@@ -327,8 +342,8 @@ final `else` branch.
 When (original) Lox encounters a run-time error, the error message including a backtrace of
 function names and line numbers is printed and the evaluation is aborted.
 
-Lox68k allows handling these errors with the `handle` expression. The first sub-expression is evaluated
-in a context where any exception raised calls the other sub-expression (the error handler)
+Lox68k allows handling errors with the `handle` expression. The first sub-expression is evaluated
+in a context where any exception raised calls the error handler (the other sub-expression )
 with the error message as its single argument.
 Like in the `if` expression, a colon must be written between the expressions to
 emphasize the special evaluation order.
@@ -337,14 +352,16 @@ emphasize the special evaluation order.
   5/0                 ⚠ "div by zero." // exception raised
   handle(5/0 : upper) → "DIV BY ZERO." // exception handled, converting message to uppercase
 ```
+Exceptions caused by system errors have always type `string`, which is the error message.
+Grep Lox68k sources for `runtimeError` to see all possible system errors.
+
 One can also manually raise an exception with the `error` native whose argument can have any
-type. This argument is passed unchanged to an active handler, but system errors have always
-type `string`. Grep Lox68k sources for `runtimeError` to see all possible system errors.
+type. This argument is passed unchanged to an active handler.
 
 The value of a `handle` expression is the value of its first argument if no exception
 has been raised, or the value returned from the error handler otherwise.
 
-If you want to discriminate between errors, you have to analyse the handler argument yourself, or
+If you want to discriminate between errors, you have to analyse the error string yourself, or
 raise exceptions of non-string type. You can re-raise the exception in the handler, which causes
 searching the next handler up the call stack.
 
@@ -448,24 +465,24 @@ Control printing execution statistic after an evaluation with the switch
   * number of garbage collections
 
 ### <a id="trace"></a>Tracing calls (*new*)
-Control tracing of calls to closures with the switch `dbg_call(arg)`. Each entry to a closure
+Control tracing of calls to closures with the switch `dbg_call(arg)`. Each call
 is logged with all arguments in a single line, which is prefixed by `-->` and indented according
-to the call nesting.
+to the nesting depth.
 
-On closure exit, `<--` and the returned value are printed, also indented.
+On return, `<--` and the returned value are printed, also indented.
 
 To control tracing of calls to native functions, use the switch `dbg_nat(arg)`.
-Arguments and results of every call to a native functions are printed in a single line,
+Arguments and results of every call to a native function are printed in a single line,
 starting with `---`, only indented when also tracing closure calls.
 
 Summary of tracing indicators:
   * `-->` calling a closure
   * `<--` returning from a closure call
-  * `==>` established an exception handler
-  * `<==` an exception is being raised
+  * `==>` establishing an exception handler
+  * `<==` an exception is raised
   * `~~>` binding a dynamic variable
   * `---` calling a native function, `->` result, *unless:*
-  * `/!\` native function raised exception
+  * `/!\` native function raises exception
 
 ### Tracing VM steps (*book*)
 Control tracing every VM step with the switch `dbg_step(arg)`.
@@ -486,10 +503,10 @@ they have no identity and can't be modified. All other types (`list`, `closure`,
 `bound`, `iterator`) are reference types with an identity and are modifiable.
 
 The `==` operator compares value types via their values and reference types via their identity,
-which is actually a simple 32 bit comparison (`valuesEqual()` macro).
-This comparison applies also to `case` branch selection and instance keys.
+which is actually a fast 32 bit comparison (`valuesEqual()` macro), also used for
+`case` branch selection and instance keys.
 
-Implementation-wise, natives, strings and reals are objects in the heap, but (mostly)
+Implementation-wise, natives, strings and reals are objects in the heap, but
 behave like value types, since:
   * Natives are constants (pointers into ROM), there's no way to create a new native from Lox.
   * Strings are interned, so a duplicate string is in fact the *identical* object.
@@ -505,7 +522,7 @@ native, which also does type conversion, so `equal(3, 3.0)` is `true`.
 ### Numeric literals
 
 #### <a id="hex"></a>Hexadecimal
-By prefixing `$` a  hexadecimal integer can be specified. Both lower and upper digits are
+By prefixing `$`, an integer can be written in hexadecimal. Both lower and upper letters are
 allowed.
 ```javascript
   $AB       → 171
@@ -516,7 +533,7 @@ allowed.
 ```
 
 #### <a id="bin"></a>Binary
-A binary literal is introduced by `%` and includes all '0' and '1' chars thereafter.
+A binary literal is introduced by `%` and includes all `0` and `1` chars thereafter.
 ```javascript
   %11111    → 31
   %101      → 5
@@ -542,7 +559,7 @@ Strings (and strings contained in subobjects) are printed without quotes.
 All values are printed in a single line. If the list ends with a comma, the newline
 is suppressed and the next `print` statement continues at the same line.
 
-All Lox68k values are printable, some types print within `< >`.
+All Lox68k values are printable, though some types print within `< >`.
 
 Instances print their slots, but only one level deep to avoid infinite recursion.
 
@@ -550,11 +567,11 @@ Instances print their slots, but only one level deep to avoid infinite recursion
 
 ```javascript
   print "Result is",7;
-    ⇒ Result is7
+    ✎ Result is7
   print "Result is",,7,,11;
-    ⇒ Result is   7   11
+    ✎ Result is   7   11
   ? 42;
-    ⇒ 42
+    ✎ 42
   print sqrt,,Set,,fun(){},,Set().clone,,slots(Set(14));
     ✎ <native sqrt>   <class Set>   <closure #11>   <bound Object.clone>   <iterator 1>
 
@@ -576,17 +593,12 @@ and is described [here for each target platform](lox68k.md#varieties).
 
 
 ### <a id="toplevel"></a>Top-level expressions
-The REPL expects declarations/statements. In Lox68k, you can also enter an *expression*
+The Lox REPL expects declarations/statements. In Lox68k, you can also enter an *expression*
 at the top-level, which is evaluated *and printed*.
 Syntactic ambiguities (`if` and `fun` may both start a declaration and an expression)
 are resolved in favour of a declaration, but you can enclose your input in `(` `)`
-to force evaluating it as an expression.
+to force interpreting it as an expression.
 ```javascript
-  6*7;            // interpreted as an expression statement, result is ignored, nothing printed
-  6*7 → 42        // now it is an expression since no trailing semicolon, so it is printed
-  print 6*7;      // the classic way: a print statement
-    ✎ 42
-
   // ambiguous, parsed as a statement, leading to syntax error
   if (3>1 : "bigger" : "smaller")  
     ✪ Error at ':': Expect ')' after condition.
@@ -601,10 +613,10 @@ to force evaluating it as an expression.
   if (3>1) "bigger" else "smaller"
     ✪ Error at 'else': Expect ';' after expression.
 
-  // syntactically fine now, but nested expression statements don't print
+  // syntactically fine now, but expression statements don't print anything
   if (3>1) "bigger"; else "smaller";
 
-  // the classic way, again
+  // so print explicitly in each branch
   if (3>1) print "bigger"; else print "smaller";
     ✎ bigger 
 

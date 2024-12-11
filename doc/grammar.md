@@ -1,27 +1,25 @@
 # Grammar for the Lox68k port
 
 Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.html) are:
-* `print` can be abbreviated by `?` and allows a list of expressions, printed on one line
-* Expressions in `print` may be separated by two commas.
-* Ending a `print` list with one or two commas suppresses printing the linefeed.
+* `print` list of expressions, with additional features
 * `[` ... `]` syntax for building lists
 * `[ exp ]` as string, list, or instance index to access elements
 * `[ exp? : exp? ]` as list or string slice to extract subsequence
 * operator `\` for division remainder
 * `$` and `%` prefix for integer literals
-* anonymous functions as expressions `fun (params*) {block}`
+* real literals with exponential part
+* `fun` expression for anonymous functions (lambdas)
 * prefix `..` before last parameter name for rest parameter in function declaration
 * prefix `..` before argument to unpack list into arguments in function call
-* Real numbers with exponential part
 * postfix `@` and `^` operators for iterators
-* function body `{ return expr;}` can be abbreviated by `-> expr`.
+* function body abbreviation `->`.
 * `case` statement for multiway branch
 * `break` statement in loops
 * superclass can be any expression
-* `handle` expression to establish a dynamic exception handler
+* `handle` expression for exception handling
 * `if` expression
 * expressions at top-level
-* `dynvar` expression to dynamically rebind global variables
+* `dynvar` expression for dynamic variables
 
 View this grammar as a [railroad diagram](grammar.html).
 
@@ -118,10 +116,10 @@ BINDIGIT       → "0" ... "1" ;
 * `(` begin grouping, call
 * `)` end grouping, call
 * `*` multiplication
-* `+` addition
+* `+` addition, concatenation
 * `,` list separator
 * `-` subtraction, negation, `->` return shorthand
-* `.` decimal point, property access, `..` unpack list, rest argument
+* `.` decimal point, property access, `..` splice argument list, rest parameter
 * `/` division, `//` comment until end of line
 * `0-9` digit
 * `:` case branch separator, splice separator, separator in special forms (`if`, `handle`, `dynvar`)
