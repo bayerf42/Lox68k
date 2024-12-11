@@ -1,4 +1,4 @@
-; CSTART_LOX_ROM.ASM  -  C startup-code for Sirichote 68008 Lox port in ROM.
+; CSTART_COMMON.ASM  -  Common C startup-code for Sirichote 68008 Lox port.
 
 ; Section definitions and memory layout
 
@@ -7,7 +7,6 @@ himem      equ         $20000          ; Highest usable RAM address
 lorom      equ         $40000          ; ROM low address
 hirom      equ         $60000          ; ROM high address
 
-progstart  equ         $44000          ; Code starts here in ROM
 datastart  equ         $02000          ; Data starts here in RAM
 loxlibsrc  equ         $5e000          ; Lox standard library source code in ROM
 
@@ -16,7 +15,6 @@ stklen     equ         $4000           ; Default stacksize
 magic_val  equ         $1138           ; If this value is stored
 magic_addr equ         $200            ; at this address, we run on the 68008 SBC
 ticks      equ         $268            ; monitor variable counting 100 Hz ticks
-
 
 ; Official monitor entry points in 4.x   
                                          
@@ -32,7 +30,6 @@ _lcd_clear             equ $40130
 _lcd_defchar           equ $40136
 _monitor_loop          equ $4013c
 _monitor_scan          equ $40142
-
 
            option      S0              ; write program ID to S0 record
 
