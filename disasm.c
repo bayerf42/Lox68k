@@ -34,10 +34,10 @@ static void byteInst(const char* name) {
     ++offset;
 }
 
-static void jumpInst(const char* name, int sign) {
-    int jump = chunk->code[++offset] << 8;
-    jump    |= chunk->code[++offset];
-    printf("%-9s %4d ; -> %d", name, jump, ++offset + ((sign>0) ? jump : -jump));
+static void jumpInst(const char* name) {
+    int delta = chunk->code[++offset] << 8;
+    delta    |= chunk->code[++offset];
+    printf("%-9s %4d ; -> %d", name, delta, ++offset + (*name != 'L' ? delta : -delta));
 }
 
 static void constInst(const char* name) {
@@ -110,12 +110,12 @@ static void disassembleIntern(void) {
         case OP_PRINT:         simpleInst("PRINT");     break;
         case OP_PRINTLN:       simpleInst("PRINTLN");   break;
         case OP_PRINTQ:        simpleInst("PRINTQ");    break;
-        case OP_JUMP:          jumpInst("JUMP",     1); break;
-        case OP_JUMP_OR:       jumpInst("JUMP_OR",  1); break;
-        case OP_JUMP_AND:      jumpInst("JUMP_AND", 1); break;
-        case OP_JUMP_TRUE:     jumpInst("JUMP_T",   1); break;
-        case OP_JUMP_FALSE:    jumpInst("JUMP_F",   1); break;
-        case OP_LOOP:          jumpInst("LOOP",    -1); break;
+        case OP_JUMP:          jumpInst("JUMP");        break;
+        case OP_JUMP_OR:       jumpInst("JUMP_OR");     break;
+        case OP_JUMP_AND:      jumpInst("JUMP_AND");    break;
+        case OP_JUMP_TRUE:     jumpInst("JUMP_T");      break;
+        case OP_JUMP_FALSE:    jumpInst("JUMP_F");      break;
+        case OP_LOOP:          jumpInst("LOOP");        break;
         case OP_CALL:          byteInst("CALL");        break;
         case OP_CALL0:         simpleInst("CALL0");     break;
         case OP_CALL1:         simpleInst("CALL1");     break;

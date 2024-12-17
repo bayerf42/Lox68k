@@ -111,7 +111,8 @@ class Map < Object {
 
 class Set < Object {
   init(..args) {
-    for (var i = 0; i < length(args); i = i + 1)
+    var len = length(args);
+    for (var i = 0; i < len; i = i + 1)
       this[args[i]] = true;
   }
 
