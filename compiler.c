@@ -383,7 +383,7 @@ static void slice(bool canAssign) {
         emitByte(OP_GET_SLICE);
 }
 
-static void index_(bool canAssign) {
+static void index(bool canAssign) {
     if (match(TOKEN_COLON)) {
         emitConstant(INT_VAL(0));
         slice(canAssign);
@@ -414,15 +414,15 @@ static void iter(bool canAssign) {
         emitByte(accessor == TOKEN_HAT ? OP_GET_ITVAL : OP_GET_ITKEY);
 }
 
-static void nil_(bool canAssign) {
+static void litNil(bool canAssign) {
     emitByte(OP_NIL);
 }
 
-static void false_(bool canAssign) {
+static void litFalse(bool canAssign) {
     emitByte(OP_FALSE);
 }
 
-static void true_(bool canAssign) {
+static void litTrue(bool canAssign) {
     emitByte(OP_TRUE);
 }
 
@@ -594,7 +594,7 @@ static Token syntheticToken(const char* text) {
     return token;
 }
 
-static void super_(bool canAssign) {
+static void keySuper(bool canAssign) {
     int  mname;
     int  argCount;
     bool isVarArg = false;
@@ -619,7 +619,7 @@ static void super_(bool canAssign) {
     }
 }
 
-static void this_(bool canAssign) {
+static void keyThis(bool canAssign) {
     if (currentClass == NULL) {
         error("Can't use 'this' outside of a class.");
         return;
@@ -627,13 +627,13 @@ static void this_(bool canAssign) {
     variable(false);
 }
 
-static void and_(bool canAssign) {
+static void opAnd(bool canAssign) {
     int endJump = emitJump(OP_JUMP_AND);
     parsePrecedence(PREC_AND);
     patchJump(endJump);
 }
 
-static void or_(bool canAssign) {
+static void opOr(bool canAssign) {
     int endJump = emitJump(OP_JUMP_OR);
     parsePrecedence(PREC_OR);
     patchJump(endJump);
@@ -714,6 +714,8 @@ static void dynvar(bool canAssign) {
     emit2Bytes(OP_CALL_BIND, vname);
 }
 
+#define X         {NULL, NULL, PREC_NONE} // Coded explicitly, not by Pratt parsing rule
+#define PRE(rule) {rule, NULL, PREC_NONE} // Using prefix rule only
 
 static const ParseRule rules[] = {
     // Keep same order as TokenType enum values in scanner.h
@@ -721,16 +723,16 @@ static const ParseRule rules[] = {
 
     // single character punctuation ***********************************
     /* [TOKEN_LEFT_PAREN]    = */ {grouping, call,   PREC_POSTFIX},
-    /* [TOKEN_RIGHT_PAREN]   = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_LEFT_BRACE]    = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_RIGHT_BRACE]   = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_LEFT_BRACKET]  = */ {list,     index_, PREC_POSTFIX},
-    /* [TOKEN_RIGHT_BRACKET] = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_COMMA]         = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_RIGHT_PAREN]   = */ X,
+    /* [TOKEN_LEFT_BRACE]    = */ X,
+    /* [TOKEN_RIGHT_BRACE]   = */ X,
+    /* [TOKEN_LEFT_BRACKET]  = */ {list,     index,  PREC_POSTFIX},
+    /* [TOKEN_RIGHT_BRACKET] = */ X,
+    /* [TOKEN_COMMA]         = */ X,
     /* [TOKEN_DOT]           = */ {NULL,     dot,    PREC_POSTFIX},
-    /* [TOKEN_SEMICOLON]     = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_COLON]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_EQUAL]         = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_SEMICOLON]     = */ X,
+    /* [TOKEN_COLON]         = */ X,
+    /* [TOKEN_EQUAL]         = */ X,
 
     // single character operators *************************************
     /* [TOKEN_PLUS]          = */ {NULL,     binary, PREC_TERM},
@@ -740,7 +742,7 @@ static const ParseRule rules[] = {
     /* [TOKEN_BACKSLASH]     = */ {NULL,     binary, PREC_FACTOR},
     /* [TOKEN_AT]            = */ {NULL,     iter,   PREC_POSTFIX},
     /* [TOKEN_HAT]           = */ {NULL,     iter,   PREC_POSTFIX},
-    /* [TOKEN_BANG]          = */ {not,      NULL,   PREC_NONE},
+    /* [TOKEN_BANG]          = */ PRE(not),
     /* [TOKEN_GREATER]       = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_LESS]          = */ {NULL,     binary, PREC_COMPARISON},
 
@@ -749,43 +751,43 @@ static const ParseRule rules[] = {
     /* [TOKEN_EQUAL_EQUAL]   = */ {NULL,     binary, PREC_EQUALITY},
     /* [TOKEN_GREATER_EQUAL] = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_LESS_EQUAL]    = */ {NULL,     binary, PREC_COMPARISON},
-    /* [TOKEN_DOT_DOT]       = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_ARROW]         = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_DOT_DOT]       = */ X,
+    /* [TOKEN_ARROW]         = */ X,
 
     // literals *******************************************************
-    /* [TOKEN_IDENTIFIER]    = */ {variable, NULL,   PREC_NONE},
-    /* [TOKEN_STRING]        = */ {string,   NULL,   PREC_NONE},
-    /* [TOKEN_INT]           = */ {intNum,   NULL,   PREC_NONE},
-    /* [TOKEN_REAL]          = */ {realNum,  NULL,   PREC_NONE},
+    /* [TOKEN_IDENTIFIER]    = */ PRE(variable),
+    /* [TOKEN_STRING]        = */ PRE(string),
+    /* [TOKEN_INT]           = */ PRE(intNum),
+    /* [TOKEN_REAL]          = */ PRE(realNum),
 
     // specials *******************************************************
-    /* [TOKEN_ERROR]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_EOF]           = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_ERROR]         = */ X,
+    /* [TOKEN_EOF]           = */ X,
 
     // non-syncing keywords *******************************************
-    /* [TOKEN_AND]           = */ {NULL,     and_,   PREC_AND},
-    /* [TOKEN_DYNVAR]        = */ {dynvar,   NULL,   PREC_NONE},
-    /* [TOKEN_ELSE]          = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_FALSE]         = */ {false_,   NULL,   PREC_NONE},
-    /* [TOKEN_HANDLE]        = */ {handler,  NULL,   PREC_NONE},
-    /* [TOKEN_NIL]           = */ {nil_,     NULL,   PREC_NONE},
-    /* [TOKEN_OR]            = */ {NULL,     or_,    PREC_OR},
-    /* [TOKEN_SUPER]         = */ {super_,   NULL,   PREC_NONE},
-    /* [TOKEN_THIS]          = */ {this_,    NULL,   PREC_NONE},
-    /* [TOKEN_TRUE]          = */ {true_,    NULL,   PREC_NONE},
-    /* [TOKEN_WHEN]          = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_AND]           = */ {NULL,     opAnd,  PREC_AND},
+    /* [TOKEN_DYNVAR]        = */ PRE(dynvar),
+    /* [TOKEN_ELSE]          = */ X,
+    /* [TOKEN_FALSE]         = */ PRE(litFalse),
+    /* [TOKEN_HANDLE]        = */ PRE(handler),
+    /* [TOKEN_NIL]           = */ PRE(litNil),
+    /* [TOKEN_OR]            = */ {NULL,     opOr,   PREC_OR},
+    /* [TOKEN_SUPER]         = */ PRE(keySuper),
+    /* [TOKEN_THIS]          = */ PRE(keyThis),
+    /* [TOKEN_TRUE]          = */ PRE(litTrue),
+    /* [TOKEN_WHEN]          = */ X,
 
     // syncing keywords ***********************************************
-    /* [TOKEN_BREAK]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_CASE]          = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_CLASS]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_FOR]           = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_FUN]           = */ {lambda,   NULL,   PREC_NONE},
-    /* [TOKEN_IF]            = */ {ifExpr,   NULL,   PREC_NONE},
-    /* [TOKEN_PRINT]         = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_RETURN]        = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_VAR]           = */ {NULL,     NULL,   PREC_NONE},
-    /* [TOKEN_WHILE]         = */ {NULL,     NULL,   PREC_NONE},
+    /* [TOKEN_BREAK]         = */ X,
+    /* [TOKEN_CASE]          = */ X,
+    /* [TOKEN_CLASS]         = */ X,
+    /* [TOKEN_FOR]           = */ X,
+    /* [TOKEN_FUN]           = */ PRE(lambda),
+    /* [TOKEN_IF]            = */ PRE(ifExpr),
+    /* [TOKEN_PRINT]         = */ X,
+    /* [TOKEN_RETURN]        = */ X,
+    /* [TOKEN_VAR]           = */ X,
+    /* [TOKEN_WHILE]         = */ X,
 };
 
 static void parsePrecedence(Precedence precedence) {

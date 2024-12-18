@@ -110,7 +110,7 @@ typedef struct {
 #endif
 
 static Token identifier(int32_t trie) {
-    // Compressed keyword postfixes in single string
+    // Overlapping keyword postfixes in single string
     const char* rest =
               "andleturnassilsefynvarintupereakisue";
     //         012345678901234567890123456789012345
