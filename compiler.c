@@ -383,7 +383,7 @@ static void slice(bool canAssign) {
         emitByte(OP_GET_SLICE);
 }
 
-static void index(bool canAssign) {
+static void index_(bool canAssign) {
     if (match(TOKEN_COLON)) {
         emitConstant(INT_VAL(0));
         slice(canAssign);
@@ -726,7 +726,7 @@ static const ParseRule rules[] = {
     /* [TOKEN_RIGHT_PAREN]   = */ X,
     /* [TOKEN_LEFT_BRACE]    = */ X,
     /* [TOKEN_RIGHT_BRACE]   = */ X,
-    /* [TOKEN_LEFT_BRACKET]  = */ {list,     index,  PREC_POSTFIX},
+    /* [TOKEN_LEFT_BRACKET]  = */ {list,     index_, PREC_POSTFIX},
     /* [TOKEN_RIGHT_BRACKET] = */ X,
     /* [TOKEN_COMMA]         = */ X,
     /* [TOKEN_DOT]           = */ {NULL,     dot,    PREC_POSTFIX},
