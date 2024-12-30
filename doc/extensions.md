@@ -239,7 +239,7 @@ may be useful for some quadratic algorithms.
 
 ### <a id="variadic"></a>Variadic functions, rest parameter, argument list splicing
 The last parameter name of a function may be prefixed by `..` indicating that this is a
-rest parameter, collecting all function arguments into a list.
+rest parameter, collecting all remaining function arguments into a list.
 
 In a function call, `..` can be prefixed to an expression (which must evaluate to a list) and
 this list is spliced into the argument list. This is allowed at any position in the argument
@@ -265,7 +265,7 @@ only required that it accepts the number of arguments it is called with.
 
 ```
   
-Named function parameters are not allowed.
+Named function parameters are not supported.
 
 ### <a id="lambda"></a>Anonymous functions (lambdas)
 An anonymous function is written like a normal function declaration, but omitting the name.

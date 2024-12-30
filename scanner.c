@@ -135,7 +135,7 @@ static Token identifier(int32_t trie) {
     // Var                         ##
     // WHEn     #
     // WHIle      ##
-    //         012345678901234567890123456789012
+    //         012345678901234567890123456789012345
     int16_t    id_length;
     const char *src;
     char       c         = scanner.start[0];

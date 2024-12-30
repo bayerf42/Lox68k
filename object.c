@@ -112,8 +112,8 @@ ObjInstance* makeInstance(ObjClass* klass) {
 
 ObjIterator* makeIterator(ObjInstance* instance) {
     ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
-    iter->instance = instance;
-    iter->position = firstIterator(instance);
+    iter->instance    = instance;
+    iter->position    = firstIterator(instance);
     return iter;
 }
 
@@ -157,11 +157,10 @@ ObjString* makeString0(const char* chars) {
 
 ObjString* makeString(const char* chars, int length) {
     // Check if we already have an equal string
-    uint32_t   hash     = hashBytes((const uint8_t*)chars, length);
-    ObjString* string;
-    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
-    if (interned != NULL)
-        return interned;
+    uint32_t   hash   = hashBytes((const uint8_t*)chars, length);
+    ObjString* string = tableFindString(&vm.strings, chars, length, hash);
+    if (string != NULL)
+        return string;
 
     // Create new string
     string = (ObjString*)allocateObject(sizeof(ObjString) + length + 1, OBJ_STRING);

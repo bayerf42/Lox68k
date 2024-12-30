@@ -36,17 +36,16 @@ typedef struct {
 } ParseRule;
 
 typedef struct {
-    Token   name;
-    int8_t  depth;
-    uint8_t isCaptured;
-    int16_t _dummy; // force size 16 to avoid multiplication in offset calculation 
+    Token   name;       // 12 bytes
+    int8_t  depth;      // implicit padding byte on 68k forces struct size 16 to 
+    bool    isCaptured; // allow shift instead of multiplication in offset calculation 
 } Local;
 
 typedef enum {
     TYPE_SCRIPT,
     TYPE_FUN,
     TYPE_LAMBDA,
-    TYPE_METHOD,     // allowed in classes only 
+    TYPE_METHOD,     // last 2 types allowed in classes only 
     TYPE_INIT,
 } FunctionType;
 
@@ -314,31 +313,11 @@ static void  function(FunctionType type);
 static void  parsePrecedence(Precedence precedence);
 static int   argumentList(bool* isVarArg, TokenType terminator);
 static int   identifierConstant(Token* name);
-static const ParseRule* getRule(TokenType type);
+static void  binary(bool canAssign);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Expressions
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-static void binary(bool canAssign) {
-    TokenType operatorType = parser.previous.type;
-    const ParseRule* rule  = getRule(operatorType);
-    parsePrecedence((Precedence)(rule->precedence + 1));
-    switch (operatorType) {
-        case TOKEN_BANG_EQUAL:    emit2Bytes(OP_EQUAL, OP_NOT); break;
-        case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
-        case TOKEN_GREATER:       emit2Bytes(OP_SWAP, OP_LESS); break;
-        case TOKEN_LESS_EQUAL:    emit3Bytes(OP_SWAP, OP_LESS, OP_NOT); break;
-        case TOKEN_LESS:          emitByte(OP_LESS); break;
-        case TOKEN_GREATER_EQUAL: emit2Bytes(OP_LESS, OP_NOT); break;
-        case TOKEN_PLUS:          emitByte(OP_ADD); break;
-        case TOKEN_MINUS:         emitByte(OP_SUB); break;
-        case TOKEN_STAR:          emitByte(OP_MUL); break;
-        case TOKEN_SLASH:         emitByte(OP_DIV); break;
-        case TOKEN_BACKSLASH:     emitByte(OP_MOD); break;
-        default: return; // Unreachable
-    }
-}
 
 static void call(bool canAssign) {
     bool isVarArg = false;
@@ -790,6 +769,28 @@ static const ParseRule rules[] = {
     /* [TOKEN_WHILE]         = */ X,
 };
 
+#define getRule(type) (&rules[type])
+
+static void binary(bool canAssign) {
+    TokenType operatorType = parser.previous.type;
+    const ParseRule* rule  = getRule(operatorType);
+    parsePrecedence((Precedence)(rule->precedence + 1));
+    switch (operatorType) {
+        case TOKEN_BANG_EQUAL:    emit2Bytes(OP_EQUAL, OP_NOT); break;
+        case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
+        case TOKEN_GREATER:       emit2Bytes(OP_SWAP, OP_LESS); break;
+        case TOKEN_LESS_EQUAL:    emit3Bytes(OP_SWAP, OP_LESS, OP_NOT); break;
+        case TOKEN_LESS:          emitByte(OP_LESS); break;
+        case TOKEN_GREATER_EQUAL: emit2Bytes(OP_LESS, OP_NOT); break;
+        case TOKEN_PLUS:          emitByte(OP_ADD); break;
+        case TOKEN_MINUS:         emitByte(OP_SUB); break;
+        case TOKEN_STAR:          emitByte(OP_MUL); break;
+        case TOKEN_SLASH:         emitByte(OP_DIV); break;
+        case TOKEN_BACKSLASH:     emitByte(OP_MOD); break;
+        default: return; // Unreachable
+    }
+}
+
 static void parsePrecedence(Precedence precedence) {
     ParseFn prefixRule;
     ParseFn infixRule;
@@ -863,10 +864,6 @@ static int argumentList(bool* isVarArg, TokenType terminator) {
     }
     consumeExp(terminator, "arguments");
     return argCount;
-}
-
-static const ParseRule* getRule(TokenType type) {
-    return &rules[type];
 }
 
 static void expression(void) {
