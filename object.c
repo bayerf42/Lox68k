@@ -113,7 +113,7 @@ ObjInstance* makeInstance(ObjClass* klass) {
 ObjIterator* makeIterator(ObjInstance* instance) {
     ObjIterator* iter = ALLOCATE_OBJ(ObjIterator, OBJ_ITERATOR);
     iter->instance    = instance;
-    iter->position    = firstIterator(instance);
+    advanceIterator(iter, 0);
     return iter;
 }
 

@@ -419,7 +419,7 @@ NATIVE(validNative) {
 
 NATIVE(nextNative) {
     ObjIterator* iter = AS_ITERATOR(args[0]);
-    nextIterator(iter);
+    advanceIterator(iter, iter->position + 1);
     RESULT = BOOL_VAL(isValidIterator(iter));
     return true;
 }

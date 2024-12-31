@@ -221,27 +221,17 @@ void markTable(Table* table) {
 // Hashtable iterators 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int firstIterator(ObjInstance* instance) {
-    int16_t i;
-    Table*  table = &instance->fields;
-    if (table->count > 0)
-        for (i = 0; i < table->capacity; i++)
-            if (!IS_EMPTY(table->entries[i].key))
-                return i;
-    return -1;
-}
-
-void nextIterator(ObjIterator* iter) {
+void advanceIterator(ObjIterator* iter, int nextPos) {
     int16_t i;
     Table*  table = &iter->instance->fields;
-    if (iter->position >= 0) {
-        for (i = iter->position + 1; i < table->capacity; i++)
+    if (nextPos >= 0 && table->count > 0) {
+        for (i = nextPos; i < table->capacity; i++)
             if (!IS_EMPTY(table->entries[i].key)) {
                 iter->position = i;
                 return;
             }
     }
-    iter->position = -1;
+    iter->position = -2;
 }
 
 bool isValidIterator(ObjIterator* iter) {

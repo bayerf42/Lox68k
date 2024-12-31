@@ -109,7 +109,7 @@ struct ObjInstance {
 
 struct ObjIterator {
     OBJ_HEADER
-    int16_t      position;     // -1 means invalid
+    int16_t      position;     // -1: before first; -2: after last; else valid position
     ObjInstance* instance;
 };
 

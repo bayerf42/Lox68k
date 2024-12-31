@@ -403,7 +403,7 @@ are inspired by Common Lisp's special variables:
 A Lox variable is resolved lexically when it is declared locally or in an enclosing function.
 If it isn't found at compile time, it is assumed to be a global variable, which is resolved
 dynamically at runtime. To define a global variable in Lox, a `var` statement must be
-executed at top level in a script. Global variables exists forever until the REPL is terminated.
+executed at top level in a script. Global variables exist forever until the REPL is terminated.
 
 Lox68k extends this scheme, a dynamic variable can be defined in a `dynvar` expression and
 then exists during evaluation of the following subexpression, automatically being removed afterwards.
