@@ -196,6 +196,13 @@ if (errno != 0) {                               \
     goto handleError;                           \
 }
 
+#define CHECK_LOX_STACK_OVERFLOW()              \
+if (vm.frameCount == FRAMES_MAX) {              \
+    runtimeError("Lox call stack overflow.");   \
+    return false;                               \
+}
+
+
 static bool callClosure(ObjClosure* closure, int argCount) {
     CallFrame*   frame;
     ObjFunction* function = closure->function;
@@ -203,10 +210,7 @@ static bool callClosure(ObjClosure* closure, int argCount) {
     int          itemCount;
     int          arity;
 
-    if (vm.frameCount == FRAMES_MAX) {
-        runtimeError("Lox call stack overflow.");
-        return false;
-    }
+    CHECK_LOX_STACK_OVERFLOW()
 
 #ifdef LOX_DBG
     if (vm.debug_trace_calls) {
@@ -247,10 +251,7 @@ static bool callWithHandler(void) {
     ObjClosure*  closure  = AS_CLOSURE(peek(1));
     ObjFunction* function = closure->function;
 
-    if (vm.frameCount == FRAMES_MAX) {
-        runtimeError("Lox call stack overflow.");
-        return false;
-    }
+    CHECK_LOX_STACK_OVERFLOW()
 
     if (!isCallable(peek(0))) {
         runtimeError("Handler must be callable.");
@@ -279,10 +280,7 @@ static bool callBinding(Value varName) {
     ObjClosure*  closure  = AS_CLOSURE(peek(0));
     ObjFunction* function = closure->function;
 
-    if (vm.frameCount == FRAMES_MAX) {
-        runtimeError("Lox call stack overflow.");
-        return false;
-    }
+    CHECK_LOX_STACK_OVERFLOW()
 
 #ifdef LOX_DBG
     if (vm.debug_trace_calls) {
@@ -410,7 +408,7 @@ static ObjUpvalue* captureUpvalue(Value* local) {
 
     while (upvalue != NULL && upvalue->location > local) {
         prevUpvalue = upvalue;
-        upvalue = upvalue->nextUpvalue;
+        upvalue     = upvalue->nextUpvalue;
     }
 
     if (upvalue != NULL && upvalue->location == local)
@@ -622,17 +620,15 @@ nextInstNoSO:
             goto nextInstNoSO;
 
         case OP_EQUAL:
-            bVal = pop();
-            aVal = pop();
-            pushUnchecked(BOOL_VAL(valuesEqual(aVal, bVal)));
+            bVal = pop(); 
+            dropNpush(1, BOOL_VAL(valuesEqual(peek(0), bVal)));
             goto nextInstNoSO;
 
         case OP_LESS:
             if (IS_INT(peek(0))) {
                 if (IS_INT(peek(1))) {
-                    bInt = AS_INT(pop());
-                    aInt = AS_INT(pop());
-                    pushUnchecked(BOOL_VAL(aInt < bInt));
+                    bVal = pop(); 
+                    dropNpush(1, BOOL_VAL(peek(0) < bVal)); // relying on Value tagging for int
                     goto nextInstNoSO;
                 } else if (IS_REAL(peek(1))) {
                     aReal = AS_REAL(peek(1));
@@ -663,9 +659,8 @@ nextInstNoSO:
         case OP_ADD:
             if (IS_INT(peek(0))) {
                 if (IS_INT(peek(1))) {
-                    bInt = AS_INT(pop());
-                    aInt = AS_INT(pop());
-                    pushUnchecked(INT_VAL(aInt + bInt));
+                    bVal = pop(); 
+                    dropNpush(1, peek(0) + bVal - 1); // relying on Value tagging for int
                     goto nextInstNoSO;
                 } else if (IS_REAL(peek(1))) {
                     aReal = AS_REAL(peek(1));
@@ -708,9 +703,8 @@ nextInstNoSO:
         case OP_SUB:
             if (IS_INT(peek(0))) {
                 if (IS_INT(peek(1))) {
-                    bInt = AS_INT(pop());
-                    aInt = AS_INT(pop());
-                    pushUnchecked(INT_VAL(aInt - bInt));
+                    bVal = pop();
+                    dropNpush(1, peek(0) - bVal + 1); // relying on Value tagging for int
                     goto nextInstNoSO;
                 } else if (IS_REAL(peek(1))) {
                     aReal = AS_REAL(peek(1));
@@ -738,8 +732,7 @@ nextInstNoSO:
             if (IS_INT(peek(0))) {
                 if (IS_INT(peek(1))) {
                     bInt = AS_INT(pop());
-                    aInt = AS_INT(pop());
-                    pushUnchecked(INT_VAL(aInt * bInt));
+                    dropNpush(1, INT_VAL(AS_INT(peek(0)) * bInt));
                     goto nextInstNoSO;
                 } else if (IS_REAL(peek(1))) {
                     aReal = AS_REAL(peek(1));
