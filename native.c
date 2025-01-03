@@ -542,12 +542,11 @@ NATIVE(bitNotNative) {
 }
 
 NATIVE(bitShiftNative) {
-    Int value = AS_INT(args[0]);
     Int amount = AS_INT(args[1]);
     if (amount > 0)
-        RESULT = INT_VAL(value << amount);
+        RESULT = (args[0] & ~1) << amount | 1;
     else
-        RESULT = INT_VAL(value >> (-amount));
+        RESULT = args[0] >> (-amount) | 1;
     return true;
 }
 
