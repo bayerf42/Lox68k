@@ -23,7 +23,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### String
-`+ < <= > >= [] [:] asc bin chr dec hex index input join length lower max min parse_int
+`+ < <= > >= [] [:] asc bin chr dec hex index input join length lower match max min parse_int
 parse_real split upper`
 
 
@@ -77,7 +77,7 @@ parse_real split upper`
 
 ## Some numbers
 * 21 keywords
-* 72 native functions
+* 73 native functions
 * 63 VM opcodes
 * 12 data types
 * about 6000 lines source code

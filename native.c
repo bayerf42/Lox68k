@@ -401,6 +401,56 @@ NATIVE(splitNative) {
     return true;
 }
 
+// A minimal regex matcher described at
+// https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
+// Supports meta characters . ^ $ *
+// compiles to about 400 bytes code,
+// thus fitting the minimalistic approach of Lox68k
+
+static int matchhere(char *regexp, char *text);
+static int matchstar(int c, char *regexp, char *text);
+
+/* match: search for regexp anywhere in text */
+static int match(char *regexp, char *text)
+{
+    if (regexp[0] == '^')
+        return matchhere(regexp+1, text);
+    do {    /* must look even if string is empty */
+        if (matchhere(regexp, text))
+            return 1;
+    } while (*text++ != '\0');
+    return 0;
+}
+
+/* matchhere: search for regexp at beginning of text */
+static int matchhere(char *regexp, char *text)
+{
+    if (regexp[0] == '\0')
+        return 1;
+    if (regexp[1] == '*')
+        return matchstar(regexp[0], regexp+2, text);
+    if (regexp[0] == '$' && regexp[1] == '\0')
+        return *text == '\0';
+    if (*text!='\0' && (regexp[0]=='.' || regexp[0]==*text))
+        return matchhere(regexp+1, text+1);
+    return 0;
+}
+
+/* matchstar: search for c*regexp at beginning of text */
+static int matchstar(int c, char *regexp, char *text)
+{
+    do {    /* a * matches zero or more instances */
+        if (matchhere(regexp, text))
+            return 1;
+    } while (*text != '\0' && (*text++ == c || c == '.'));
+    return 0;
+}
+
+NATIVE(matchNative) {
+    RESULT = BOOL_VAL(match(AS_CSTRING(args[0]), AS_CSTRING(args[1])));
+    return true;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Iterators
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -537,7 +587,7 @@ NATIVE(bitXorNative) {
 }
 
 NATIVE(bitNotNative) {
-    RESULT = (~args[0]) | 1;
+    RESULT = ~args[0] | 1;
     return true;
 }
 
@@ -546,7 +596,7 @@ NATIVE(bitShiftNative) {
     if (amount > 0)
         RESULT = (args[0] & ~1) << amount | 1;
     else
-        RESULT = args[0] >> (-amount) | 1;
+        RESULT = args[0] >> -amount | 1;
     return true;
 }
 
@@ -942,6 +992,7 @@ static const Native allNatives[] = {
     {"upper",       "S",    upperNative},
     {"join",        "Lsss", joinNative},
     {"split",       "SS",   splitNative},
+    {"match",       "SS",   matchNative},
 
     {"slots",       "I",    slotsNative},
     {"valid",       "T",    validNative},
@@ -1018,3 +1069,5 @@ void defineAllNatives() {
     drop();
     drop();
 }
+
+

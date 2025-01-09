@@ -79,7 +79,7 @@
 ## Board limitations
 
   * There's no OS, no file system, no permanent storage (other than ROM), no multithreading/tasking,
-    no asynchronous I/O, just one interrupt (used directly to interrupt the VM)
+    no asynchronous I/O, just one interrupt (used to count 100Hz ticks)
   * There are only routines to read/write a single byte over the serial interface at 9600 baud,
     so all I/O (including loading source code) has to be routed over those. The C library does
     this automatically, so functions like `printf` and `gets` (with simple line editing) can be
