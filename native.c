@@ -88,7 +88,7 @@ bool callNative(const Native* native, int argCount, Value* args) {
 //
 // Basic arity and type checks already have been done via the signature string,
 // only in special cases you have to do further checks,
-// e.g. join, index, lcd_defchar
+// e.g. join, lcd_defchar
 //
 // Each char in the signature strings stands for the allowed argument type at the
 // corresponding position. See matchesType() above for possible types.
@@ -244,56 +244,24 @@ NATIVE(deleteNative) {
 }
 
 NATIVE(indexNative) {
-    ObjList*   list;
-    ObjString* haystack;
-    ObjString* needle;
-    int        start = (argCount == 2) ? 0 : AS_INT(args[2]);
-    int        i, delta;
+    ObjList* list  = AS_LIST(args[1]);;
+    int      start = (argCount == 2) ? 0 : AS_INT(args[2]);
+    int      i;
 
     RESULT = NIL_VAL;
-    if (IS_LIST(args[1])) {
-        list  = AS_LIST(args[1]);
-        if (list->arr.count == 0 && start == 0)
-            return true;
-        if (!isValidListIndex(list, start)) {
-            runtimeError("'%s' %s out of range.", "index", "start index");
-            return false;
-        }
-        if (start < 0) start += list->arr.count;
+    if (list->arr.count == 0 && start == 0)
+        return true;
+    if (!isValidListIndex(list, start)) {
+        runtimeError("'%s' %s out of range.", "index", "start index");
+        return false;
+    }
+    if (start < 0) start += list->arr.count;
 
-        for (i = start; i < list->arr.count; i++) {
-            if (valuesEqual(args[0], list->arr.values[i])) {
-                RESULT = INT_VAL(i);
-                break;
-            }
+    for (i = start; i < list->arr.count; i++) {
+        if (valuesEqual(args[0], list->arr.values[i])) {
+            RESULT = INT_VAL(i);
+            break;
         }
-    } else {
-        haystack = AS_STRING(args[1]);
-        if (!IS_STRING(args[0])) {
-            runtimeError("'%s' type mismatch at argument %d, expected %s but got %s.",
-                         "index", 1, "a string", valueType(args[0]));
-            return false;
-        }
-        needle = AS_STRING(args[0]);
-        if (haystack->length == 0 && start == 0) {
-            if (needle->length == 0)
-                RESULT = INT_VAL(0);
-            return true;
-        }
-        if (!isValidStringIndex(haystack, start)) {
-            runtimeError("'%s' %s out of range.", "index", "start index");
-            return false;
-        }
-        if (start < 0) start += haystack->length;
-
-        // strstr is broken in IDE68K C library, wrote our own...
-        delta = haystack->length - needle->length;
-        for (i = start; i <= delta; i++) {
-            if (!fix_memcmp(haystack->chars + i, needle->chars, needle->length)) {
-                RESULT = INT_VAL(i);
-                break;
-            }
-        } 
     }
     return true;
 }
@@ -403,51 +371,56 @@ NATIVE(splitNative) {
 
 // A minimal regex matcher described at
 // https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
-// Supports meta characters . ^ $ *
+// Supports meta characters . ^ $ * ?
 // compiles to about 400 bytes code,
 // thus fitting the minimalistic approach of Lox68k
+// Changes: added '?' meta character, return match position instead of bool, const pointers
 
-static int matchhere(char *regexp, char *text);
-static int matchstar(int c, char *regexp, char *text);
+static const char* matchhere(const char* regexp, const char* text);
+static const char* matchstar(int c, const char* regexp, const char* text, int limit);
 
 /* match: search for regexp anywhere in text */
-static int match(char *regexp, char *text)
+static const char* match(const char* regexp, const char* text)
 {
     if (regexp[0] == '^')
-        return matchhere(regexp+1, text);
+        return matchhere(regexp + 1, text);
     do {    /* must look even if string is empty */
         if (matchhere(regexp, text))
-            return 1;
-    } while (*text++ != '\0');
-    return 0;
+            return text;
+    } while (*text++);
+    return NULL;
 }
 
 /* matchhere: search for regexp at beginning of text */
-static int matchhere(char *regexp, char *text)
+static const char* matchhere(const char* regexp, const char* text)
 {
     if (regexp[0] == '\0')
-        return 1;
+        return text;
     if (regexp[1] == '*')
-        return matchstar(regexp[0], regexp+2, text);
+        return matchstar(regexp[0], regexp + 2, text, -1);
+    if (regexp[1] == '?')
+        return matchstar(regexp[0], regexp + 2, text, 1);
     if (regexp[0] == '$' && regexp[1] == '\0')
-        return *text == '\0';
-    if (*text!='\0' && (regexp[0]=='.' || regexp[0]==*text))
-        return matchhere(regexp+1, text+1);
-    return 0;
+        return *text ? NULL : text;
+    if (*text && (regexp[0] == '.' || regexp[0] == *text))
+        return matchhere(regexp + 1, text + 1);
+    return NULL;
 }
 
 /* matchstar: search for c*regexp at beginning of text */
-static int matchstar(int c, char *regexp, char *text)
+static const char* matchstar(int c, const char* regexp, const char* text, int limit)
 {
     do {    /* a * matches zero or more instances */
         if (matchhere(regexp, text))
-            return 1;
-    } while (*text != '\0' && (*text++ == c || c == '.'));
-    return 0;
+            return text;
+    } while (limit-- && *text && (*text++ == c || c == '.'));
+    return NULL;
 }
 
 NATIVE(matchNative) {
-    RESULT = BOOL_VAL(match(AS_CSTRING(args[0]), AS_CSTRING(args[1])));
+    const char* text = AS_CSTRING(args[1]);
+    const char* pos  = match(AS_CSTRING(args[0]), text);
+    RESULT = pos ? INT_VAL(pos - text) : NIL_VAL;
     return true;
 }
 
@@ -984,7 +957,7 @@ static const Native allNatives[] = {
     {"append",      "LA",   appendNative},
     {"insert",      "LNA",  insertNative},
     {"delete",      "LN",   deleteNative},
-    {"index",       "AQn",  indexNative},
+    {"index",       "ALn",  indexNative},
     {"remove",      "IA",   removeNative},
     {"equal",       "AA",   equalNative},
 

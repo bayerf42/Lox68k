@@ -43,7 +43,6 @@ Trailing `?` at return type means that the native may return `nil`.
 | heap        | int                       | any         | all          | Lox value stored at address *int* in heap                                         |
 | hex         | int                       | string      | all          | *int* as hexadecimal string                                                       |
 | index       | any, list, int?           | int?        | all          | search *any* in *list*, returns index where found, optional search start *int*    |  
-| index       | string, string, int?      | int?        | all          | search 1st *string* in 2nd *string*, returns index, optional search start *int*   |  
 | input       | string?                   | string      | all          | input string from terminal with optional prompt                                   |
 | insert      | list, int, any            | nil         | all          | inserts *any* into *list* at position *int*                                       |
 | it_clone    | iterator                  | iterator    | all          | clones *iterator*. Both iterators move independently, compare them with equal     |
@@ -57,7 +56,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | list        | int, any?                 | list        | all          | creates a list with *int* elements, initialized to *any* or nil                   |
 | log         | num                       | real        | all          | natural logarithm                                                                 |  
 | lower       | string                    | string      | all          | lower case of string                                                              |  
-| match       | string *re*, string *txt* | bool        | all          | [very simple regex matcher](https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html) supporting `.` `^` `$` `*` meta chars. |
+| match       | string *re*, string *txt* | int?        | all          | [very simple regex matcher](https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html) supporting `.` `^` `$` `*` `?` meta chars, returns match position. |
 | name        | any                       | string?     | all          | name of class, closure, bound, or native, nil for other values                    |  
 | next        | iterator                  | bool        | all          | advances *iterator* to next entry, returns true when valid                        |  
 | parent      | class                     | class?      | all          | retrieve super class of *class* or nil                                            |

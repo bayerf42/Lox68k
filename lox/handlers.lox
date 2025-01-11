@@ -15,7 +15,7 @@ fun t1(n) {
 
 fun arith_handler(default) {
   return fun(exc) {
-    if (type(exc) == "string" and index("arithmetic error", exc))
+    if (type(exc) == "string" and match("arithmetic error", exc))
       return default;
     else
       error(exc);
@@ -23,7 +23,7 @@ fun arith_handler(default) {
 }
 
 // or as one-liner: 
-fun ah(d) -> fun(e) -> if(type(e)=="string" and index("arith", e) : d : error(e))
+fun ah(d) -> fun(e) -> if(type(e)=="string" and match("arith", e) : d : error(e))
 fun sexp(x) -> handle(exp(x) : ah(0.0))
 
 
