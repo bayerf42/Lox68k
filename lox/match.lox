@@ -1,11 +1,13 @@
 // Very simple regular expression matcher as described at
 // https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
+// Extended for '?' meta char
 //
 //    c    matches any literal character c
 //    .    matches any single character
 //    ^    matches the beginning of the input string
 //    $    matches the end of the input string
 //    *    matches zero or more occurrences of the previous character
+//    ?    matches zero or one occurrences of the previous character
 
 match("x",  "abcxdef")
 match("x",  "abcdef")
@@ -13,19 +15,33 @@ match("^x", "abcxdef")
 match("^x", "xdef")
 match("x$", "abcxdef")
 match("x$", "abcx")
+""
 match("^xy$", "xyz")
 match("^xy$", "xy")
 match(".x..", "axbc")
 match(".x..", "axb")
 match("", "anything")
 match("", "")
+""
 match("c*d", "abc")
 match("c*d", "abd")
 match("c*d", "abcd")
 match("c*d", "abccccd")
 match("c*d", "abcccce")
+""
 match("^a*b*c*$", "abc")
 match("^a*b*c*$", "abbbc")
 match("^a*b*c*$", "abccc")
 match("^a*b*c*$", "aaa")
 match("^a*b*c*$", "axbc")
+""
+match("^ab?c$", "abc")
+match("^ab?c$", "ac")
+match("^ab?c$", "abbc")
+match("^ab*c$", "abbc")
+""
+match("...?.$",  "1")
+match("...?.$",  "12")
+match("...?.$",  "123")
+match("...?.$",  "1234")
+match("...?.$",  "12345")

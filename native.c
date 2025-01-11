@@ -383,7 +383,7 @@ static const char* matchstar(int c, const char* regexp, const char* text, int li
 static const char* match(const char* regexp, const char* text)
 {
     if (regexp[0] == '^')
-        return matchhere(regexp + 1, text);
+        return matchhere(regexp + 1, text) ? text : NULL;
     do {    /* must look even if string is empty */
         if (matchhere(regexp, text))
             return text;
@@ -394,6 +394,8 @@ static const char* match(const char* regexp, const char* text)
 /* matchhere: search for regexp at beginning of text */
 static const char* matchhere(const char* regexp, const char* text)
 {
+    CHECK_STACKOVERFLOW
+
     if (regexp[0] == '\0')
         return text;
     if (regexp[1] == '*')
@@ -401,8 +403,8 @@ static const char* matchhere(const char* regexp, const char* text)
     if (regexp[1] == '?')
         return matchstar(regexp[0], regexp + 2, text, 1);
     if (regexp[0] == '$' && regexp[1] == '\0')
-        return *text ? NULL : text;
-    if (*text && (regexp[0] == '.' || regexp[0] == *text))
+        return *text == '\0' ? text : NULL;
+    if (*text != '\0' && (regexp[0] == '.' || regexp[0] == *text))
         return matchhere(regexp + 1, text + 1);
     return NULL;
 }
@@ -413,7 +415,7 @@ static const char* matchstar(int c, const char* regexp, const char* text, int li
     do {    /* a * matches zero or more instances */
         if (matchhere(regexp, text))
             return text;
-    } while (limit-- && *text && (*text++ == c || c == '.'));
+    } while (limit-- && *text != '\0' && (*text++ == c || c == '.'));
     return NULL;
 }
 
