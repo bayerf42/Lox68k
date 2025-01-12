@@ -375,6 +375,7 @@ NATIVE(splitNative) {
 // compiles to about 400 bytes code,
 // thus fitting the minimalistic approach of Lox68k
 // Changes: added '?' meta character, return match position instead of bool, const pointers
+//          loop instead of recursion in matchhere()
 
 static const char* matchhere(const char* regexp, const char* text);
 static const char* matchstar(int c, const char* regexp, const char* text, int limit);
@@ -394,19 +395,20 @@ static const char* match(const char* regexp, const char* text)
 /* matchhere: search for regexp at beginning of text */
 static const char* matchhere(const char* regexp, const char* text)
 {
-    CHECK_STACKOVERFLOW
-
-    if (regexp[0] == '\0')
-        return text;
-    if (regexp[1] == '*')
-        return matchstar(regexp[0], regexp + 2, text, -1);
-    if (regexp[1] == '?')
-        return matchstar(regexp[0], regexp + 2, text, 1);
-    if (regexp[0] == '$' && regexp[1] == '\0')
-        return *text == '\0' ? text : NULL;
-    if (*text != '\0' && (regexp[0] == '.' || regexp[0] == *text))
-        return matchhere(regexp + 1, text + 1);
-    return NULL;
+    for (;; ++regexp, ++text) {
+        if (regexp[0] == '\0')
+            return text;
+        if (regexp[1] == '*')
+            return matchstar(regexp[0], regexp + 2, text, -1);
+        if (regexp[1] == '?')
+            return matchstar(regexp[0], regexp + 2, text, 1);
+        if (regexp[0] == '$' && regexp[1] == '\0')
+            return *text == '\0' ? text : NULL;
+        if (*text != '\0' && (regexp[0] == '.' || regexp[0] == *text))
+            continue;
+        return NULL;
+    }
+    return NULL; // unreachable
 }
 
 /* matchstar: search for c*regexp at beginning of text */
