@@ -56,7 +56,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | list        | int, any?                 | list        | all          | creates a list with *int* elements, initialized to *any* or nil                   |
 | log         | num                       | real        | all          | natural logarithm                                                                 |  
 | lower       | string                    | string      | all          | lower case of string                                                              |  
-| match       | string *re*, string *txt* | int?        | all          | [very simple regex matcher](https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html) supporting `.` `^` `$` `*` `?` meta chars, returns match position. |
+| match       | string *re*, string *txt* | list?       | all          | [very simple regex matcher](https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html) supporting `.` `^` `$` `*` `?` meta chars, returns 2 element list with match start and end, or `nil`. |
 | name        | any                       | string?     | all          | name of class, closure, bound, or native, nil for other values                    |  
 | next        | iterator                  | bool        | all          | advances *iterator* to next entry, returns true when valid                        |  
 | parent      | class                     | class?      | all          | retrieve super class of *class* or nil                                            |

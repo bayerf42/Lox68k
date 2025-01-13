@@ -8,40 +8,52 @@
 //    $    matches the end of the input string
 //    *    matches zero or more occurrences of the previous character
 //    ?    matches zero or one occurrences of the previous character
+//
+// On successful match, a list with begin and end positions is returned. The begin position
+// is the (0-based) index into the searched string, the end position is the position of the
+// first character NOT matched. Both position can be the length of the string when an empty
+// match is found at the end. These positions can be used in a slice expression to extract
+// the matched part of th string.
+//
+// When the pattern doesn't match, nil is returned.
 
-match("x",  "abcxdef")
-match("x",  "abcdef")
-match("^x", "abcxdef")
-match("^x", "xdef")
-match("x$", "abcxdef")
-match("x$", "abcx")
+match("x",  "abcxdef")        // [3, 4]
+match("x",  "abcdef")         // nil
+match("^x", "abcxdef")        // nil 
+match("^x", "xdef")           // [0, 1]
+match("x$", "abcxdef")        // nil
+match("x$", "abcx")           // [3, 4]
 ""
-match("^xy$", "xyz")
-match("^xy$", "xy")
-match(".x..", "axbc")
-match(".x..", "axb")
-match("", "anything")
-match("", "")
+match("^xy$", "xyz")          // nil
+match("^xy$", "xy")           // [0, 2]
+match(".x..", "axbc")         // [0, 4]
+match(".x..", "axb")          // nil
+match("", "anything")         // [0, 0] 
+match("", "")                 // [0, 0]
 ""
-match("c*d", "abc")
-match("c*d", "abd")
-match("c*d", "abcd")
-match("c*d", "abccccd")
-match("c*d", "abcccce")
+match("c*d", "abc")           // nil
+match("c*d", "abd")           // [2, 3]
+match("c*d", "abcd")          // [2, 4]
+match("c*d", "abccccd")       // [2, 7]
+match("c*d", "abcccce")       // nil 
 ""
-match("^a*b*c*$", "abc")
-match("^a*b*c*$", "abbbc")
-match("^a*b*c*$", "abccc")
-match("^a*b*c*$", "aaa")
-match("^a*b*c*$", "axbc")
+match("^a*b*c*$", "abc")      // [0, 3]
+match("^a*b*c*$", "abbbc")    // [0, 5]
+match("^a*b*c*$", "abccc")    // [0, 5]
+match("^a*b*c*$", "aaa")      // [0, 3]
+match("^a*b*c*$", "axbc")     // nil
 ""
-match("^ab?c$", "abc")
-match("^ab?c$", "ac")
-match("^ab?c$", "abbc")
-match("^ab*c$", "abbc")
+match("^ab?c$", "abc")        // [0, 3]
+match("^ab?c$", "ac")         // [0, 2]
+match("^ab?c$", "abbc")       // nil 
+match("^ab*c$", "abbc")       // [0, 4]
 ""
-match("...?.$",  "1")
-match("...?.$",  "12")
-match("...?.$",  "123")
-match("...?.$",  "1234")
-match("...?.$",  "12345")
+match("...?.$",  "1")         // nil
+match("...?.$",  "12")        // nil
+match("...?.$",  "123")       // [0, 3]
+match("...?.$",  "1234")      // [0, 4]
+match("...?.$",  "12345")     // [1, 5]
+""
+match("$",   "foobar")        // [6, 6]
+match("r?$", "foobar")        // [5, 6]
+match("z?$", "foobar")        // [6, 6]

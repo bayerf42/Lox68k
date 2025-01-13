@@ -372,13 +372,14 @@ NATIVE(splitNative) {
 // A minimal regex matcher described at
 // https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
 // Supports meta characters . ^ $ * ?
-// compiles to about 400 bytes code,
-// thus fitting the minimalistic approach of Lox68k
-// Changes: added '?' meta character, return match position instead of bool, const pointers
+// compiles to about 500 bytes code,
+// thus fitting the minimalistic mindset of Lox68k
+// Changes: added '?' meta character, return matched range instead of bool, const pointers
 //          loop instead of recursion in matchhere()
 
 static const char* matchhere(const char* regexp, const char* text);
 static const char* matchstar(int c, const char* regexp, const char* text, int limit);
+static const char* matchend; // for returning 2nd value
 
 /* match: search for regexp anywhere in text */
 static const char* match(const char* regexp, const char* text)
@@ -396,6 +397,7 @@ static const char* match(const char* regexp, const char* text)
 static const char* matchhere(const char* regexp, const char* text)
 {
     for (;; ++regexp, ++text) {
+        matchend = text;
         if (regexp[0] == '\0')
             return text;
         if (regexp[1] == '*')
@@ -422,9 +424,16 @@ static const char* matchstar(int c, const char* regexp, const char* text, int li
 }
 
 NATIVE(matchNative) {
-    const char* text = AS_CSTRING(args[1]);
-    const char* pos  = match(AS_CSTRING(args[0]), text);
-    RESULT = pos ? INT_VAL(pos - text) : NIL_VAL;
+    const char* text  = AS_CSTRING(args[1]);
+    const char* begin = match(AS_CSTRING(args[0]), text);
+    Value       range[2];
+
+    if (begin) {
+        range[0] = INT_VAL(begin    - text);
+        range[1] = INT_VAL(matchend - text);
+        RESULT   = OBJ_VAL(makeList(2, range, 2, 1));
+    } else
+        RESULT   = NIL_VAL;
     return true;
 }
 
