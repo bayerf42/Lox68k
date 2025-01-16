@@ -232,7 +232,7 @@ static void markRoots(void) {
 }
 
 static void traceReferences(void) {
-    while (vm.grayCount > 0) {
+    while (vm.grayCount) {
         Obj* object = vm.grayStack[--vm.grayCount];
         blackenObject(object);
     }

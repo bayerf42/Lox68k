@@ -107,7 +107,6 @@ and yields the error message `index out of range`.
   lst[true]     ⚠ "List index is not an integer."
 
   lst[2] = "ok" → "ok" // list items may be assigned
-
   lst           → [2, 5, "ok", "foo", <native sinh>];
 ```
 
@@ -141,6 +140,83 @@ default to the maxima.
   lst == lst[:]   → false          // copy is a new list, never identical to original
 ```
 Assignment to a slice is not allowed.
+
+## <a id="string"></a>Some native functions for strings
+
+### Splitting
+To split a string into a list of substrings at a set of separator characters, use the `split`
+native.
+
+```javascript
+  var str = "Lorem ipsum dolor sit amet,  consetetur elitr. ";
+
+  split(str, " ")   → ["Lorem", "ipsum", "dolor", "sit", "amet,", "consetetur", "elitr."]
+  split(str, " ,.") → ["Lorem", "ipsum", "dolor", "sit", "amet", "consetetur", "elitr"]
+  split(str, "t")   → ["Lorem ipsum dolor si", " ame", ",  conse", "e", "ur eli", "r. "]
+```
+In contrast to the `split` function in other languages, sequences of more than one
+separator characters are removed at once, so there'll never be an empty string
+in the result list.
+
+### Joining
+To join a list of strings without creating lots of temporary strings, use the `join` native.
+It has optional parameters to insert a separator string between list elements and to add
+prefix and postfix strings. 
+
+```javascript
+  var lst = ["2025", "Jan", "15"];
+
+  join(lst)                    → "2025Jan15"
+  join(lst, "-")               → "2025-Jan-15"
+  join(lst, "-", "<<", ">>")   → "<<2025-Jan-15>>"
+  join(["foo", 42])            ⚠ "'join' string expected in list at 1."
+```
+
+### Regular expressions
+Most regular expression matching libraries are very big, larger than the entire Lox68k
+implementation. So the very small (only 30 lines of C!) and elegant
+[matching routine by Rob Pike](https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html)
+has been employed, which supports a restricted` but nevertheless useful subset of meta characters:
+
+* `c` matches any literal character c
+* `.` matches any single character
+* `^` matches the beginning of the input string
+* `$` matches the end of the input string
+* `*` matches zero or more occurrences of the previous character
+* `?` matches zero or one occurrence of the previous character (new)
+
+On successful match, a list with begin and end positions is returned. The begin position
+is the (0-based) index into the searched string, the end position is the position of the
+first character *not* matched. Both position can be the length of the string when an empty
+match is found at the end. These positions can be used in a slice expression to extract
+the matched part of the string.
+
+When the pattern doesn't match, `nil` is returned.
+
+
+```javascript
+  match("xy",   "abxycde") → [2, 4]
+  match("xz",   "abxycde") → nil
+  match(".y",   "abxycde") → [2, 4]
+  match(".*y",  "abxycde") → [0, 4]
+  match("b$",   "abcdb")   → [4, 5]
+  match("ab*c", "xacz")    → [1, 3]
+  match("ab*c", "xabbbcz") → [1, 6]
+  match("ab?c", "xabbbcz") → nil
+  match("",     "foo")     → [0, 0] // empty always matches at start
+  match("$",    "foo")     → [3, 3] // empty match at end
+
+  fun extract(re, str) {
+    var range = match(re, str);
+    if (range)
+      return str[range[0] : range[1]];
+    else
+      error("No match.");
+  }
+
+  extract("ab*c", "xabbbcz") → "abbbc"
+  extract("ab*c", "xabbbz")  ⚠ "No match."
+```
 
 ## <a id="class"></a>Classes and instances
 
@@ -339,7 +415,7 @@ final `else` branch.
 
 
 ## <a id="exception"></a>Exception handling
-When (original) Lox encounters a run-time error, the error message including a backtrace of
+When Lox encounters a run-time error, the error message including a backtrace of
 function names and line numbers is printed and the evaluation is aborted.
 
 Lox68k allows handling errors with the `handle` expression. The first sub-expression is evaluated

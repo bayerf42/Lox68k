@@ -1,59 +1,43 @@
 // Very simple regular expression matcher as described at
 // https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
-// Extended for '?' meta char
-//
-//    c    matches any literal character c
-//    .    matches any single character
-//    ^    matches the beginning of the input string
-//    $    matches the end of the input string
-//    *    matches zero or more occurrences of the previous character
-//    ?    matches zero or one occurrences of the previous character
-//
-// On successful match, a list with begin and end positions is returned. The begin position
-// is the (0-based) index into the searched string, the end position is the position of the
-// first character NOT matched. Both position can be the length of the string when an empty
-// match is found at the end. These positions can be used in a slice expression to extract
-// the matched part of th string.
-//
-// When the pattern doesn't match, nil is returned.
 
+"Testing basic match"
 match("x",  "abcxdef")        // [3, 4]
 match("x",  "abcdef")         // nil
 match("^x", "abcxdef")        // nil 
 match("^x", "xdef")           // [0, 1]
 match("x$", "abcxdef")        // nil
 match("x$", "abcx")           // [3, 4]
-""
+"Testing start anchor"
 match("^xy$", "xyz")          // nil
 match("^xy$", "xy")           // [0, 2]
 match(".x..", "axbc")         // [0, 4]
 match(".x..", "axb")          // nil
 match("", "anything")         // [0, 0] 
 match("", "")                 // [0, 0]
-""
+"Testing *"
 match("c*d", "abc")           // nil
 match("c*d", "abd")           // [2, 3]
 match("c*d", "abcd")          // [2, 4]
 match("c*d", "abccccd")       // [2, 7]
 match("c*d", "abcccce")       // nil 
-""
+"Testing multiple *"
 match("^a*b*c*$", "abc")      // [0, 3]
 match("^a*b*c*$", "abbbc")    // [0, 5]
 match("^a*b*c*$", "abccc")    // [0, 5]
 match("^a*b*c*$", "aaa")      // [0, 3]
 match("^a*b*c*$", "axbc")     // nil
-""
+"Testing ?"
 match("^ab?c$", "abc")        // [0, 3]
 match("^ab?c$", "ac")         // [0, 2]
 match("^ab?c$", "abbc")       // nil 
 match("^ab*c$", "abbc")       // [0, 4]
-""
+"Testing end match"
 match("...?.$",  "1")         // nil
 match("...?.$",  "12")        // nil
 match("...?.$",  "123")       // [0, 3]
 match("...?.$",  "1234")      // [0, 4]
 match("...?.$",  "12345")     // [1, 5]
-""
 match("$",   "foobar")        // [6, 6]
 match("r?$", "foobar")        // [5, 6]
 match("z?$", "foobar")        // [6, 6]

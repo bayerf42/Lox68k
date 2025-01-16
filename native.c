@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "vm.h"
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Typechecking natives
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,41 +76,41 @@ bool callNative(const Native* native, int argCount, Value* args) {
 }
 
 #define RESULT args[-1]
-#define NATIVE(fun) static bool fun(int argCount, Value* args)
 
 // Concatening fun name with ## crashes IDE68K compiler
+#define NATIVE(fun) static bool fun(int argCount, Value* args)
 
 // Calling convention for natives:
 // ===============================
 //
 // 1st parameter is number of arguments (only useful for variadic arity)
-// 2nd parameter is pointer to call stack slice, arguments can be accessed by
+// 2nd parameter is pointer to value stack slice, arguments can be accessed by
 // args[0], args[1], etc.
 //
 // Basic arity and type checks already have been done via the signature string,
-// only in special cases you have to do further checks,
-// e.g. join, lcd_defchar
+// only in special cases you have to do further checks, e.g. in join, lcd_defchar.
 //
 // Each char in the signature strings stands for the allowed argument type at the
 // corresponding position. See matchesType() above for possible types.
 // Uppercase means required parameter, lower case optional parameter (must be trailing).
 // Test argCount for actual number in this case. 
 //
-// If you allocate heap objects, you have to ensure that prior objects are not
+// If you allocate heap objects, you have to ensure that objects allocated before are not
 // garbage collected, so you have to add them to the root set of reachable objects.
 // The easiest way to do this is to push() every allocated object and drop() before returning. 
 //
-// Make sure that the stack level is the same after calling your native or terrible things
-// may happen.
+// Make sure that the value stack level is the same after calling your native or
+// terrible things may happen.
 //
-// The result is stored into args[-1] (or use macro RESULT)
+// The result is stored into args[-1] (use macro RESULT)
 //
-// To indicate success, return true, on error return false.
-// you have to call runtimeError(...) before returning false to provide a useful error message
-// and setup possible exception handling.
+// Return true to indicate success, or false on error.
+// You have to call runtimeError(...) before returning false to provide a useful
+// error message and setup possible exception handling.
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Arithmetics
+// Real arithmetics
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define CHECK_ARITH_ERROR(op)                       \
@@ -174,18 +175,17 @@ NATIVE(powNative) {
 }
 
 #ifdef KIT68K
-
 Real mod(Real a, Real b) {
     Real q = div(a, b);
     Real h = intToReal(realToInt(q));
     h      = sub(q, h);
     return mul(b, h);
 }
-
 #endif
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Lists and strings
+// Lists
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NATIVE(lengthNative) {
@@ -266,6 +266,11 @@ NATIVE(indexNative) {
     return true;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Other types
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 NATIVE(removeNative) {
     ObjInstance* instance = AS_INSTANCE(args[0]);
     bool         removed  = tableDelete(&instance->fields, args[1]);
@@ -296,6 +301,11 @@ NATIVE(equalNative) {
     return true;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Strings
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 NATIVE(lowerNative) {
     RESULT = OBJ_VAL(caseString(AS_STRING(args[0]), false));
     return true;
@@ -306,12 +316,10 @@ NATIVE(upperNative) {
     return true;
 }
 
-#define APPEND(str) { \
+#define APPEND(str) {                                                                \
     len = strlen(str); if (dest - big_buffer + len >= (INPUT_SIZE-1)) goto Overflow; \
-    strcpy(dest, (str)); \
+    strcpy(dest, (str));                                                             \
     dest += len; }
-
-// FIXME?? Doesn't handle embedded \0 characters correctly.
 
 NATIVE(joinNative) {
     ObjList*    list   = AS_LIST(args[0]);
@@ -369,31 +377,33 @@ NATIVE(splitNative) {
     return true;
 }
 
-// A minimal regex matcher described at
+
+// Rob Pike's minimal regex matcher described at
 // https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
 // Supports meta characters . ^ $ * ?
-// compiles to about 500 bytes code,
-// thus fitting the minimalistic mindset of Lox68k
-// Changes: added '?' meta character, return matched range instead of bool, const pointers
-//          loop instead of recursion in matchhere()
+// compiles to about 500 bytes code, thus fitting the minimalistic mindset of Lox68k
+// Changes: added '?' meta character
+//          return range actually matched instead of simple flag
+//          const char pointers
+//          loop instead of tail recursion in matchhere()
 
 static const char* matchhere(const char* regexp, const char* text);
 static const char* matchstar(int c, const char* regexp, const char* text, int limit);
 static const char* matchend; // for returning 2nd value
 
-/* match: search for regexp anywhere in text */
+// search for regexp anywhere in text
 static const char* match(const char* regexp, const char* text)
 {
     if (regexp[0] == '^')
         return matchhere(regexp + 1, text) ? text : NULL;
-    do {    /* must look even if string is empty */
+    do {
         if (matchhere(regexp, text))
             return text;
     } while (*text++);
     return NULL;
 }
 
-/* matchhere: search for regexp at beginning of text */
+// search for regexp at beginning of text
 static const char* matchhere(const char* regexp, const char* text)
 {
     for (;; ++regexp, ++text) {
@@ -413,10 +423,10 @@ static const char* matchhere(const char* regexp, const char* text)
     return NULL; // unreachable
 }
 
-/* matchstar: search for c*regexp at beginning of text */
+// search for c*regexp or c?regexp at beginning of text (depending on limit)
 static const char* matchstar(int c, const char* regexp, const char* text, int limit)
 {
-    do {    /* a * matches zero or more instances */
+    do {
         if (matchhere(regexp, text))
             return text;
     } while (limit-- && *text != '\0' && (*text++ == c || c == '.'));
@@ -436,6 +446,7 @@ NATIVE(matchNative) {
         RESULT   = NIL_VAL;
     return true;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Iterators
@@ -463,10 +474,11 @@ NATIVE(nextNative) {
 NATIVE(itCloneNative) {
     ObjIterator* src  = AS_ITERATOR(args[0]);
     ObjIterator* dest = makeIterator(src->instance);
-    dest->position = src->position;
+    dest->position    = src->position;
     RESULT = OBJ_VAL(dest);
     return true;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Some datatype conversions
@@ -483,7 +495,7 @@ NATIVE(ascNative) {
     }
     if (index < 0)
         index += string->length;
-    code = string->chars[index] & 0xff;
+    code   = string->chars[index] & 0xff;
     RESULT = INT_VAL(code);
     return true;
 }
@@ -497,7 +509,7 @@ NATIVE(chrNative) {
         return false;
     }
     codepoint = (char)code;
-    RESULT = OBJ_VAL(makeString(&codepoint, 1));
+    RESULT    = OBJ_VAL(makeString(&codepoint, 1));
     return true;
 }
 
@@ -507,19 +519,19 @@ NATIVE(decNative) {
         res = formatInt(AS_INT(args[0]));
     else
         res = formatReal(AS_REAL(args[0]));
-    RESULT = OBJ_VAL(makeString0(res));
+    RESULT  = OBJ_VAL(makeString0(res));
     return true;
 }
 
 NATIVE(hexNative) {
     const char* res = formatHex(AS_INT(args[0]));
-    RESULT = OBJ_VAL(makeString0(res));
+    RESULT          = OBJ_VAL(makeString0(res));
     return true;
 }
 
 NATIVE(binNative) {
     const char* res = formatBin(AS_INT(args[0]));
-    RESULT = OBJ_VAL(makeString0(res));
+    RESULT          = OBJ_VAL(makeString0(res));
     return true;
 }
 
@@ -552,18 +564,18 @@ NATIVE(inputNative) {
     return true;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Integers
+// Integers (exploiting the Value tagging scheme)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NATIVE(bitAndNative) {
-    // No shifting and masking needed :-)
-    RESULT = args[0] & args[1];
+    RESULT = args[0] & args[1]; // LSB always set
     return true;
 }
 
 NATIVE(bitOrNative) {
-    RESULT = args[0] | args[1];
+    RESULT = args[0] | args[1]; // LSB always set
     return true;
 }
 
@@ -586,19 +598,25 @@ NATIVE(bitShiftNative) {
     return true;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Random numbers
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 NATIVE(randomNative) {
     vm.randomState ^= vm.randomState << 13;
     vm.randomState ^= vm.randomState >> 17;
     vm.randomState ^= vm.randomState << 5;
-    RESULT = INT_VAL(vm.randomState & 0x3fffffff);
+    RESULT          = INT_VAL(vm.randomState & 0x3fffffff);
     return true;
 }
 
 NATIVE(seedRandNative) {
-    RESULT = INT_VAL(vm.randomState);
-    vm.randomState = AS_INT(args[0]);
+    RESULT          = INT_VAL(vm.randomState);
+    vm.randomState  = AS_INT(args[0]);
     return true;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Modifying debugging options, disassembler
@@ -712,6 +730,7 @@ NATIVE(heapNative) {
     RESULT = *((Value*)address);
     return true;
 }
+
 
 #ifdef KIT68K
 
@@ -850,6 +869,7 @@ NATIVE(sleepNative) {
 
 #endif
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // System
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -862,7 +882,7 @@ NATIVE(gcNative) {
 
 NATIVE(typeNative) {
     const char* type = valueType(args[0]);
-    RESULT = OBJ_VAL(makeString0(type));
+    RESULT           = OBJ_VAL(makeString0(type));
     return true;
 }
 
@@ -1055,5 +1075,3 @@ void defineAllNatives() {
     drop();
     drop();
 }
-
-
