@@ -172,7 +172,7 @@ prefix and postfix strings.
   join(["foo", 42])            ⚠ "'join' string expected in list at 1."
 ```
 
-### Regular expressions
+### <a id="regex"></a>Regular expressions
 Most regular expression matching libraries are very big, larger than the entire Lox68k
 implementation. So the very small (only 30 lines of C!) and elegant
 [matching routine by Rob Pike](https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html)
@@ -193,6 +193,9 @@ the matched part of the string.
 
 When the pattern doesn't match, `nil` is returned.
 
+Just like with the `index` native, you can specify an optional start position for the search.
+Nevertheless, the returned positions refer to the original string.
+ 
 
 ```javascript
   match("xy",   "abxycde") → [2, 4]
@@ -216,6 +219,10 @@ When the pattern doesn't match, `nil` is returned.
 
   extract("ab*c", "xabbbcz") → "abbbc"
   extract("ab*c", "xabbbz")  ⚠ "No match."
+
+  match("a*b", "xaaabyabz")    → [1, 5]
+  match("a*b", "xaaabyabz", 5) → [6, 8]
+
 ```
 
 ## <a id="class"></a>Classes and instances

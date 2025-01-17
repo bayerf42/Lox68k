@@ -41,3 +41,8 @@ match("...?.$",  "12345")     // [1, 5]
 match("$",   "foobar")        // [6, 6]
 match("r?$", "foobar")        // [5, 6]
 match("z?$", "foobar")        // [6, 6]
+"Optional start index"
+match("ab*c", "xabcqacyabbcu")     // [1, 4]
+match("ab*c", "xabcqacyabbcu", 4)  // [5, 7]
+match("ab*c", "xabcqacyabbcu", 7)  // [8, 12]
+match("ab*c", "xabcqacyabbcu", 12) // nil

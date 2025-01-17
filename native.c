@@ -387,8 +387,8 @@ NATIVE(splitNative) {
 //          const char pointers
 //          loop instead of tail recursion in matchhere()
 
-static const char* matchhere(const char* regexp, const char* text);
-static const char* matchstar(int c, const char* regexp, const char* text, int limit);
+static bool matchhere(const char* regexp, const char* text);
+static bool matchstar(int c, const char* regexp, const char* text, int limit);
 static const char* matchend; // for returning 2nd value
 
 // search for regexp anywhere in text
@@ -404,43 +404,53 @@ static const char* match(const char* regexp, const char* text)
 }
 
 // search for regexp at beginning of text
-static const char* matchhere(const char* regexp, const char* text)
+static bool matchhere(const char* regexp, const char* text)
 {
     for (;; ++regexp, ++text) {
         matchend = text;
         if (regexp[0] == '\0')
-            return text;
+            return true;
         if (regexp[1] == '*')
             return matchstar(regexp[0], regexp + 2, text, -1);
         if (regexp[1] == '?')
             return matchstar(regexp[0], regexp + 2, text, 1);
         if (regexp[0] == '$' && regexp[1] == '\0')
-            return *text == '\0' ? text : NULL;
+            return *text == '\0';
         if (*text != '\0' && (regexp[0] == '.' || regexp[0] == *text))
             continue;
-        return NULL;
+        return false;
     }
-    return NULL; // unreachable
+    return false; // unreachable
 }
 
 // search for c*regexp or c?regexp at beginning of text (depending on limit)
-static const char* matchstar(int c, const char* regexp, const char* text, int limit)
+static bool matchstar(int c, const char* regexp, const char* text, int limit)
 {
     do {
         if (matchhere(regexp, text))
-            return text;
+            return true;
     } while (limit-- && *text != '\0' && (*text++ == c || c == '.'));
-    return NULL;
+    return false;
 }
 
 NATIVE(matchNative) {
-    const char* text  = AS_CSTRING(args[1]);
-    const char* begin = match(AS_CSTRING(args[0]), text);
+    ObjString*  text  = AS_STRING(args[1]);
+    const char* chars = text->chars;
+    int         start = (argCount == 2) ? 0 : AS_INT(args[2]);
+    const char* matchbegin;
     Value       range[2];
 
-    if (begin) {
-        range[0] = INT_VAL(begin    - text);
-        range[1] = INT_VAL(matchend - text);
+    if (!(text->length == start || // allow empty match at end
+          isValidStringIndex(text, start))) {
+        runtimeError("'%s' %s out of range.", "match", "start index");
+        return false;
+    }
+    if (start < 0) start += text->length;
+    matchbegin = match(AS_CSTRING(args[0]), chars + start);
+
+    if (matchbegin) {
+        range[0] = INT_VAL(matchbegin - chars);
+        range[1] = INT_VAL(matchend   - chars);
         RESULT   = OBJ_VAL(makeList(2, range, 2, 1));
     } else
         RESULT   = NIL_VAL;
@@ -998,7 +1008,7 @@ static const Native allNatives[] = {
     {"upper",       "S",    upperNative},
     {"join",        "Lsss", joinNative},
     {"split",       "SS",   splitNative},
-    {"match",       "SS",   matchNative},
+    {"match",       "SSn",  matchNative},
 
     {"slots",       "I",    slotsNative},
     {"valid",       "T",    validNative},
