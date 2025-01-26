@@ -249,7 +249,7 @@ NATIVE(indexNative) {
     int      i;
 
     RESULT = NIL_VAL;
-    if (list->arr.count == 0 && start == 0)
+    if (list->arr.count == start) // allow empty list (but always fail search)
         return true;
     if (!isValidListIndex(list, start)) {
         runtimeError("'%s' %s out of range.", "index", "start index");

@@ -401,8 +401,9 @@ The `case` statement provides a multi-way branch. It evaluates an expression (on
 and selects the first matching branch.
 
 A branch is introduced by `when` and followed by a comma-separated list of comparison values
-(needn't be constant). When a branch is selected, all following statements are executed and
-the `case` statement is left. No `break` statement is needed to leave it, in fact, `break` would
+(needn't be constant). When a branch is selected, all following statements upto the next
+`when` are executed and the `case` statement is left.
+No `break` statement is needed to leave it, in fact, `break` would
 leave the loop containing the `case` statement. 
 
 When no branch matches the `case` expression, nothing is executed, unless there is a
