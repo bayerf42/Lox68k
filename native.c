@@ -249,7 +249,7 @@ NATIVE(indexNative) {
     int      i;
 
     RESULT = NIL_VAL;
-    if (list->arr.count == start) // allow empty list (but always fail search)
+    if (list->arr.count == start) // allow searching empty list
         return true;
     if (!isValidListIndex(list, start)) {
         runtimeError("'%s' %s out of range.", "index", "start index");
@@ -440,7 +440,7 @@ NATIVE(matchNative) {
     const char* matchbegin;
     Value       range[2];
 
-    if (!(text->length == start || // allow empty match at end
+    if (!(text->length == start || // allow searching empty string
           isValidStringIndex(text, start))) {
         runtimeError("'%s' %s out of range.", "match", "start index");
         return false;

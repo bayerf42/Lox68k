@@ -185,6 +185,8 @@ has been employed, which supports a restricted` but nevertheless useful subset o
 * `*` matches zero or more occurrences of the previous character
 * `?` matches zero or one occurrence of the previous character (new)
 
+Omitting meta `+` saves some code and is no problem, just write `cc*` instead of `c+`.
+
 On successful match, a list with begin and end positions is returned. The begin position
 is the (0-based) index into the searched string, the end position is the position of the
 first character *not* matched. Both position can be the length of the string when an empty
@@ -556,7 +558,7 @@ to the nesting depth.
 On return, `<--` and the returned value are printed, also indented.
 
 To control tracing of calls to native functions, use the switch `dbg_nat(arg)`.
-Arguments and results of every call to a native function are printed in a single line,
+Arguments and results of every call are printed in a single line,
 starting with `---`, only indented when also tracing closure calls.
 
 Summary of tracing indicators:
@@ -565,8 +567,7 @@ Summary of tracing indicators:
   * `==>` establishing an exception handler
   * `<==` an exception is raised
   * `~~>` binding a dynamic variable
-  * `---` calling a native function, `->` result, *unless:*
-  * `/!\` native function raises exception
+  * `---` calling a native function, `->` returning result or `/!\` raising exception
 
 ### Tracing VM steps (*book*)
 Control tracing every VM step with the switch `dbg_step(arg)`.
