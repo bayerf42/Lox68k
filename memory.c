@@ -296,6 +296,7 @@ void collectGarbage(bool checkReclaim) {
 
 }
 
+#ifndef KIT68K
 void freeObjects(void) {
     Obj* object = vm.objects;
     Obj* next;
@@ -306,3 +307,4 @@ void freeObjects(void) {
         object = next;
     }
 }
+#endif

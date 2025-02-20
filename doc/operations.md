@@ -23,7 +23,7 @@ parse_real pi pow rad sin sinh sqrt tan tanh trunc`
 
 
 ### String
-`+ < <= > >= [] [:] asc bin chr dec hex index input join length lower match max min parse_int
+`+ < <= > >= [] [:] asc bin chr dec hex input join length lower match max min parse_int
 parse_real split upper`
 
 

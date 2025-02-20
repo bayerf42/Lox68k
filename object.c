@@ -8,8 +8,7 @@
 #include "object.h"
 #include "vm.h"
 
-char        buffer[130];     // general purpose: debugging, name building, error messages
-static char cvBuffer[32];    // for number conversion
+char buffer[130]; // general purpose: debugging, name building, error messages
 
 #ifndef KIT68K
 // Optimized ASM code for 68K, see kit_util.asm
@@ -273,9 +272,7 @@ void printObject(Value value, int flags) {
             break;
 
         case OBJ_DYNVAR:
-            putstr("<dynvar ");
-            printValue(AS_DYNVAR(value)->current, flags);
-            putstr(">");
+            putstr("<dynvar>");
             break;
 
         case OBJ_FUNCTION:
@@ -438,6 +435,8 @@ ObjString* caseString(ObjString* a, bool toUpper) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Reals 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static char cvBuffer[34]; // for number conversions, max size 32 byte + \0 terminator + align
 
 const char* formatReal(Real val) {
 #ifdef KIT68K

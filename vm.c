@@ -167,12 +167,14 @@ void initVM(void) {
     defineAllNatives();
 }
 
+#ifndef KIT68K
 void freeVM(void) {
     freeTable(&vm.globals);
     freeTable(&vm.strings);
     vm.initString = NULL;
     freeObjects();
 }
+#endif
 
 #ifndef KIT68K
 // Optimized ASM code for 68K, see kit_util.asm

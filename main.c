@@ -7,7 +7,7 @@
 #include "memory.h"
 #include "vm.h"
 
-#define VERSION "Lox68k 1.6"
+#define VERSION "Lox68k 1.7"
 #define AUTHOR  "by Fred Bayer"
 #ifdef LOX_DBG
 #define DBG_STR "debug"
@@ -39,12 +39,7 @@ int main() {
         *port0       = 0x40;        // make IRQ button check fail
 
         // Load ROM file with FFP lib and Lox standard lib.
-        if (loadROM() == 0)
-            printf("%s loaded.\n", "ROM");
-        else {
-            printf("%s not found.\n", "ROM");
-            loxLibSrc = NULL;
-        }  
+        putstr(loadROM() == 0 ? "ROM loaded.\n" : "ROM not found.\n");
     }
 
     init_freelist();
@@ -61,9 +56,9 @@ int main() {
         readLine();
         if (!ON_KIT() && big_buffer[0] == '&') {
             if (loadSource(big_buffer + 1) == 0) 
-                printf("%s loaded.\n", "File");
+                putstr("File loaded.\n");
             else {
-                printf("%s not found.\n", "File");
+                printf("File not found.\n");
                 continue;
             }
         }    

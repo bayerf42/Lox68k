@@ -119,7 +119,7 @@ and doesn't support modern *C99*.
   [Listed here](operations.md)
 
 
-## <a id="varieties"></a>The 4 varieties of Lox buildable
+## <a id="varieties"></a>The 2*4 varieties of Lox buildable
 
 All varieties are compiled from the same source files as described in the following sections.
 

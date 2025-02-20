@@ -638,6 +638,7 @@ static void buildThunk(void) {
     ObjFunction* function;
     int          i;
 
+    CHECK_STACKOVERFLOW
     initCompiler(&compiler, TYPE_LAMBDA);
     beginScope();
     expression();
@@ -1035,8 +1036,6 @@ static void forStatement(void) {
     int      incrementStart;
     LoopInfo loopInfo;
 
-    CHECK_STACKOVERFLOW
-
     beginScope();
     initBreaks(&loopInfo);
 
@@ -1222,8 +1221,6 @@ static void whileStatement(void) {
     int      loopStart = currentChunk()->count;
     int      exitJump;
     LoopInfo loopInfo;
-
-    CHECK_STACKOVERFLOW
 
     consumeExp(TOKEN_LEFT_PAREN, "condition");
     expression();
