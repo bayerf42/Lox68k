@@ -81,7 +81,7 @@ fun string(obj) {
 
 fun _bh(hash, formatter) {
   var res = [];
-  for (var it = slots(hash); valid(it); next(it))
+  for (var it = slots(hash); next(it);)
     append(res, formatter(it));
   return res;
 }
@@ -92,7 +92,7 @@ class Object {
 
   clone() {
     var res = class_of(this)();
-    for (var it = slots(this); valid(it); next(it))
+    for (var it = slots(this); next(it);)
       res[it@] = it^;
     return res;
   }  
@@ -119,20 +119,20 @@ class Set < Object {
   string() -> join(_bh(this, fun (it) -> string(it@)), ", ", "{", "}")
 
   union(that) {
-    for (var it = slots(that); valid(it); next(it))
+    for (var it = slots(that); next(it);)
       this[it@] = true;
     return this;
   }
 
   intersect(that) {
-    for (var it = slots(this); valid(it); next(it))
+    for (var it = slots(this); next(it);)
       if (!that[it@])
         remove(this, it@);
     return this;
   }
 
   subtract(that) {
-    for (var it = slots(that); valid(it); next(it))
+    for (var it = slots(that); next(it);)
       remove(this, it@);
     return this;
   }

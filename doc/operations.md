@@ -3,7 +3,7 @@
 ## Types
 
 ### Any
-`= == != addr case const equal error id name print return string type when`
+`= == != addr case const error id name print return string type when`
 
 
 ### Bool
@@ -52,7 +52,7 @@ parse_real split upper`
 
 
 ### Iterator
-`@ ^ it_clone next slots valid`
+`@ ^ next slots`
 
 
 ## Topics
@@ -77,7 +77,7 @@ parse_real split upper`
 
 ## Some numbers
 * 21 keywords
-* 73 native functions
+* 70 native functions
 * 63 VM opcodes
 * 12 data types
 * about 6000 lines source code

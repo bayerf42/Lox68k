@@ -268,41 +268,6 @@ NATIVE(indexNative) {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Other types
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-NATIVE(removeNative) {
-    ObjInstance* instance = AS_INSTANCE(args[0]);
-    bool         removed  = tableDelete(&instance->fields, args[1]);
-    RESULT = BOOL_VAL(removed);
-    return true;
-}
-
-NATIVE(equalNative) {
-    Value       a   = args[0];
-    Value       b   = args[1];
-    bool        res = false;
-    ObjIterator *ait, *bit;
-
-    if (IS_REAL(a)) {
-        if (IS_INT(b))
-            res = AS_REAL(a) == intToReal(AS_INT(b));
-        else if (IS_REAL(b))
-            res = AS_REAL(a) == AS_REAL(b);
-    } else if (IS_REAL(b) && IS_INT(a)) { 
-        res = AS_REAL(b) == intToReal(AS_INT(a));  
-    } else if (IS_ITERATOR(a) && IS_ITERATOR(b)) {
-        ait = AS_ITERATOR(a);  
-        bit = AS_ITERATOR(b);  
-        res = ait->instance == bit->instance && ait->position == bit->position;
-    } else
-        res = a == b;
-    RESULT = BOOL_VAL(res);
-    return true;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // Strings
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -459,8 +424,15 @@ NATIVE(matchNative) {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-// Iterators
+// Instances and iterators
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+NATIVE(removeNative) {
+    ObjInstance* instance = AS_INSTANCE(args[0]);
+    bool         removed  = tableDelete(&instance->fields, args[1]);
+    RESULT = BOOL_VAL(removed);
+    return true;
+}
 
 NATIVE(slotsNative) {
     ObjInstance* instance = AS_INSTANCE(args[0]);
@@ -468,24 +440,10 @@ NATIVE(slotsNative) {
     return true;
 }
 
-NATIVE(validNative) {
-    ObjIterator* iter = AS_ITERATOR(args[0]);
-    RESULT = BOOL_VAL(isValidIterator(iter));
-    return true;
-}
-
 NATIVE(nextNative) {
     ObjIterator* iter = AS_ITERATOR(args[0]);
     advanceIterator(iter, iter->position + 1);
     RESULT = BOOL_VAL(isValidIterator(iter));
-    return true;
-}
-
-NATIVE(itCloneNative) {
-    ObjIterator* src  = AS_ITERATOR(args[0]);
-    ObjIterator* dest = makeIterator(src->instance);
-    dest->position    = src->position;
-    RESULT = OBJ_VAL(dest);
     return true;
 }
 
@@ -707,26 +665,6 @@ NATIVE(pokeNative) {
     return true;
 }
 
-NATIVE(execNative) {
-    typedef Value sub0(void);
-    typedef Value sub1(Value);
-    typedef Value sub2(Value,Value);
-    typedef Value sub3(Value,Value,Value);
-
-    int32_t address = AS_INT(args[0]);
-    Value   res     = NIL_VAL;
-
-    switch (argCount) {
-        case 1: res = ((sub0*) address)(); break;
-        case 2: res = ((sub1*) address)(args[1]); break;
-        case 3: res = ((sub2*) address)(args[1],args[2]); break;
-        case 4: res = ((sub3*) address)(args[1],args[2],args[3]); break;
-    }
-
-    RESULT = res;
-    return true;
-}
-
 NATIVE(addrNative) {
     if (IS_OBJ(args[0]))
         RESULT = INT_VAL((uint32_t)AS_OBJ(args[0]));
@@ -839,6 +777,26 @@ NATIVE(soundNative) {
 NATIVE(trapNative) {
     _trap(0);
     RESULT = NIL_VAL;
+    return true;
+}
+
+NATIVE(execNative) {
+    typedef Value sub0(void);
+    typedef Value sub1(Value);
+    typedef Value sub2(Value,Value);
+    typedef Value sub3(Value,Value,Value);
+
+    int32_t address = AS_INT(args[0]);
+    Value   res     = NIL_VAL;
+
+    switch (argCount) {
+        case 1: res = ((sub0*) address)(); break;
+        case 2: res = ((sub1*) address)(args[1]); break;
+        case 3: res = ((sub2*) address)(args[1],args[2]); break;
+        case 4: res = ((sub3*) address)(args[1],args[2],args[3]); break;
+    }
+
+    RESULT = res;
     return true;
 }
 
@@ -1001,8 +959,6 @@ static const Native allNatives[] = {
     {"insert",      "LNA",  insertNative},
     {"delete",      "LN",   deleteNative},
     {"index",       "ALn",  indexNative},
-    {"remove",      "IA",   removeNative},
-    {"equal",       "AA",   equalNative},
 
     {"lower",       "S",    lowerNative},
     {"upper",       "S",    upperNative},
@@ -1010,10 +966,11 @@ static const Native allNatives[] = {
     {"split",       "SS",   splitNative},
     {"match",       "SSn",  matchNative},
 
+    {"parent",      "C",    parentNative},
+    {"class_of",    "A",    classOfNative},
+    {"remove",      "IA",   removeNative},
     {"slots",       "I",    slotsNative},
-    {"valid",       "T",    validNative},
     {"next",        "T",    nextNative},
-    {"it_clone",    "T",    itCloneNative},
 
     {"asc",         "Sn",   ascNative},
     {"chr",         "N",    chrNative},
@@ -1032,18 +989,15 @@ static const Native allNatives[] = {
     {"random",      "",     randomNative},
     {"seed_rand",   "N",    seedRandNative},
 
-    {"sleep",       "N",    sleepNative},
-    {"gc",          "",     gcNative},
     {"type",        "A",    typeNative},
     {"name",        "A",    nameNative},
-    {"parent",      "C",    parentNative},
-    {"class_of",    "A",    classOfNative},
     {"error",       "A",    errorNative},
+    {"gc",          "",     gcNative},
     {"clock",       "",     clockNative},
+    {"sleep",       "N",    sleepNative},
 
     {"peek",        "N",    peekNative},
     {"poke",        "NN",   pokeNative},
-    {"exec",        "Naaa", execNative},
     {"addr",        "A",    addrNative},
     {"heap",        "N",    heapNative},
 
@@ -1054,6 +1008,7 @@ static const Native allNatives[] = {
     {"lcd_defchar", "NL",   lcdDefcharNative},
     {"keycode",     "",     keycodeNative},
     {"sound",       "NN",   soundNative},
+    {"exec",        "Naaa", execNative},
     {"trap",        "",     trapNative},
 #endif
 

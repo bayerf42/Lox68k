@@ -35,9 +35,8 @@ Trailing `?` at return type means that the native may return `nil`.
 | dec         | num                       | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int                 | nil         | all          | deletes element at *int* from *list*                                              |
 | disasm      | fun, int                  | int?        | all/debug    | prints VM code of *fun* at offset *int*, returns next offset or nil at end        |
-| equal       | any, any                  | bool        | all          | more lenient than ==, numbers compared numerically, iterators for same position   |  
 | error       | any                       | *no return* | all          | throws an error with exception *any*. Can be caught with `handle` expression.     |  
-| exec        | int, any?, any?, any?     | any         | all          | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
+| exec        | int, any?, any?, any?     | any         | Kit, Emu     | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
 | exp         | num                       | real        | all          | exponential                                                                       |  
 | gc          | -                         | int         | all          | forces garbage collection, returns size of allocated memory                       |  
 | heap        | int                       | any         | all          | Lox value stored at address *int* in heap                                         |
@@ -45,7 +44,6 @@ Trailing `?` at return type means that the native may return `nil`.
 | index       | any, list, int?           | int?        | all          | search *any* in *list*, returns index where found, optional search start *int*    |  
 | input       | string?                   | string      | all          | input string from terminal with optional prompt                                   |
 | insert      | list, int, any            | nil         | all          | inserts *any* into *list* at position *int*                                       |
-| it_clone    | iterator                  | iterator    | all          | clones *iterator*. Both iterators move independently, compare them with equal     |
 | join        | list, sep?, beg?, end?    | string      | all          | joins all strings in *list*, separated by *sep*, prefix *beg*, suffix *end*       |
 | keycode     | -                         | int?        | Kit          | code of key currently pressed or nil                                              |  
 | lcd_clear   | -                         | nil         | Kit          | clears LCD                                                                        |  
@@ -82,5 +80,4 @@ Trailing `?` at return type means that the native may return `nil`.
 | trunc       | num                       | int         | all          | truncate real to integer                                                          |  
 | type        | any                       | string      | all          | type (as string) of *any*                                                         |  
 | upper       | string                    | string      | all          | upper case of string                                                              |  
-| valid       | iterator                  | bool        | all          | does *iterator* address a valid entry?                                            |  
 

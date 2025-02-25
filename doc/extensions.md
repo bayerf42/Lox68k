@@ -302,12 +302,15 @@ doesn't remove it.
 
 ## <a id="iterator"></a>Iterators
 An iterator is a new Lox builtin type allowing traversing all slots of an instance.
+On creation, an iterator is positioned **before** the first slot, to actually point it
+to the first, you must call `next`, returning `true` if the current position is still valid.
+
 
 ```javascript
   var m = Map("foo",42, "bar",38, true,666);
 
   // this is the standard idiom to iterate over all slots in an instance.
-  for (var iter = slots(m); valid(iter); next(iter)) {
+  for (var iter = slots(m); next(iter);) { // advance and test via next()
       print iter@,,;     // the @ operator accesses the key, read-only
       print iter^;       // the ^ operator accesses the value, may assign to it
       remove(m, iter@);  // removing the current item is allowed
@@ -317,8 +320,6 @@ An iterator is a new Lox builtin type allowing traversing all slots of an instan
     ✎ foo   42
   m → Map()              // empty, all items have been removed in loop
 ```
-You can clone an iterator which moves independently from the original with `it_clone()`. This
-may be useful for some quadratic algorithms.
  
 ## Functions
 
@@ -599,8 +600,8 @@ behave like value types, since:
     but **reals shouldn't be compared for equality anyway**. And don't use reals as instance
     keys or `case` branch selectors for the same reason.
 
-However, if you really want to compare reals for numeric equality, you can use the `equal`
-native, which also does type conversion, so `equal(3, 3.0)` is `true`.
+However, if you really want to compare reals for numeric equality, you can use
+an expression like `a >= b and a <= b` which also does type conversion.
 
 ## Minor extensions
 
