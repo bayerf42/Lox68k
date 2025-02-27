@@ -44,7 +44,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | index       | any, list, int?           | int?        | all          | search *any* in *list*, returns index where found, optional search start *int*    |  
 | input       | string?                   | string      | all          | input string from terminal with optional prompt                                   |
 | insert      | list, int, any            | nil         | all          | inserts *any* into *list* at position *int*                                       |
-| join        | list, sep?, beg?, end?    | string      | all          | joins all strings in *list*, separated by *sep*, prefix *beg*, suffix *end*       |
+| join        | list, sep?, beg?, end?    | string      | all          | [joins](extensions.md#join) all strings in *list* with optional sep, beg, end     |
 | keycode     | -                         | int?        | Kit          | code of key currently pressed or nil                                              |  
 | lcd_clear   | -                         | nil         | Kit          | clears LCD                                                                        |  
 | lcd_defchar | int, list *of 8 bytes*    | nil         | Kit          | creates a user-defined char with code *int* for LCD with bit pattern from *list*  |  
@@ -56,7 +56,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | lower       | string                    | string      | all          | lower case of string                                                              |  
 | match       | string, string, int?      | list?       | all          | [Regex matcher](extensions.md#regex), returns range or nil. Optional start index. |
 | name        | any                       | string?     | all          | name of class, closure, bound, or native, nil for other values                    |  
-| next        | iterator                  | bool        | all          | advances *iterator* to next entry, returns true when valid                        |  
+| next        | iterator                  | bool        | all          | advances [iterator](extensions.md#iterator) to next entry, returns true when valid|  
 | parent      | class                     | class?      | all          | retrieve super class of *class* or nil                                            |
 | parse_int   | string                    | int?        | all          | parses *string* as integer                                                        |
 | parse_real  | string                    | real?       | all          | parses *string* as real                                                           |
@@ -70,9 +70,9 @@ Trailing `?` at return type means that the native may return `nil`.
 | sin         | num                       | real        | all          | sine                                                                              |  
 | sinh        | num                       | real        | all          | hyperbolic sine                                                                   |  
 | sleep       | int *dur*                 | nil         | all          | busy waits for *dur* milliseconds                                                 |  
-| slots       | instance                  | iterator    | all          | iterator over all slots in *instance*                                             |
+| slots       | instance                  | iterator    | all          | [iterator](extensions.md#iterator) over all slots in *instance*                   |
 | sound       | int *rate*, int *dur*     | nil         | Kit          | plays a sound on speaker, cycle length *rate*, for *dur* milliseconds             |  
-| split       | string, string *sep*      | list        | all          | splits first string into a list of strings at separators from set *sep*           |  
+| split       | string, string *sep*      | list        | all          | [splits](extensions.md#split) string into a list at separators from set *sep*     |  
 | sqrt        | num                       | real        | all          | square root                                                                       |  
 | tan         | num                       | real        | all          | tangent                                                                           |  
 | tanh        | num                       | real        | all          | hyperbolic tangent                                                                |  

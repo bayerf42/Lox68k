@@ -143,7 +143,7 @@ Assignment to a slice is not allowed.
 
 ## <a id="string"></a>Some native functions for strings
 
-### Splitting
+### <a id="split"></a>Splitting
 To split a string into a list of substrings at a set of separator characters, use the `split`
 native.
 
@@ -158,7 +158,7 @@ In contrast to the `split` function in other languages, sequences of more than o
 separator characters are removed at once, so there'll never be an empty string
 in the result list.
 
-### Joining
+### <a id="join"></a>Joining
 To join a list of strings without creating lots of temporary strings, use the `join` native.
 It has optional parameters to insert a separator string between list elements and to add
 prefix and postfix strings. 
@@ -178,14 +178,19 @@ implementation. So the very small (only 30 lines of C!) and elegant
 [matching routine by Rob Pike](https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html)
 has been employed, which supports a restricted` but nevertheless useful subset of meta characters:
 
-* `c` matches any literal character c
-* `.` matches any single character
+* `c` matches the literal character `c`
+* `.` matches any character
+* `#` matches a digit (new)
+* `@` matches a letter (new)
+* `&` matches a letter or digit (new)
+* ` ` matches a space character (new)
 * `^` matches the beginning of the input string
 * `$` matches the end of the input string
-* `*` matches zero or more occurrences of the previous character
+* `*` matches zero or more occurrences of the previous character (greedy variant)
 * `?` matches zero or one occurrence of the previous character (new)
 
 Omitting meta `+` saves some code and is no problem, just write `cc*` instead of `c+`.
+Other character classes or escaping meta characters are not supported.
 
 On successful match, a list with begin and end positions is returned. The begin position
 is the (0-based) index into the searched string, the end position is the position of the
@@ -193,23 +198,25 @@ first character *not* matched. Both position can be the length of the string whe
 match is found at the end. These positions can be used in a slice expression to extract
 the matched part of the string.
 
-When the pattern doesn't match, `nil` is returned.
+When the pattern doesn't match, `nil` is returned. 
 
 Just like with the `index` native, you can specify an optional start position for the search.
 Nevertheless, the returned positions refer to the original string.
  
 
 ```javascript
-  match("xy",   "abxycde") → [2, 4]
-  match("xz",   "abxycde") → nil
-  match(".y",   "abxycde") → [2, 4]
-  match(".*y",  "abxycde") → [0, 4]
-  match("b$",   "abcdb")   → [4, 5]
-  match("ab*c", "xacz")    → [1, 3]
-  match("ab*c", "xabbbcz") → [1, 6]
-  match("ab?c", "xabbbcz") → nil
-  match("",     "foo")     → [0, 0] // empty always matches at start
-  match("$",    "foo")     → [3, 3] // empty match at end
+  match("xy",   "abxycde")    → [2, 4]
+  match("xz",   "abxycde")    → nil
+  match(".y",   "abxycde")    → [2, 4]
+  match(".*y",  "abxycde")    → [0, 4]
+  match("b$",   "abcdb")      → [4, 5]
+  match("ab*",  "xacz")       → [1, 2]
+  match("ab*",  "xabbbcz")    → [1, 5]
+  match("ab?c", "xabbbcz")    → nil
+  match("",     "foo")        → [0, 0] // empty always matches at start
+  match("$",    "foo")        → [3, 3] // empty match at end
+  match("##*",  "abc1234def") → [3, 7] // match non-empty digit sequence
+  match("@&*",  " num12 * 8") → [1, 6] // match an identifier
 
   fun extract(re, str) {
     var range = match(re, str);
@@ -224,7 +231,8 @@ Nevertheless, the returned positions refer to the original string.
 
   match("a*b", "xaaabyabz")    → [1, 5]
   match("a*b", "xaaabyabz", 5) → [6, 8]
-
+  match("^ab", "cdeabc")       → nil    // no match at start
+  match("^ab", "cdeabc", 3)    → [3, 5] // match since starting from index 3
 ```
 
 ## <a id="class"></a>Classes and instances
@@ -659,7 +667,7 @@ Instances print their slots, but only one level deep to avoid infinite recursion
   ? 42;
     ✎ 42
   print sqrt,,Set,,fun(){},,Set().clone,,slots(Set(14));
-    ✎ <native sqrt>   <class Set>   <closure #11>   <bound Object.clone>   <iterator 1>
+    ✎ <native sqrt>   <class Set>   <closure #11>   <bound Object.clone>   <iterator -1>
 
   var infinite = Set(38);
   infinite.self = infinite;        // We include ourselves now..

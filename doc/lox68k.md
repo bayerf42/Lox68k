@@ -59,7 +59,7 @@ in the release. Just burn it into an EPROM or flash chip.
 * A [list datatype](extensions.md#list) with according primitives
 * [Indexing](extensions.md#index) and [slicing](extensions.md#slice)
   composite data with `[]` [operator](operators.md)
-* 73 [native functions](natives.md) for type conversion, collections, strings, math
+* 70 [native functions](natives.md) for type conversion, collections, strings, math
   and [low-level functions](assembly.md) on the 68008 Kit
 * [Debugging options](extensions.md#debug) selectable at runtime
 * [Hexadecimal](extensions.md#hex) and [binary](extensions.md#bin) literals

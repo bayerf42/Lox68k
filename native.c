@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "object.h"
 #include "disasm.h"
@@ -345,32 +346,30 @@ NATIVE(splitNative) {
 
 // Rob Pike's minimal regex matcher described at
 // https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
-// Supports meta characters . ^ $ * ?
+// Supports meta characters . # @ & ^ $ * ?
 // compiles to about 500 bytes code, thus fitting the minimalistic mindset of Lox68k
 // Changes: added '?' meta character
 //          return range actually matched instead of simple flag
 //          const char pointers
 //          loop instead of tail recursion in matchhere()
+//          added '#' digit, '@' letter, '&' alphanum, ' ' space metas characters
+//          use greedy variant of star matching 
 
-static bool matchhere(const char* regexp, const char* text);
 static bool matchstar(int c, const char* regexp, const char* text, int limit);
 static const char* matchend; // for returning 2nd value
 
-// search for regexp anywhere in text
-static const char* match(const char* regexp, const char* text)
-{
-    if (regexp[0] == '^')
-        return matchhere(regexp + 1, text) ? text : NULL;
-    do {
-        if (matchhere(regexp, text))
-            return text;
-    } while (*text++);
-    return NULL;
+// match a single char including simple character classes
+static bool matchsingle(int c, int pat) {
+    if (pat == '.') return true;
+    if (pat == '#') return isdigit(c);
+    if (pat == '@') return isalpha(c);
+    if (pat == '&') return isalnum(c);
+    if (pat == ' ') return isspace(c);
+    return c == pat;
 }
 
 // search for regexp at beginning of text
-static bool matchhere(const char* regexp, const char* text)
-{
+static bool matchhere(const char* regexp, const char* text) {
     for (;; ++regexp, ++text) {
         matchend = text;
         if (regexp[0] == '\0')
@@ -381,20 +380,33 @@ static bool matchhere(const char* regexp, const char* text)
             return matchstar(regexp[0], regexp + 2, text, 1);
         if (regexp[0] == '$' && regexp[1] == '\0')
             return *text == '\0';
-        if (*text != '\0' && (regexp[0] == '.' || regexp[0] == *text))
-            continue;
+        if (*text != '\0' && matchsingle(*text, regexp[0]))
+            continue; // instead of tail recursion
         return false;
     }
     return false; // unreachable
 }
 
-// search for c*regexp or c?regexp at beginning of text (depending on limit)
-static bool matchstar(int c, const char* regexp, const char* text, int limit)
-{
+// search for regexp anywhere in text
+static const char* match(const char* regexp, const char* text) {
+    if (regexp[0] == '^')
+        return matchhere(regexp + 1, text) ? text : NULL;
     do {
         if (matchhere(regexp, text))
+            return text;
+    } while (*text++);
+    return NULL;
+}
+
+// leftmost longest search for c*regexp or c?regexp
+static bool matchstar(int c, const char* regexp, const char* text, int limit) {
+    const char *t;
+    for (t = text; limit-- && *t != '\0' && matchsingle(*t, c); t++)
+        ;
+    do {
+        if (matchhere(regexp, t))
             return true;
-    } while (limit-- && *text != '\0' && (*text++ == c || c == '.'));
+    } while (t-- > text);
     return false;
 }
 
@@ -938,6 +950,7 @@ char* readLine() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static const Native allNatives[] = {
+    // Mathematics
     {"abs",         "R",    absNative},
     {"trunc",       "R",    truncNative},
     {"sqrt",        "R",    sqrtNative},
@@ -952,6 +965,7 @@ static const Native allNatives[] = {
     {"atan",        "R",    atanNative},
     {"pow",         "RR",   powNative},
 
+    // Lists
     {"length",      "Q",    lengthNative},
     {"list",        "Na",   listNative},
     {"reverse",     "L",    reverseNative},
@@ -960,18 +974,21 @@ static const Native allNatives[] = {
     {"delete",      "LN",   deleteNative},
     {"index",       "ALn",  indexNative},
 
+    // Strings
     {"lower",       "S",    lowerNative},
     {"upper",       "S",    upperNative},
     {"join",        "Lsss", joinNative},
     {"split",       "SS",   splitNative},
     {"match",       "SSn",  matchNative},
 
+    // Objects
     {"parent",      "C",    parentNative},
     {"class_of",    "A",    classOfNative},
     {"remove",      "IA",   removeNative},
     {"slots",       "I",    slotsNative},
     {"next",        "T",    nextNative},
 
+    // Type conversion
     {"asc",         "Sn",   ascNative},
     {"chr",         "N",    chrNative},
     {"dec",         "R",    decNative},
@@ -981,6 +998,7 @@ static const Native allNatives[] = {
     {"parse_real",  "S",    parseRealNative},
     {"input",       "s",    inputNative},
 
+    // Binary integers
     {"bit_and",     "NN",   bitAndNative},
     {"bit_or",      "NN",   bitOrNative},
     {"bit_xor",     "NN",   bitXorNative},
@@ -989,6 +1007,7 @@ static const Native allNatives[] = {
     {"random",      "",     randomNative},
     {"seed_rand",   "N",    seedRandNative},
 
+    // Misc.
     {"type",        "A",    typeNative},
     {"name",        "A",    nameNative},
     {"error",       "A",    errorNative},
@@ -996,6 +1015,7 @@ static const Native allNatives[] = {
     {"clock",       "",     clockNative},
     {"sleep",       "N",    sleepNative},
 
+    // Memory access
     {"peek",        "N",    peekNative},
     {"poke",        "NN",   pokeNative},
     {"addr",        "A",    addrNative},
