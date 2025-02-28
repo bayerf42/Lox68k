@@ -176,7 +176,8 @@ prefix and postfix strings.
 Most regular expression matching libraries are very big, larger than the entire Lox68k
 implementation. So the very small (only 30 lines of C!) and elegant
 [matching routine by Rob Pike](https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html)
-has been employed, which supports a restricted` but nevertheless useful subset of meta characters:
+has been employed and extended, supporting a restricted` but nevertheless useful subset
+of meta characters:
 
 * `c` matches the literal character `c`
 * `.` matches any character
@@ -190,7 +191,7 @@ has been employed, which supports a restricted` but nevertheless useful subset o
 * `?` matches zero or one occurrence of the previous character (new)
 
 Omitting meta `+` saves some code and is no problem, just write `cc*` instead of `c+`.
-Other character classes or escaping meta characters are not supported.
+Other character classes or escaping meta characters is not supported.
 
 On successful match, a list with begin and end positions is returned. The begin position
 is the (0-based) index into the searched string, the end position is the position of the

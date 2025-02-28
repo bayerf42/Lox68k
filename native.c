@@ -360,6 +360,7 @@ static const char* matchend; // for returning 2nd value
 
 // match a single char including simple character classes
 static bool matchsingle(int c, int pat) {
+    if (!c)         return false;
     if (pat == '.') return true;
     if (pat == '#') return isdigit(c);
     if (pat == '@') return isalpha(c);
@@ -380,7 +381,7 @@ static bool matchhere(const char* regexp, const char* text) {
             return matchstar(regexp[0], regexp + 2, text, 1);
         if (regexp[0] == '$' && regexp[1] == '\0')
             return *text == '\0';
-        if (*text != '\0' && matchsingle(*text, regexp[0]))
+        if (matchsingle(*text, regexp[0]))
             continue; // instead of tail recursion
         return false;
     }
@@ -398,10 +399,10 @@ static const char* match(const char* regexp, const char* text) {
     return NULL;
 }
 
-// leftmost longest search for c*regexp or c?regexp
-static bool matchstar(int c, const char* regexp, const char* text, int limit) {
-    const char *t;
-    for (t = text; limit-- && *t != '\0' && matchsingle(*t, c); t++)
+// leftmost longest search for pc*regexp or pc?regexp
+static bool matchstar(int pc, const char* regexp, const char* text, int limit) {
+    const char* t;
+    for (t = text; limit-- && matchsingle(*t, pc); t++)
         ;
     do {
         if (matchhere(regexp, t))
