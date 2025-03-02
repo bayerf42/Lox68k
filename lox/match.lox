@@ -1,37 +1,36 @@
-// Very simple regular expression matcher as described at
+// Very simple regular expression matcher based on
 // https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
+// but with several extensions
 
 "Testing basic match"
-match("x",  "abcxdef")        // [3, 4]
-match("x",  "abcdef")         // nil
-match("^x", "abcxdef")        // nil 
-match("^x", "xdef")           // [0, 1]
-match("x$", "abcxdef")        // nil
-match("x$", "abcx")           // [3, 4]
-"Testing start anchor"
-match("^xy$", "xyz")          // nil
-match("^xy$", "xy")           // [0, 2]
-match(".x..", "axbc")         // [0, 4]
-match(".x..", "axb")          // nil
-match("", "anything")         // [0, 0] 
-match("", "")                 // [0, 0]
-"Testing *"
-match("c*d", "abc")           // nil
-match("c*d", "abd")           // [2, 3]
-match("c*d", "abcd")          // [2, 4]
-match("c*d", "abccccd")       // [2, 7]
-match("c*d", "abcccce")       // nil 
-"Testing multiple *"
-match("^a*b*c*$", "abc")      // [0, 3]
-match("^a*b*c*$", "abbbc")    // [0, 5]
-match("^a*b*c*$", "abccc")    // [0, 5]
-match("^a*b*c*$", "aaa")      // [0, 3]
-match("^a*b*c*$", "axbc")     // nil
-"Testing ?"
-match("^ab?c$", "abc")        // [0, 3]
-match("^ab?c$", "ac")         // [0, 2]
-match("^ab?c$", "abbc")       // nil 
-match("^ab*c$", "abbc")       // [0, 4]
+match("cd", "abcdef")        // [2, 4]
+match("cx", "abcdef")        // nil
+match("c.e", "abcdef")       // [2, 5]
+"Testing start/end anchors"
+match("^xy$", "xyz")         // nil
+match("^xy$", "xy")          // [0, 2]
+match("^xy", "xyz")          // [0, 2]
+match("..$", "xyz")          // [1, 3]
+"Testing *,+,?"
+match("ab*c", "xac")         // [1, 3]
+match("ab*c", "xabc")        // [1, 4]
+match("ab*c", "xabbbc")      // [1, 6]
+match("ab+c", "xac")         // nil
+match("ab+c", "xabc")        // [1, 4]
+match("ab+c", "xabbbc")      // [1, 6}
+match("ab?c", "xac")         // [1, 3]
+match("ab?c", "xabc")        // [1, 4]
+match("ab?c", "xabbbc")      // nil
+"Testing char classes"
+match("%a", "12e45")         // [2, 3]
+match("%a%d", "12e45")       // [2, 4]
+match("%d%p", "12e45,e")     // [4, 6]
+match("%X", "defg")          // [3, 4]
+match("%d+", "abc456efg")    // [3, 6]
+match("%a%w*","3+a12x-54")   // [2, 6]
+"Testing escapes"
+match("%..%%","--.X%--")     // [2, 5]
+match("%G+","defgGGgh")      // [4, 6]
 "Testing end match"
 match("...?.$",  "1")         // nil
 match("...?.$",  "12")        // nil
@@ -46,3 +45,4 @@ match("ab*c", "xabcqacyabbcu")     // [1, 4]
 match("ab*c", "xabcqacyabbcu", 4)  // [5, 7]
 match("ab*c", "xabcqacyabbcu", 7)  // [8, 12]
 match("ab*c", "xabcqacyabbcu", 12) // nil
+

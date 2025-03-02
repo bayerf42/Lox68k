@@ -181,17 +181,26 @@ of meta characters:
 
 * `c` matches the literal character `c`
 * `.` matches any character
-* `#` matches a digit (new)
-* `@` matches a letter (new)
-* `&` matches a letter or digit (new)
-* ` ` matches a space character (new)
 * `^` matches the beginning of the input string
 * `$` matches the end of the input string
-* `*` matches zero or more occurrences of the previous character (greedy variant)
-* `?` matches zero or one occurrence of the previous character (new)
+* `*` matches zero or more occurrences of the previous character
+* `+` matches one or more occurrences of the previous character
+* `?` matches zero or one occurrence of the previous character
+* `%a` matches an alphabetic character
+* `%b` matches a binary digit
+* `%c` matches a control character
+* `%d` matches a decimal digit
+* `%l` matches a lower-case letter
+* `%p` matches a punctuation character
+* `%s` matches a space character
+* `%u` matches an upper-case letter
+* `%w` matches an alphanumeric character
+* `%x` matches a hexadecimal digit
+* `%`  prefix before any other character cancels its meta function interpreting it verbatim
 
-Omitting meta `+` saves some code and is no problem, just write `cc*` instead of `c+`.
-Other character classes or escaping meta characters is not supported.
+Predefined character classes are similar to [Lua's](https://www.lua.org/pil/20.2.html)
+The uppercase variant means the complement of the class. User-defined character classes in `[]`
+like in other RE libraries are not supported.
 
 On successful match, a list with begin and end positions is returned. The begin position
 is the (0-based) index into the searched string, the end position is the position of the
@@ -216,8 +225,9 @@ Nevertheless, the returned positions refer to the original string.
   match("ab?c", "xabbbcz")    → nil
   match("",     "foo")        → [0, 0] // empty always matches at start
   match("$",    "foo")        → [3, 3] // empty match at end
-  match("##*",  "abc1234def") → [3, 7] // match non-empty digit sequence
-  match("@&*",  " num12 * 8") → [1, 6] // match an identifier
+  match("%d+",  "abc1234def") → [3, 7] // match non-empty digit sequence
+  match("%a%w*"," num12 * 8") → [1, 6] // match an identifier
+  match("%..%%","--.X%--")    → [2, 5] // matches literal . , any char, literal %
 
   fun extract(re, str) {
     var range = match(re, str);

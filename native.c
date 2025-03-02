@@ -346,46 +346,78 @@ NATIVE(splitNative) {
 
 // Rob Pike's minimal regex matcher described at
 // https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
-// Supports meta characters . # @ & ^ $ * ?
-// compiles to about 500 bytes code, thus fitting the minimalistic mindset of Lox68k
-// Changes: added '?' meta character
+// Supports meta characters . % ^ $ * ? +
+// compiles to about 800 bytes code, thus fitting the minimalistic mindset of Lox68k
+// Changes: added '?' and '+' meta characters
 //          return range actually matched instead of simple flag
-//          const char pointers
-//          loop instead of tail recursion in matchhere()
-//          added '#' digit, '@' letter, '&' alphanum, ' ' space metas characters
+//          goto instead of tail recursion in matchhere()
 //          use greedy variant of star matching 
+//          added '%' escape and char classes like in Lua
 
-static bool matchstar(int c, const char* regexp, const char* text, int limit);
+static bool matchstar(int c, const char* regexp, const char* text, int limit, bool escape);
 static const char* matchend; // for returning 2nd value
 
-// match a single char including simple character classes
-static bool matchsingle(int c, int pat) {
-    if (!c)         return false;
-    if (pat == '.') return true;
-    if (pat == '#') return isdigit(c);
-    if (pat == '@') return isalpha(c);
-    if (pat == '&') return isalnum(c);
-    if (pat == ' ') return isspace(c);
-    return c == pat;
+// match a single char against pattern or character class
+static bool matchsingle(int pat, int c, bool escape) {
+    char cclass;
+    bool res;
+    if (!c) return false;
+    if (escape) {
+        cclass = pat | LOWER_CASE_MASK;
+        if      (cclass == 'a') res = isalpha(c);
+        else if (cclass == 'b') res = (c | 0x01) == '1'; // binary digit '0' or '1'
+        else if (cclass == 'c') res = iscntrl(c);
+        else if (cclass == 'd') res = isdigit(c);
+        else if (cclass == 'l') res = islower(c);
+        else if (cclass == 'p') res = ispunct(c);
+        else if (cclass == 's') res = isspace(c);
+        else if (cclass == 'u') res = isupper(c);
+        else if (cclass == 'w') res = isalnum(c);
+        else if (cclass == 'x') res = isxdigit(c);
+        else return pat == c;
+        return pat & LOWER_CASE_MASK ? res : !res;
+    } else
+        return pat == '.' || pat == c;
 }
 
 // search for regexp at beginning of text
 static bool matchhere(const char* regexp, const char* text) {
-    for (;; ++regexp, ++text) {
-        matchend = text;
-        if (regexp[0] == '\0')
-            return true;
-        if (regexp[1] == '*')
-            return matchstar(regexp[0], regexp + 2, text, -1);
-        if (regexp[1] == '?')
-            return matchstar(regexp[0], regexp + 2, text, 1);
-        if (regexp[0] == '$' && regexp[1] == '\0')
-            return *text == '\0';
-        if (matchsingle(*text, regexp[0]))
-            continue; // instead of tail recursion
-        return false;
+    bool escape;
+tailRecurse:
+    matchend = text;
+    escape   = false;
+    if (regexp[0] == '\0')
+        return true;
+    if (regexp[0] == '$' && regexp[1] == '\0')
+        return *text == '\0';
+    if (regexp[0] == '%' && regexp[1] != '\0') {
+        escape = true;
+        ++regexp;
     }
-    return false; // unreachable
+    if (regexp[1] == '+')
+        return matchsingle(regexp[0], *text, escape)
+            && matchstar(regexp[0], regexp + 2, text + 1, -1, escape);
+    if (regexp[1] == '*')
+        return matchstar(regexp[0], regexp + 2, text, -1, escape);
+    if (regexp[1] == '?')
+        return matchstar(regexp[0], regexp + 2, text, 1, escape);
+    if (matchsingle(regexp[0], *text, escape)) {
+        ++regexp, ++text;
+        goto tailRecurse;
+    }
+    return false;
+}
+
+// leftmost longest search for pc*regexp or pc?regexp
+static bool matchstar(int pc, const char* regexp, const char* text, int limit, bool escape) {
+    const char* t;
+    for (t = text; limit-- && matchsingle(pc, *t, escape); t++)
+        ;
+    do {
+        if (matchhere(regexp, t))
+            return true;
+    } while (t-- > text);
+    return false;
 }
 
 // search for regexp anywhere in text
@@ -397,18 +429,6 @@ static const char* match(const char* regexp, const char* text) {
             return text;
     } while (*text++);
     return NULL;
-}
-
-// leftmost longest search for pc*regexp or pc?regexp
-static bool matchstar(int pc, const char* regexp, const char* text, int limit) {
-    const char* t;
-    for (t = text; limit-- && matchsingle(*t, pc); t++)
-        ;
-    do {
-        if (matchhere(regexp, t))
-            return true;
-    } while (t-- > text);
-    return false;
 }
 
 NATIVE(matchNative) {
