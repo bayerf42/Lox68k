@@ -344,25 +344,22 @@ NATIVE(splitNative) {
 }
 
 
-// Rob Pike's minimal regex matcher described at
+// Regex matcher based on Rob Pike's minimal matcher described at
 // https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
-// Supports meta characters . % ^ $ * ? +
-// compiles to about 800 bytes code, thus fitting the minimalistic mindset of Lox68k
-// Changes: added '?' and '+' meta characters
+// Changes: added '?' '+' '-' meta characters like in Lua
 //          return range actually matched instead of simple flag
 //          goto instead of tail recursion in matchhere()
-//          use greedy variant of star matching 
+//          provide both greedy and non-greedy variants of repetition matching 
 //          added '%' escape and char classes like in Lua
 
-static bool matchstar(int c, const char* regexp, const char* text, int limit, bool escape);
-static const char* matchend; // for returning 2nd value
+static const char* match_end; // for returning 2nd value
 
 // match a single char against pattern or character class
-static bool matchsingle(int pat, int c, bool escape) {
+static bool match_single(int pat, int c, bool escape) {
     char cclass;
     bool res;
     if (!c) return false;
-    if (escape) {
+    if (escape) { // prefixed with '%' in pattern
         cclass = pat | LOWER_CASE_MASK;
         if      (cclass == 'a') res = isalpha(c);
         else if (cclass == 'b') res = (c | 0x01) == '1'; // binary digit '0' or '1'
@@ -380,12 +377,35 @@ static bool matchsingle(int pat, int c, bool escape) {
         return pat == '.' || pat == c;
 }
 
-// search for regexp at beginning of text
-static bool matchhere(const char* regexp, const char* text) {
+static bool match_here(const char* regexp, const char* text);
+
+// maximal match for pat*regexp or pat?regexp
+static bool match_max(int pat, const char* regexp, const char* text, int limit, bool escape) {
+    const char* t;
+    for (t = text; limit-- && match_single(pat, *t, escape); t++)
+        ;
+    do {
+        if (match_here(regexp, t))
+            return true;
+    } while (t-- > text);
+    return false;
+}
+
+// minimal match for pat*regexp
+static bool match_min(int pat, const char* regexp, const char* text, bool escape) {
+    do {
+        if (match_here(regexp, text))
+            return true;
+    } while (match_single(pat, *text++, escape));
+    return false;
+}
+
+// match regexp at beginning of text
+static bool match_here(const char* regexp, const char* text) {
     bool escape;
-tailRecurse:
-    matchend = text;
-    escape   = false;
+tail_recurse:
+    match_end = text;
+    escape    = false;
     if (regexp[0] == '\0')
         return true;
     if (regexp[0] == '$' && regexp[1] == '\0')
@@ -395,37 +415,27 @@ tailRecurse:
         ++regexp;
     }
     if (regexp[1] == '+')
-        return matchsingle(regexp[0], *text, escape)
-            && matchstar(regexp[0], regexp + 2, text + 1, -1, escape);
+        return match_single(regexp[0], *text, escape)
+            && match_max(regexp[0], regexp + 2, text + 1, -1, escape);
     if (regexp[1] == '*')
-        return matchstar(regexp[0], regexp + 2, text, -1, escape);
+        return match_max(regexp[0], regexp + 2, text, -1, escape);
     if (regexp[1] == '?')
-        return matchstar(regexp[0], regexp + 2, text, 1, escape);
-    if (matchsingle(regexp[0], *text, escape)) {
+        return match_max(regexp[0], regexp + 2, text, 1, escape);
+    if (regexp[1] == '-')
+        return match_min(regexp[0], regexp + 2, text, escape);
+    if (match_single(regexp[0], *text, escape)) {
         ++regexp, ++text;
-        goto tailRecurse;
+        goto tail_recurse;
     }
     return false;
 }
 
-// leftmost longest search for pc*regexp or pc?regexp
-static bool matchstar(int pc, const char* regexp, const char* text, int limit, bool escape) {
-    const char* t;
-    for (t = text; limit-- && matchsingle(pc, *t, escape); t++)
-        ;
-    do {
-        if (matchhere(regexp, t))
-            return true;
-    } while (t-- > text);
-    return false;
-}
-
-// search for regexp anywhere in text
+// match regexp anywhere in text
 static const char* match(const char* regexp, const char* text) {
     if (regexp[0] == '^')
-        return matchhere(regexp + 1, text) ? text : NULL;
+        return match_here(regexp + 1, text) ? text : NULL;
     do {
-        if (matchhere(regexp, text))
+        if (match_here(regexp, text))
             return text;
     } while (*text++);
     return NULL;
@@ -435,7 +445,7 @@ NATIVE(matchNative) {
     ObjString*  text  = AS_STRING(args[1]);
     const char* chars = text->chars;
     int         start = (argCount == 2) ? 0 : AS_INT(args[2]);
-    const char* matchbegin;
+    const char* match_begin;
     Value       range[2];
 
     if (!(text->length == start || // allow searching empty string
@@ -444,11 +454,11 @@ NATIVE(matchNative) {
         return false;
     }
     if (start < 0) start += text->length;
-    matchbegin = match(AS_CSTRING(args[0]), chars + start);
+    match_begin = match(AS_CSTRING(args[0]), chars + start);
 
-    if (matchbegin) {
-        range[0] = INT_VAL(matchbegin - chars);
-        range[1] = INT_VAL(matchend   - chars);
+    if (match_begin) {
+        range[0] = INT_VAL(match_begin - chars);
+        range[1] = INT_VAL(match_end   - chars);
         RESULT   = OBJ_VAL(makeList(2, range, 2, 1));
     } else
         RESULT   = NIL_VAL;

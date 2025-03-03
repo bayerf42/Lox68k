@@ -80,10 +80,10 @@ parse_real split upper`
 * 70 native functions
 * 63 VM opcodes
 * 12 data types
-* about 6000 lines source code
+* about 6500 lines source code
 * 56 k bytes code size on 68008 kit (48 k without debugging functions)
 * Performance
-  * 9k ops on 68008 kit
+  * 10k ops on 68008 kit
   * 70M ops on Raspberry 4 Linux
   * 300M ops on Intel i7 Laptop Windows 11
 

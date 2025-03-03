@@ -35,7 +35,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | dec         | num                       | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int                 | nil         | all          | deletes element at *int* from *list*                                              |
 | disasm      | fun, int                  | int?        | all/debug    | prints VM code of *fun* at offset *int*, returns next offset or nil at end        |
-| error       | any                       | *no return* | all          | throws an error with exception *any*. Can be caught with `handle` expression.     |  
+| error       | any                       | *no return* | all          | raises an [exception](extensions.md#exception) with value *any*                   |  
 | exec        | int, any?, any?, any?     | any         | Kit, Emu     | executes subroutine at address *int* with upto 3 values on stack, return in `D0`  |  
 | exp         | num                       | real        | all          | exponential                                                                       |  
 | gc          | -                         | int         | all          | forces garbage collection, returns size of allocated memory                       |  

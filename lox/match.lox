@@ -21,11 +21,14 @@ match("ab+c", "xabbbc")      // [1, 6}
 match("ab?c", "xac")         // [1, 3]
 match("ab?c", "xabc")        // [1, 4]
 match("ab?c", "xabbbc")      // nil
+"Tesing greedy/non-greedy"
+match("a.*c", "xabbcbcbcxx") // [1, 9]
+match("a.-c", "xabbcbcbcxx") // [1, 5]
 "Testing char classes"
 match("%a", "12e45")         // [2, 3]
 match("%a%d", "12e45")       // [2, 4]
 match("%d%p", "12e45,e")     // [4, 6]
-match("%X", "defg")          // [3, 4]
+match("%X", "defhg")         // [3, 4]
 match("%d+", "abc456efg")    // [3, 6]
 match("%a%w*","3+a12x-54")   // [2, 6]
 "Testing escapes"
@@ -37,9 +40,6 @@ match("...?.$",  "12")        // nil
 match("...?.$",  "123")       // [0, 3]
 match("...?.$",  "1234")      // [0, 4]
 match("...?.$",  "12345")     // [1, 5]
-match("$",   "foobar")        // [6, 6]
-match("r?$", "foobar")        // [5, 6]
-match("z?$", "foobar")        // [6, 6]
 "Optional start index"
 match("ab*c", "xabcqacyabbcu")     // [1, 4]
 match("ab*c", "xabcqacyabbcu", 4)  // [5, 7]

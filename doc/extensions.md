@@ -183,9 +183,10 @@ of meta characters:
 * `.` matches any character
 * `^` matches the beginning of the input string
 * `$` matches the end of the input string
-* `*` matches zero or more occurrences of the previous character
-* `+` matches one or more occurrences of the previous character
 * `?` matches zero or one occurrence of the previous character
+* `+` matches one or more occurrences of the previous character
+* `*` matches zero or more occurrences of the previous character (greedy, longest match)
+* `-` matches zero or more occurrences of the previous character (non-greedy, shortest match)
 * `%a` matches an alphabetic character
 * `%b` matches a binary digit
 * `%c` matches a control character
@@ -228,6 +229,8 @@ Nevertheless, the returned positions refer to the original string.
   match("%d+",  "abc1234def") → [3, 7] // match non-empty digit sequence
   match("%a%w*"," num12 * 8") → [1, 6] // match an identifier
   match("%..%%","--.X%--")    → [2, 5] // matches literal . , any char, literal %
+  match("a.*z", "xabzbbzx")   → [1, 7] // greedy
+  match("a.-z", "xabzbbzx")   → [1, 4] // non-greedy
 
   fun extract(re, str) {
     var range = match(re, str);
