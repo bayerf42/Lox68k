@@ -341,14 +341,10 @@ void insertIntoList(ObjList* list, Value value, int index) {
 }
 
 void storeToList(ObjList* list, int index, Value value) {
-    if (index < 0)
-        index += list->arr.count;
     list->arr.values[index] = value;
 }
 
 Value indexFromList(ObjList* list, int index) {
-    if (index < 0)
-        index += list->arr.count;
     return list->arr.values[index];
 }
 
@@ -362,16 +358,17 @@ ObjList* sliceFromList(ObjList* list, int begin, int end) {
 void deleteFromList(ObjList* list, int index) {
     int i;
 
-    if (index < 0)
-        index += list->arr.count;
     for (i = index; i < list->arr.count - 1; i++)
         list->arr.values[i] = list->arr.values[i + 1];
     list->arr.values[--list->arr.count] = NIL_VAL;
 }
 
-bool isValidListIndex(ObjList* list, int index) {
-    return (index >= 0 && index <   list->arr.count) ||
-           (index <  0 && index >= -list->arr.count);
+bool isValidListIndex(ObjList* list, int* index) {
+    // also adjust negative index
+    if (*index >= 0) 
+        return  *index <  list->arr.count;
+    else
+        return (*index += list->arr.count) >= 0;
 }
 
 ObjList* concatLists(ObjList* a, ObjList* b) {
@@ -391,14 +388,15 @@ ObjList* concatLists(ObjList* a, ObjList* b) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ObjString* indexFromString(ObjString* string, int index) {
-    if (index < 0)
-        index += string->length;
     return makeString(string->chars + index, 1);
 }
 
-bool isValidStringIndex(ObjString* string, int index) {
-    return (index >= 0 && index <   string->length) ||
-           (index <  0 && index >= -string->length);
+bool isValidStringIndex(ObjString* string, int* index) {
+    // also adjust negative index
+    if (*index >= 0) 
+        return  *index <  string->length;
+    else
+        return (*index += string->length) >= 0;
 }
 
 ObjString* sliceFromString(ObjString* string, int begin, int end) {

@@ -235,7 +235,7 @@ NATIVE(insertNative) {
 NATIVE(deleteNative) {
     ObjList* list  = AS_LIST(args[0]);
     int      index = AS_INT(args[1]);
-    if (!isValidListIndex(list, index)) {
+    if (!isValidListIndex(list, &index)) {
         runtimeError("'%s' %s out of range.", "delete", "index");
         return false;
     }
@@ -252,11 +252,10 @@ NATIVE(indexNative) {
     RESULT = NIL_VAL;
     if (list->arr.count == start) // allow searching empty list
         return true;
-    if (!isValidListIndex(list, start)) {
+    if (!isValidListIndex(list, &start)) {
         runtimeError("'%s' %s out of range.", "index", "start index");
         return false;
     }
-    if (start < 0) start += list->arr.count;
 
     for (i = start; i < list->arr.count; i++) {
         if (valuesEqual(args[0], list->arr.values[i])) {
@@ -449,11 +448,10 @@ NATIVE(matchNative) {
     Value       range[2];
 
     if (!(text->length == start || // allow searching empty string
-          isValidStringIndex(text, start))) {
+          isValidStringIndex(text, &start))) {
         runtimeError("'%s' %s out of range.", "match", "start index");
         return false;
     }
-    if (start < 0) start += text->length;
     match_begin = match(AS_CSTRING(args[0]), chars + start);
 
     if (match_begin) {
@@ -500,12 +498,10 @@ NATIVE(ascNative) {
     Int        code;
     int        index = (argCount == 1) ? 0 : AS_INT(args[1]);
 
-    if (!isValidStringIndex(string, index)) {
+    if (!isValidStringIndex(string, &index)) {
         runtimeError("'%s' %s out of range.", "asc", "index");
         return false;
     }
-    if (index < 0)
-        index += string->length;
     code   = string->chars[index] & 0xff;
     RESULT = INT_VAL(code);
     return true;

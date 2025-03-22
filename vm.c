@@ -1050,7 +1050,7 @@ nextInstNoSO:
                     goto handleError;
                 }
                 index = AS_INT(aVal);
-                if (!isValidListIndex(bLst, index)) {
+                if (!isValidListIndex(bLst, &index)) {
                     runtimeError("%s out of range.", "List index");
                     goto handleError;
                 }
@@ -1064,7 +1064,7 @@ nextInstNoSO:
                     goto handleError;
                 }
                 index = AS_INT(aVal);
-                if (!isValidStringIndex(bStr, index)) {
+                if (!isValidStringIndex(bStr, &index)) {
                     runtimeError("%s out of range.", "String index");
                     goto handleError;
                 }
@@ -1094,7 +1094,7 @@ nextInstNoSO:
                     goto handleError;
                 }
                 index = AS_INT(aVal);
-                if (!isValidListIndex(bLst, index)) {
+                if (!isValidListIndex(bLst, &index)) {
                     runtimeError("%s out of range.", "List index");
                     goto handleError;
                 }
