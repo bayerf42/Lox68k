@@ -166,14 +166,11 @@ bool         isObjType(Value value, ObjType type);
 bool         isCallable(Value value);
 
 void         insertIntoList(ObjList* list, Value value, int index);
-void         storeToList(ObjList* list, int index, Value value);
-Value        indexFromList(ObjList* list, int index);
 ObjList*     sliceFromList(ObjList* list, int begin, int end);
 void         deleteFromList(ObjList* list, int index);
 bool         isValidListIndex(ObjList* list, int* index);
 ObjList*     concatLists(ObjList* a, ObjList* b);
 
-ObjString*   indexFromString(ObjString* string, int index);
 ObjString*   sliceFromString(ObjString* string, int begin, int end);
 bool         isValidStringIndex(ObjString* string, int* index);
 ObjString*   concatStrings(ObjString* a, ObjString* b);

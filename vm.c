@@ -1054,7 +1054,7 @@ nextInstNoSO:
                     runtimeError("%s out of range.", "List index");
                     goto handleError;
                 }
-                resVal = indexFromList(bLst, index);
+                resVal = bLst->arr.values[index];
                 dropNpush(2, resVal);
                 goto nextInstNoSO;
             } else if (IS_STRING(bVal)) {
@@ -1068,7 +1068,7 @@ nextInstNoSO:
                     runtimeError("%s out of range.", "String index");
                     goto handleError;
                 }
-                resVal = OBJ_VAL(indexFromString(bStr, index));
+                resVal = OBJ_VAL(makeString(bStr->chars + index, 1));
                 dropNpush(2, resVal);
                 goto nextInstNoSO;
             } else if (IS_INSTANCE(bVal)) {
@@ -1098,7 +1098,7 @@ nextInstNoSO:
                     runtimeError("%s out of range.", "List index");
                     goto handleError;
                 }
-                storeToList(bLst, index, cVal);
+                bLst->arr.values[index] = cVal;
                 dropNpush(3, cVal);
                 goto nextInstNoSO;
             } else if (IS_INSTANCE(bVal)) {

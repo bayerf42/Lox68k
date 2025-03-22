@@ -340,14 +340,6 @@ void insertIntoList(ObjList* list, Value value, int index) {
     ++list->arr.count;
 }
 
-void storeToList(ObjList* list, int index, Value value) {
-    list->arr.values[index] = value;
-}
-
-Value indexFromList(ObjList* list, int index) {
-    return list->arr.values[index];
-}
-
 ObjList* sliceFromList(ObjList* list, int begin, int end) {
     int n = list->arr.count;
     limitIndex(&begin, n);
@@ -386,10 +378,6 @@ ObjList* concatLists(ObjList* a, ObjList* b) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Strings 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-ObjString* indexFromString(ObjString* string, int index) {
-    return makeString(string->chars + index, 1);
-}
 
 bool isValidStringIndex(ObjString* string, int* index) {
     // also adjust negative index
