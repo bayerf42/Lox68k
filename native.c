@@ -430,14 +430,14 @@ tail_recurse:
 }
 
 // match regexp anywhere in text
-static const char* match(const char* regexp, const char* text) {
+static bool match(const char* regexp, const char** text) {
     if (regexp[0] == '^')
-        return match_here(regexp + 1, text) ? text : NULL;
+        return match_here(regexp + 1, *text);
     do {
-        if (match_here(regexp, text))
-            return text;
-    } while (*text++);
-    return NULL;
+        if (match_here(regexp, *text))
+            return true;
+    } while (*(*text)++);
+    return false;
 }
 
 NATIVE(matchNative) {
@@ -452,9 +452,9 @@ NATIVE(matchNative) {
         runtimeError("'%s' %s out of range.", "match", "start index");
         return false;
     }
-    match_begin = match(AS_CSTRING(args[0]), chars + start);
+    match_begin = chars + start;
 
-    if (match_begin) {
+    if (match(AS_CSTRING(args[0]), &match_begin)) {
         range[0] = INT_VAL(match_begin - chars);
         range[1] = INT_VAL(match_end   - chars);
         RESULT   = OBJ_VAL(makeList(2, range, 2, 1));
