@@ -360,15 +360,16 @@ static bool match_single(int pat, int c, bool escape) {
     if (!c) return false;
     if (escape) { // prefixed with '%' in pattern
         cclass = pat | LOWER_CASE_MASK;
-        if      (cclass == 'a') res = isalpha(c);
-        else if (cclass == 'b') res = (c | 0x01) == '1'; // binary digit '0' or '1'
+        // '_' is considered alphabetic! 
+        if      (cclass == 'a') res = isalpha(c) || c == '_';
+        else if (cclass == 'b') res = (c | 0x01) == '1';      // binary digit '0' or '1'
         else if (cclass == 'c') res = iscntrl(c);
         else if (cclass == 'd') res = isdigit(c);
         else if (cclass == 'l') res = islower(c);
-        else if (cclass == 'p') res = ispunct(c);
+        else if (cclass == 'p') res = ispunct(c) && c != '_';
         else if (cclass == 's') res = isspace(c);
         else if (cclass == 'u') res = isupper(c);
-        else if (cclass == 'w') res = isalnum(c);
+        else if (cclass == 'w') res = isalnum(c) || c == '_';
         else if (cclass == 'x') res = isxdigit(c);
         else return pat == c;
         return pat & LOWER_CASE_MASK ? res : !res;
