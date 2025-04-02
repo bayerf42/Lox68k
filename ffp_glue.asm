@@ -10,11 +10,8 @@
        xref    _errno        ; indicates overflow or domain error when != 0
 
 _fabs
-       move.l  d7,-(a7)
-       move.l  (8,a7),d7
-       jsr     ffp_abs
-       move.l  d7,d0
-       move.l  (a7)+,d7
+       move.l  (4,a7),d0
+       and.b   #$7f,d0       ; Just clear sign bit, simpler than calling FFP lib
        rts
 
 _sin

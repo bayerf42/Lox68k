@@ -222,7 +222,7 @@ void markTable(Table* table) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void advanceIterator(ObjIterator* iter, int pos) {
-    Table*  table = &iter->instance->fields;
+    Table* table = &iter->instance->fields;
     if (pos >= 0 && table->count > 0) {
         for (; pos < table->capacity; pos++)
             if (!IS_EMPTY(table->entries[pos].key)) {
@@ -234,10 +234,10 @@ void advanceIterator(ObjIterator* iter, int pos) {
 }
 
 bool isValidIterator(ObjIterator* iter) {
-    Table*  table = &iter->instance->fields;
-    bool valid    = iter->position >= 0              &&
-                    iter->position < table->capacity &&
-                    !IS_EMPTY(table->entries[iter->position].key);
+    Table* table = &iter->instance->fields;
+    bool   valid = iter->position >= 0              &&
+                   iter->position < table->capacity &&
+                   !IS_EMPTY(table->entries[iter->position].key);
     return valid;
 }
 

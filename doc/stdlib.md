@@ -54,7 +54,7 @@ You can start Lox68k with or without the standard library:
 ## Classes
 
 | Name        | Methods   | Parameters    | Returns     | Description                                                                       |
-|-------------|-----------|---------------|-------------|--------------|--------------------------------------------------------------------|
+|-------------|-----------|---------------|-------------|-----------------------------------------------------------------------------------|
 | Object      |           | -             |             | base class for every Lox class, defines string() and clone() methods.             |
 |             | clone     | -             | instance    | method used to shallow-copy an instance                                           |  
 |             | string    | -             | string      | method used to convert an object to a string                                      |  

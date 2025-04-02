@@ -110,7 +110,7 @@ BINDIGIT       → "0" ... "1" ;
 * `"` begin string literal, end string literal
 * `#` illegal
 * `$` begin hexadecimal number literal
-* `%` begin binary number literal
+* `%` begin binary number literal, escape char in match() pattern strings
 * `&` illegal on Kit, load a file on Windows/Linux/Simulator
 * `'` illegal
 * `(` begin grouping, call

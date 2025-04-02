@@ -6,6 +6,7 @@
 #include "disasm.h"
 #include "memory.h"
 #include "scanner.h"
+#include "vm.h"
 
 typedef struct {
     Token current;

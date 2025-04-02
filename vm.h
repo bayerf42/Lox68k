@@ -12,7 +12,7 @@ typedef struct {
 } CallFrame;
 
 typedef struct {
-    Value*      sp;  // keep first to allow fast addressing without offset
+    Value*      sp;      // keep first to allow fast addressing without offset
     Value       stack[STACK_MAX];
     CallFrame   frames[FRAMES_MAX];
     int         frameCount;
