@@ -68,7 +68,7 @@ struct Obj {
 
 struct ObjBound {
     OBJ_HEADER
-    Value        receiver;
+    Value        receiver;     // actually always an ObjInstance*
     ObjClosure*  method;
 };
 

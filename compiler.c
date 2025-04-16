@@ -8,6 +8,13 @@
 #include "scanner.h"
 #include "vm.h"
 
+// Static compiler table limits
+#define MAX_UPVALUES  32 // number of upvalues in a function
+#define MAX_LOCALS    64 // number of local variables in a fucntion
+#define MAX_BRANCHES 127 // branches per 'case' statement
+#define MAX_LABELS    31 // comparison values per 'case' branch
+#define MAX_BREAKS    16 // number of 'break' statements in a loop
+
 typedef struct {
     Token current;
     Token previous;

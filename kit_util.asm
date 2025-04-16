@@ -7,9 +7,9 @@
 ; void fix_memcpy(char* dest, const char* src, size_t size);
        xdef      _fix_memcpy
 _fix_memcpy:
-       movea.l   (4,A7),A0     ; dest
-       movea.l   (8,A7),A1     ; src
-       move.l    (12,A7),D1    ; size
+       movea.l   (4,A7),A0                 ; dest
+       movea.l   (8,A7),A1                 ; src
+       move.l    (12,A7),D1                ; size
        bra.s     .test
 .loop  move.b    (A1)+,(A0)+
 .test  dbra      D1,.loop
@@ -18,10 +18,10 @@ _fix_memcpy:
 ; int fix_memcmp(const char* a, const char* b, size_t size);
        xdef      _fix_memcmp
 _fix_memcmp:
-       movea.l   (4,A7),A0     ; a
-       movea.l   (8,A7),A1     ; b
-       move.l    (12,A7),D1    ; size
-       clr.b     D0            ; result
+       movea.l   (4,A7),A0                 ; a
+       movea.l   (8,A7),A1                 ; b
+       move.l    (12,A7),D1                ; size
+       clr.b     D0                        ; result
        bra.s     .test
 .loop  move.b    (A0)+,D0
        sub.b     (A1)+,D0
@@ -34,7 +34,7 @@ _fix_memcmp:
        xdef      _putstr
 _putstr:
        move.l    A2,-(A7)
-       movea.l   (8,A7),A2     ; str
+       movea.l   (8,A7),A2                 ; str
 .next  move.b    (A2)+,D0
        beq.s     .done
        ext.w     D0
@@ -44,7 +44,7 @@ _putstr:
        addq.w    #4,A7
        bra.s     .next
 .done  move.l    (A7)+,A2
-       rts                     ; return value never used
+       rts                                 ; return value never used
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Some assembler replacements for bottleneck functions
@@ -53,15 +53,15 @@ _putstr:
 ; bool isObjType(Value value, ObjType type);
        xdef      _isObjType
 _isObjType:
-       move.l    (4,A7),D1     ; value
-       clr.l     D0            ; double use as return value and bit number in next instruction
-       btst      D0,D1         ; bit 0 set?  
-       bne.s     .done         ; it's an integer
-       cmp.l     #6,D1         ; low enough to be special value?
+       move.l    (4,A7),D1                 ; value
+       clr.l     D0                        ; double use as return value and bit number in next instruction
+       btst      D0,D1                     ; bit 0 set?  
+       bne.s     .done                     ; it's an integer
+       cmp.l     #6,D1                     ; low enough to be special value?
        bls.s     .done
        move.l    D1,A0
-       move.b    (4,A0),D0     ; type tag in object
-       cmp.b     (11,A7),D0    ; type argument passed
+       move.b    (4,A0),D0                 ; type tag in object
+       cmp.b     (11,A7),D0                ; type argument passed
        seq       D0
 .done  rts
 
@@ -69,12 +69,12 @@ _isObjType:
        xdef      _push
 _push:
        lea       _vm.W,A1
-       cmpi.l    #_vm+16388,(A1) ; beyond end of value stack
+       cmpi.l    #_vm+16388,(A1)           ; beyond end of value stack
        blo.s     .push
-       st        20011(A1)       ; stack overflow
+       st        20011(A1)                 ; stack overflow
        rts
 
-.push  move.l    (A1),A0         ; push actually
+.push  move.l    (A1),A0                   ; push actually
        addq.l    #4,(A1)
        move.l    (4,A7),(A0)
        rts

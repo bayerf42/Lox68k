@@ -239,22 +239,16 @@ static void printInstance(ObjInstance* inst, int flags) {
     putstr(")");
 }
 
+
 const char* typeName(ObjType type) {
-    switch (type) {
-        case OBJ_BOUND:    return "bound";
-        case OBJ_CLASS:    return "class";
-        case OBJ_CLOSURE:  return "closure";
-        case OBJ_DYNVAR:   return "dynvar";   // internal
-        case OBJ_FUNCTION: return "fun";      // internal
-        case OBJ_INSTANCE: return "instance";
-        case OBJ_ITERATOR: return "iterator";
-        case OBJ_LIST:     return "list";
-        case OBJ_NATIVE:   return "native";
-        case OBJ_REAL:     return "real";
-        case OBJ_STRING:   return "string";
-        case OBJ_UPVALUE:  return "upvalue";  // internal
-        default:           return "unknown";  // shouldn't happen
-    }
+    static const char* const typeNames[] = {
+         "unknown",
+         // ensure same order as enum declaration
+         "dynvar",  "fun",     "instance", "iterator",
+         "list",    "upvalue", "bound",    "class",
+         "closure", "native",  "real",     "string"
+    };
+    return typeNames[OBJ_DYNVAR<=type && type<=OBJ_STRING ? type + 1 : 0];
 }
 
 void printObject(Value value, int flags) {

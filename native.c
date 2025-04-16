@@ -55,6 +55,7 @@ bool callNative(const Native* native, int argCount, Value* args) {
         ++currParm;
     }
 
+    // Check number of arguments.
     if (minParmCount > argCount || argCount > maxParmCount) {
         if (minParmCount == maxParmCount)
             runtimeError("'%s' expected %d arguments but got %d.",
@@ -65,6 +66,7 @@ bool callNative(const Native* native, int argCount, Value* args) {
         return false;
     }
 
+    // Check argument types.
     for (i = 0; i < argCount; i++) {
         expected = matchesType(args[i], signature[i] & ~LOWER_CASE_MASK);
         if (expected) {
@@ -73,6 +75,8 @@ bool callNative(const Native* native, int argCount, Value* args) {
             return false;
         }
     }
+
+    // Actual native call
     return (*native->function)(argCount, args);
 }
 
@@ -85,11 +89,11 @@ bool callNative(const Native* native, int argCount, Value* args) {
 // ===============================
 //
 // 1st parameter is number of arguments (only useful for variadic arity)
-// 2nd parameter is pointer to value stack slice, arguments can be accessed by
+// 2nd parameter is pointer into value stack slice, arguments can be accessed by
 // args[0], args[1], etc.
 //
-// Basic arity and type checks already have been done via the signature string,
-// only in special cases you have to do further checks, e.g. in join, lcd_defchar.
+// Basic arity and type checks have already been done via the signature string,
+// only in special cases you have to do additional checks, e.g. in join, lcd_defchar.
 //
 // Each char in the signature strings stands for the allowed argument type at the
 // corresponding position. See matchesType() above for possible types.
@@ -151,7 +155,7 @@ static bool transcendentalNative(Value* args, RealFun fun, const char* funName) 
     return true;
 }
 
-// The power of C macros...
+// The power of C macros: Use fun both as a symbol and as a string in error message.
 #define TRANS_NATIVE(fun) \
     { return transcendentalNative(args, fun, #fun); }
 
@@ -352,6 +356,7 @@ NATIVE(splitNative) {
 //          added '%' escape and char classes like in Lua
 
 static const char* match_end; // for returning 2nd value
+static bool        match_here(const char* regexp, const char* text);
 
 // match a single char against pattern or character class
 static bool match_single(int pat, int c, bool escape) {
@@ -360,8 +365,7 @@ static bool match_single(int pat, int c, bool escape) {
     if (!c) return false;
     if (escape) { // prefixed with '%' in pattern
         cclass = pat | LOWER_CASE_MASK;
-        // '_' is considered alphabetic! 
-        if      (cclass == 'a') res = isalpha(c) || c == '_';
+        if      (cclass == 'a') res = isalpha(c) || c == '_'; // '_' is considered alphabetic! 
         else if (cclass == 'b') res = (c | 0x01) == '1';      // binary digit '0' or '1'
         else if (cclass == 'c') res = iscntrl(c);
         else if (cclass == 'd') res = isdigit(c);
@@ -376,8 +380,6 @@ static bool match_single(int pat, int c, bool escape) {
     } else
         return pat == '.' || pat == c;
 }
-
-static bool match_here(const char* regexp, const char* text);
 
 // maximal match for pat*regexp or pat?regexp
 static bool match_max(int pat, const char* regexp, const char* text, int limit, bool escape) {
@@ -466,7 +468,7 @@ NATIVE(matchNative) {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-// Instances and iterators
+// Classes, instances, and iterators
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NATIVE(removeNative) {
@@ -486,6 +488,21 @@ NATIVE(nextNative) {
     ObjIterator* iter = AS_ITERATOR(args[0]);
     advanceIterator(iter, iter->position + 1);
     RESULT = BOOL_VAL(isValidIterator(iter));
+    return true;
+}
+
+NATIVE(parentNative) {
+    RESULT = OBJ_VAL(AS_CLASS(args[0])->superClass);
+    return true;
+}
+
+NATIVE(classOfNative) {
+    if (IS_INSTANCE(args[0]))
+        RESULT = OBJ_VAL(AS_INSTANCE(args[0])->klass);
+    else if (IS_BOUND(args[0]))
+        RESULT = OBJ_VAL(AS_BOUND(args[0])->method->function->klass);
+    else
+        RESULT = NIL_VAL;
     return true;
 }
 
@@ -683,7 +700,7 @@ NATIVE(disasmNative) {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Machine code support
+// Low-level memory access
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NATIVE(peekNative) {
@@ -928,21 +945,6 @@ NATIVE(nameNative) {
     return true;
 }
 
-NATIVE(parentNative) {
-    RESULT = OBJ_VAL(AS_CLASS(args[0])->superClass);
-    return true;
-}
-
-NATIVE(classOfNative) {
-    if (IS_INSTANCE(args[0]))
-        RESULT = OBJ_VAL(AS_INSTANCE(args[0])->klass);
-    else if (IS_BOUND(args[0]))
-        RESULT = OBJ_VAL(AS_BOUND(args[0])->method->function->klass);
-    else
-        RESULT = NIL_VAL;
-    return true;
-}
-
 NATIVE(errorNative) {
     userError(args[0]);
     return false;
@@ -994,7 +996,6 @@ static const Native allNatives[] = {
     {"pow",         "RR",   powNative},
 
     // Lists
-    {"length",      "Q",    lengthNative},
     {"list",        "Na",   listNative},
     {"reverse",     "L",    reverseNative},
     {"append",      "LA",   appendNative},
@@ -1003,6 +1004,7 @@ static const Native allNatives[] = {
     {"index",       "ALn",  indexNative},
 
     // Strings
+    {"length",      "Q",    lengthNative},
     {"lower",       "S",    lowerNative},
     {"upper",       "S",    upperNative},
     {"join",        "Lsss", joinNative},
@@ -1024,7 +1026,6 @@ static const Native allNatives[] = {
     {"bin",         "N",    binNative},
     {"parse_int",   "S",    parseIntNative},
     {"parse_real",  "S",    parseRealNative},
-    {"input",       "s",    inputNative},
 
     // Binary integers
     {"bit_and",     "NN",   bitAndNative},
@@ -1035,7 +1036,8 @@ static const Native allNatives[] = {
     {"random",      "",     randomNative},
     {"seed_rand",   "N",    seedRandNative},
 
-    // Misc.
+    // System
+    {"input",       "s",    inputNative},
     {"type",        "A",    typeNative},
     {"name",        "A",    nameNative},
     {"error",       "A",    errorNative},
@@ -1043,7 +1045,7 @@ static const Native allNatives[] = {
     {"clock",       "",     clockNative},
     {"sleep",       "N",    sleepNative},
 
-    // Memory access
+    // Low-level memory access
     {"peek",        "N",    peekNative},
     {"poke",        "NN",   pokeNative},
     {"addr",        "A",    addrNative},

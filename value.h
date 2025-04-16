@@ -26,9 +26,9 @@ typedef struct ObjUpvalue  ObjUpvalue;
 // Object pointers  xxxx xxxx ... xxxx xxx0 (even address > 6)
 // Specials         0000 0000 ... 0000 0xx0 (special Obj*, empty, nil, false, true; see below)
 
-#define NIL_VAL          0x00000000
+#define NIL_VAL          0x00000000  // which is also the null pointer!
 #define FALSE_VAL        0x00000002
-#define EMPTY_VAL        0x00000004
+#define EMPTY_VAL        0x00000004  // empty hash table bucket, not visible to the user
 #define TRUE_VAL         0x00000006
 
 #define IS_BOOL(value)   (((value) | 4) == TRUE_VAL)
