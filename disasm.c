@@ -13,7 +13,7 @@ static void simpInst(const char* name) {
 }
 
 static void byteInst(const char* name) {
-    // byte instruction, 1 extra byte, 0-255 local/upvalue index or argument count
+    // byte instruction, 1 extra byte, 0-255 local/upvalue index, small int const, argument count
     int arg = chunk->code[++offset];
     printf("%-9s %4d", name, arg);
     ++offset;
@@ -72,11 +72,10 @@ static void disassembleIntern(void) {
 
     switch (opcd) {
         case OP_CONSTANT:      cnstInst("CONST");     break;
+        case OP_INT:           byteInst("INT");       break;
         case OP_NIL:           simpInst("NIL");       break;
         case OP_TRUE:          simpInst("TRUE");      break;
         case OP_FALSE:         simpInst("FALSE");     break;
-        case OP_ZERO:          simpInst("ZERO");      break;
-        case OP_ONE:           simpInst("ONE");       break;
         case OP_POP:           simpInst("POP");       break;
         case OP_SWAP:          simpInst("SWAP");      break;
         case OP_DUP:           simpInst("DUP");       break;

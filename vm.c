@@ -515,16 +515,18 @@ nextInstNoSO:
 
     switch (READ_BYTE()) {
         case OP_CONSTANT:
-            index = READ_BYTE();
+            index    = READ_BYTE();
             constant = consts[index];
             push(constant);
+            goto nextInst;
+
+        case OP_INT:
+            push(INT_VAL((Int)READ_BYTE()));
             goto nextInst;
 
         case OP_NIL:   push(NIL_VAL);    goto nextInst;
         case OP_TRUE:  push(TRUE_VAL);   goto nextInst;
         case OP_FALSE: push(FALSE_VAL);  goto nextInst;
-        case OP_ZERO:  push(INT_VAL(0)); goto nextInst;
-        case OP_ONE:   push(INT_VAL(1)); goto nextInst;
         case OP_POP:   drop();           goto nextInstNoSO;
         case OP_DUP:   push(peek(0));    goto nextInst;
 

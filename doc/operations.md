@@ -78,7 +78,7 @@ parse_real split upper`
 ## Some numbers
 * 21 keywords
 * 70 native functions
-* 63 VM opcodes
+* 62 VM opcodes
 * 12 data types
 * about 7000 lines source code
 * 56 k bytes code size on 68008 kit (48 k without debugging functions)

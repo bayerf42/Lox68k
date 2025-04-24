@@ -3,11 +3,10 @@
 
 typedef enum {
     OP_CONSTANT,      // push constant value at index byte0
+    OP_INT,           // push integer byte0
     OP_NIL,           // push value nil
     OP_TRUE,          // push value true
     OP_FALSE,         // push value false
-    OP_ZERO,          // push int 0
-    OP_ONE,           // push int 1
     OP_POP,           // pop TOS
     OP_SWAP,          // swap 2 TOS values
     OP_DUP,           // duplicate TOS value

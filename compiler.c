@@ -227,9 +227,10 @@ static int makeConstant(Value value) {
 }
 
 static void emitConstant(Value value) {
-    if      (value == INT_VAL(0)) emitByte(OP_ZERO);
-    else if (value == INT_VAL(1)) emitByte(OP_ONE);
-    else                          emit2Bytes(OP_CONSTANT, makeConstant(value));
+    if (IS_INT(value) && AS_INT(value) <= UINT8_MAX)
+        emit2Bytes(OP_INT, AS_INT(value));
+    else
+        emit2Bytes(OP_CONSTANT, makeConstant(value));
 }
 
 static void patchJump(int offset) {
