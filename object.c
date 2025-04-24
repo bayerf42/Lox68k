@@ -239,7 +239,6 @@ static void printInstance(ObjInstance* inst, int flags) {
     putstr(")");
 }
 
-
 const char* typeName(ObjType type) {
     static const char* const typeNames[] = {
          "unknown",

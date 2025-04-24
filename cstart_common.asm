@@ -50,7 +50,7 @@ bss        equ         *               ; start address of bss section (uninitial
 
            section     heap
 heap       equ         *               ; start address of heap section (start of free memory, RAM)
-
+                                       ; actually unused in Lox, just marks end of BSS section.
 
            section     code
 start:                                 ; Start Lox interpreter with standard library

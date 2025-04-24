@@ -1017,6 +1017,7 @@ static void varDeclaration(void) {
 static void expressionStatement(bool topLevel) {
     expression();
     if (topLevel)
+        // Maybe a top-level expression printing its value implicitly.
         emitByte(match(TOKEN_SEMICOLON) ? OP_POP : OP_PRINTQ);
     else {
         consumeExp(TOKEN_SEMICOLON, "expression");
