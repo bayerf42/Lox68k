@@ -66,6 +66,7 @@ initLox    lea         himem,A7        ; initial stack pointer
 .loop      move.l      D0,(A0)+        
            cmp.l       #heap,A0
            bcs.s       .loop
+
            move.l      #-1,__ungetbuf.W ; unget-buffer for keyboard input
            move.l      #(himem-stklen),__stack.W ; top of stack (for stack overflow detection)
            move.l      A1,_loxLibSrc.W ; Lox standard library source in ROM

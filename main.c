@@ -97,9 +97,9 @@ static char* readFile(const char* path) {
 static bool runFile(const char* path) {
     char* source = readFile(path);
     if (source) {
-        InterpretResult result = interpret(source);
+        EvalResult result = interpret(source);
         free(source);
-        return result == INTERPRET_OK;
+        return result == EVAL_OK;
     }
     return false;
 }

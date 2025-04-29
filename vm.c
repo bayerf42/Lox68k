@@ -451,7 +451,7 @@ static void defineMethod(ObjString* name) {
 #define READ_USHORT() (frame->ip += 2, (frame->ip[-2] << 8) | frame->ip[-1])
 #define CURR_INSTR()  (frame->ip[-1])
 
-static InterpretResult run(void) {
+static EvalResult run(void) {
     int   index, begin, end, i;
     Value constant;
 
@@ -501,7 +501,7 @@ nextInstNoSO:
         (void)READ_BYTE();
         putstr("Interrupted.\n");
         printBacktrace();
-        return INTERPRET_INTERRUPTED;
+        return EVAL_INTERRUPTED;
     }
 
 #ifdef LOX_DBG
@@ -974,7 +974,7 @@ nextInstNoSO:
 
             if (vm.frameCount == 0) {
                 drop();
-                return INTERPRET_OK;
+                return EVAL_OK;
             }
             vm.sp = frame->fp;
             pushUnchecked(resVal);
@@ -1052,7 +1052,7 @@ nextInstNoSO:
                     goto handleError;
                 }
                 index = AS_INT(aVal);
-                if (!isValidListIndex(bLst, &index)) {
+                if (!validateListIndex(bLst, &index)) {
                     runtimeError("%s out of range.", "List index");
                     goto handleError;
                 }
@@ -1066,7 +1066,7 @@ nextInstNoSO:
                     goto handleError;
                 }
                 index = AS_INT(aVal);
-                if (!isValidStringIndex(bStr, &index)) {
+                if (!validateStringIndex(bStr, &index)) {
                     runtimeError("%s out of range.", "String index");
                     goto handleError;
                 }
@@ -1096,7 +1096,7 @@ nextInstNoSO:
                     goto handleError;
                 }
                 index = AS_INT(aVal);
-                if (!isValidListIndex(bLst, &index)) {
+                if (!validateListIndex(bLst, &index)) {
                     runtimeError("%s out of range.", "List index");
                     goto handleError;
                 }
@@ -1186,7 +1186,7 @@ handleError:
         argCount           = 1;
         goto cont_call;
     }
-    return INTERPRET_RUNTIME_ERROR;
+    return EVAL_RUNTIME_ERROR;
 }
 
 #ifndef KIT68K
@@ -1204,13 +1204,13 @@ static void handleInterrupts(bool enable) {
 }
 #endif
 
-InterpretResult interpret(const char* source) {
-    ObjFunction*    function = compile(source);
-    ObjClosure*     closure;
-    InterpretResult result;
+EvalResult interpret(const char* source) {
+    ObjFunction* function = compile(source);
+    ObjClosure*  closure;
+    EvalResult   result;
 
     if (function == NULL)
-        return INTERPRET_COMPILE_ERROR;
+        return EVAL_COMPILE_ERROR;
 
     pushUnchecked(OBJ_VAL(function));
     closure = makeClosure(function);

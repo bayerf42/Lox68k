@@ -311,10 +311,19 @@ void printObject(Value value, int flags) {
 // Lists 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void limitIndex(int* place, int n) {
-    if (*place < 0) *place += n;
-    if (*place < 0) *place  = 0;
-    if (*place > n) *place  = n;
+// for slicing, index beyond ends allowed
+static void limitIndex(int n, int* index) {
+    if (*index < 0) *index += n;
+    if (*index < 0) *index  = 0;
+    if (*index > n) *index  = n;
+}
+
+// also adjust negative index
+bool validateListIndex(ObjList* list, int* index) {
+    if (*index >= 0) 
+        return  *index <  list->arr.count;
+    else
+        return (*index += list->arr.count) >= 0;
 }
 
 void insertIntoList(ObjList* list, Value value, int index) {
@@ -326,7 +335,7 @@ void insertIntoList(ObjList* list, Value value, int index) {
         list->arr.capacity = GROW_CAPACITY(oldCapacity);
         list->arr.values   = GROW_ARRAY(Value, list->arr.values, oldCapacity, list->arr.capacity);
     }
-    limitIndex(&index, n);
+    limitIndex(n, &index);
     for (i = n; i >= index; i--)
         list->arr.values[i + 1] = list->arr.values[i];
     list->arr.values[index] = value;
@@ -335,8 +344,8 @@ void insertIntoList(ObjList* list, Value value, int index) {
 
 ObjList* sliceFromList(ObjList* list, int begin, int end) {
     int n = list->arr.count;
-    limitIndex(&begin, n);
-    limitIndex(&end,   n);
+    limitIndex(n, &begin);
+    limitIndex(n, &end);
     return makeList(end - begin, &list->arr.values[begin], end - begin, 1);
 }
 
@@ -346,14 +355,6 @@ void deleteFromList(ObjList* list, int index) {
     for (i = index; i < list->arr.count - 1; i++)
         list->arr.values[i] = list->arr.values[i + 1];
     list->arr.values[--list->arr.count] = NIL_VAL;
-}
-
-bool isValidListIndex(ObjList* list, int* index) {
-    // also adjust negative index
-    if (*index >= 0) 
-        return  *index <  list->arr.count;
-    else
-        return (*index += list->arr.count) >= 0;
 }
 
 ObjList* concatLists(ObjList* a, ObjList* b) {
@@ -372,8 +373,8 @@ ObjList* concatLists(ObjList* a, ObjList* b) {
 // Strings 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool isValidStringIndex(ObjString* string, int* index) {
-    // also adjust negative index
+// also adjust negative index
+bool validateStringIndex(ObjString* string, int* index) {
     if (*index >= 0) 
         return  *index <  string->length;
     else
@@ -382,8 +383,8 @@ bool isValidStringIndex(ObjString* string, int* index) {
 
 ObjString* sliceFromString(ObjString* string, int begin, int end) {
     int n = string->length;
-    limitIndex(&begin, n);
-    limitIndex(&end,   n);
+    limitIndex(n, &begin);
+    limitIndex(n, &end);
     return makeString(string->chars + begin, (end > begin) ? end - begin : 0);
 }
 
@@ -395,18 +396,13 @@ ObjString* concatStrings(ObjString* a, ObjString* b) {
     return makeString(big_buffer, a->length + b->length);
 }
 
-ObjString* caseString(ObjString* a, bool toUpper) {
+ObjString* mapString(ObjString* a, int (*mapChar)(int)) {
     int   length = a->length;
     char* cp;
-    fix_memcpy(big_buffer, a->chars, length);
-    big_buffer[length] = '\0';
+    fix_memcpy(big_buffer, a->chars, length + 1);
 
-    if (toUpper)
-        for (cp=big_buffer; *cp; ++cp)
-            *cp = toupper(*cp);
-    else
-        for (cp=big_buffer; *cp; ++cp)
-            *cp = tolower(*cp);
+    for (cp=big_buffer; *cp; ++cp)
+        *cp = (*mapChar)(*cp);
 
     return makeString(big_buffer, length);
 }

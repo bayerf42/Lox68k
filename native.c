@@ -239,7 +239,7 @@ NATIVE(insertNative) {
 NATIVE(deleteNative) {
     ObjList* list  = AS_LIST(args[0]);
     int      index = AS_INT(args[1]);
-    if (!isValidListIndex(list, &index)) {
+    if (!validateListIndex(list, &index)) {
         runtimeError("'%s' %s out of range.", "delete", "index");
         return false;
     }
@@ -256,7 +256,7 @@ NATIVE(indexNative) {
     RESULT = NIL_VAL;
     if (list->arr.count == start) // allow searching empty list
         return true;
-    if (!isValidListIndex(list, &start)) {
+    if (!validateListIndex(list, &start)) {
         runtimeError("'%s' %s out of range.", "index", "start index");
         return false;
     }
@@ -276,12 +276,12 @@ NATIVE(indexNative) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NATIVE(lowerNative) {
-    RESULT = OBJ_VAL(caseString(AS_STRING(args[0]), false));
+    RESULT = OBJ_VAL(mapString(AS_STRING(args[0]), &tolower));
     return true;
 }
 
 NATIVE(upperNative) {
-    RESULT = OBJ_VAL(caseString(AS_STRING(args[0]), true));
+    RESULT = OBJ_VAL(mapString(AS_STRING(args[0]), &toupper));
     return true;
 }
 
@@ -381,7 +381,7 @@ static bool match_single(int pat, int c, bool escape) {
         return pat == '.' || pat == c;
 }
 
-// maximal match for pat*regexp or pat?regexp
+// maximal match for pat* regexp and variants
 static bool match_max(int pat, const char* regexp, const char* text, int limit, bool escape) {
     const char* t;
     for (t = text; limit-- && match_single(pat, *t, escape); t++)
@@ -393,7 +393,7 @@ static bool match_max(int pat, const char* regexp, const char* text, int limit, 
     return false;
 }
 
-// minimal match for pat*regexp
+// minimal match for pat- regexp
 static bool match_min(int pat, const char* regexp, const char* text, bool escape) {
     do {
         if (match_here(regexp, text))
@@ -432,14 +432,14 @@ tail_recurse:
     return false;
 }
 
-// match regexp anywhere in text
-static bool match(const char* regexp, const char** text) {
+// match regexp anywhere in *ptext
+static bool match(const char* regexp, const char** ptext) {
     if (regexp[0] == '^')
-        return match_here(regexp + 1, *text);
+        return match_here(regexp + 1, *ptext);
     do {
-        if (match_here(regexp, *text))
+        if (match_here(regexp, *ptext))
             return true;
-    } while (*(*text)++);
+    } while (*(*ptext)++);
     return false;
 }
 
@@ -451,7 +451,7 @@ NATIVE(matchNative) {
     Value       range[2];
 
     if (!(text->length == start || // allow searching empty string
-          isValidStringIndex(text, &start))) {
+          validateStringIndex(text, &start))) {
         runtimeError("'%s' %s out of range.", "match", "start index");
         return false;
     }
@@ -516,7 +516,7 @@ NATIVE(ascNative) {
     Int        code;
     int        index = (argCount == 1) ? 0 : AS_INT(args[1]);
 
-    if (!isValidStringIndex(string, &index)) {
+    if (!validateStringIndex(string, &index)) {
         runtimeError("'%s' %s out of range.", "asc", "index");
         return false;
     }

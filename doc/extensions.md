@@ -55,7 +55,7 @@ terminated by `]`.
 
 ```javascript
   var lst = [2, 5, nil, "foo", sinh];
-  lst → [2, 5, nil, "foo", <native sinh>];
+  lst → [2, 5, nil, "foo", <native sinh>]
 
   list(5) → [nil, nil, nil, nil, nil]
   list(3, 17+4) → [21, 21, 21]
@@ -65,7 +65,7 @@ Lists can be both treated in a functional way creating new lists with `+`, `list
 and by modifying existings lists: `append`, `delete`, `insert`, and assigning to an index.
 
 ```javascript
-  lst + reverse([1, 2, 3]) → [2, 5, nil, "foo", <native sinh>, 3, 2, 1];
+  lst + reverse([1, 2, 3]) → [2, 5, nil, "foo", <native sinh>, 3, 2, 1]
 
   insert(lst, 2, "bar") → nil
   lst → [2, 5, "bar", nil, "foo", <native sinh>]
@@ -176,7 +176,7 @@ prefix and postfix strings.
 Most regular expression matching libraries are very big, larger than the entire Lox68k
 implementation. So the very small (only 30 lines of C!) and elegant
 [matching routine by Rob Pike](https://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html)
-has been employed and extended, supporting a restricted` but nevertheless useful subset
+has been employed and extended, supporting a restricted but nevertheless useful subset
 of meta characters:
 
 * `c` matches the literal character `c`
@@ -187,15 +187,15 @@ of meta characters:
 * `+` matches one or more occurrences of the previous character
 * `*` matches zero or more occurrences of the previous character (greedy, longest match)
 * `-` matches zero or more occurrences of the previous character (non-greedy, shortest match)
-* `%a` matches an alphabetic character
+* `%a` matches an alphabetic character (including `_`)
 * `%b` matches a binary digit
 * `%c` matches a control character
 * `%d` matches a decimal digit
 * `%l` matches a lower-case letter
-* `%p` matches a punctuation character
+* `%p` matches a punctuation character  (excluding `_`)
 * `%s` matches a space character
 * `%u` matches an upper-case letter
-* `%w` matches an alphanumeric character
+* `%w` matches an alphanumeric character (including `_`)
 * `%x` matches a hexadecimal digit
 * `%`  prefix before any other character cancels its meta function interpreting it verbatim
 

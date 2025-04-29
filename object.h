@@ -137,8 +137,8 @@ struct ObjString {
 
 struct ObjUpvalue {
     OBJ_HEADER
-    Value*       location;
-    Value        closed;
+    Value*       location;     // pointer into value stack or into my 'closed' field
+    Value        closed;       // storage for closed upvalue migrated from value stack
     ObjUpvalue*  nextUpvalue;
 };
 
@@ -168,13 +168,13 @@ bool         isCallable(Value value);
 void         insertIntoList(ObjList* list, Value value, int index);
 ObjList*     sliceFromList(ObjList* list, int begin, int end);
 void         deleteFromList(ObjList* list, int index);
-bool         isValidListIndex(ObjList* list, int* index);
+bool         validateListIndex(ObjList* list, int* index);
 ObjList*     concatLists(ObjList* a, ObjList* b);
 
 ObjString*   sliceFromString(ObjString* string, int begin, int end);
-bool         isValidStringIndex(ObjString* string, int* index);
+bool         validateStringIndex(ObjString* string, int* index);
 ObjString*   concatStrings(ObjString* a, ObjString* b);
-ObjString*   caseString(ObjString* a, bool toUpper);
+ObjString*   mapString(ObjString* a, int (*mapChar)(int));
 
 const char*  formatReal(Real val);
 const char*  formatInt(Int val);

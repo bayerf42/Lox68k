@@ -5,43 +5,43 @@
 #include "value.h"
 
 typedef struct {
-    uint8_t*    ip;      // instruction pointer, keep first to allow fast addressing without offset  
+    uint8_t*    ip;      // instruction pointer, keep first for fast addressing without offset  
     Value*      fp;      // frame pointer into value stack
     ObjClosure* closure; // active closure 
     Value       handler; // exception handler, if callable; dynamic variable, if string
 } CallFrame;
 
 typedef struct {
-    Value*      sp;      // keep first to allow fast addressing without offset
-    Value       stack[STACK_MAX];
-    CallFrame   frames[FRAMES_MAX];
-    int         frameCount;
-    Table       globals;
-    Table       strings;
-    ObjString*  initString;
-    ObjUpvalue* openUpvalues;
-    int         lambdaCount;
-    uint32_t    randomState;
+    Value*      sp;                  // stack pointer, keep first for fast addressing without offset
+    Value       stack[STACK_MAX];    // value stack
+    CallFrame   frames[FRAMES_MAX];  // call stack
+    int         frameCount;          // call depth
+    Table       globals;             // table of global variables
+    Table       strings;             // weak set of all string used
+    ObjString*  initString;          // ref to 'init' string
+    ObjUpvalue* openUpvalues;        // list of open upvalues
+    int         lambdaCount;         // 
+    uint32_t    randomState;         // state of pseudo-random number generator
 
-    bool        handleException;
-    bool        hadStackoverflow;
-    size_t      bytesAllocated;
-    Obj*        objects;
-    int         grayCount;
-    Obj*        grayStack[GRAY_MAX];
+    bool        handleException;     // internal state
+    bool        hadStackoverflow;    // internal state
+    size_t      bytesAllocated;      // to trigger GC
+    Obj*        objects;             // list of all objects used
+    int         grayCount;           // for GC 
+    Obj*        grayStack[GRAY_MAX]; // for GC
 
 #ifndef KIT68K
-  volatile bool interrupted;
+  volatile bool interrupted;         // set from signal handler
 #endif
 
 #ifdef LOX_DBG
-    bool        log_native_result;
-    size_t      totallyAllocated;
+    bool        log_native_result;   // logging status
+    size_t      totallyAllocated;    // execution statistics...
     int         numGCs;
     steps_t     stepsExecuted;
     clock_t     started;
 
-    bool        debug_print_code;
+    bool        debug_print_code;    // debugging flags...
     bool        debug_trace_steps;
     bool        debug_trace_calls;
     bool        debug_trace_natives;
@@ -51,20 +51,20 @@ typedef struct {
 } VM;
 
 typedef enum {
-    INTERPRET_OK,
-    INTERPRET_COMPILE_ERROR,
-    INTERPRET_RUNTIME_ERROR,
-    INTERPRET_INTERRUPTED,
-} InterpretResult;
+    EVAL_OK,
+    EVAL_COMPILE_ERROR,
+    EVAL_RUNTIME_ERROR,
+    EVAL_INTERRUPTED,
+} EvalResult;
 
 extern VM vm;
 
-void            initVM(void);
-void            freeVM(void);
-InterpretResult interpret(const char* source);
-void            push(Value value);
-void            runtimeError(const char* format, ...);
-void            userError(Value exception);
+void       initVM(void);
+void       freeVM(void);
+EvalResult interpret(const char* source);
+void       push(Value value);
+void       runtimeError(const char* format, ...);
+void       userError(Value exception);
 
 #define drop()               --vm.sp
 #define pop()                (*(--vm.sp))
