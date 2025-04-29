@@ -74,6 +74,7 @@ static void disassembleIntern(void) {
     switch (opcd) {
         case OP_CONSTANT:      cnstInst("CONST");     break;
         case OP_INT:           byteInst("INT");       break;
+        case OP_ZERO:          simpInst("ZERO");      break;
         case OP_NIL:           simpInst("NIL");       break;
         case OP_TRUE:          simpInst("TRUE");      break;
         case OP_FALSE:         simpInst("FALSE");     break;

@@ -227,7 +227,9 @@ static int makeConstant(Value value) {
 }
 
 static void emitConstant(Value value) {
-    if (IS_INT(value) && AS_INT(value) <= UINT8_MAX)
+    if (valuesEqual(value, INT_VAL(0)))
+        emitByte(OP_ZERO);
+    else if (IS_INT(value) && AS_INT(value) <= UINT8_MAX)
         emit2Bytes(OP_INT, AS_INT(value));
     else
         emit2Bytes(OP_CONSTANT, makeConstant(value));

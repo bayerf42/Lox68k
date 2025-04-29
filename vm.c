@@ -524,6 +524,7 @@ nextInstNoSO:
             push(INT_VAL((Int)READ_BYTE()));
             goto nextInst;
 
+        case OP_ZERO:  push(INT_VAL(0)); goto nextInst;
         case OP_NIL:   push(NIL_VAL);    goto nextInst;
         case OP_TRUE:  push(TRUE_VAL);   goto nextInst;
         case OP_FALSE: push(FALSE_VAL);  goto nextInst;

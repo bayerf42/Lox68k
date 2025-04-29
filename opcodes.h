@@ -4,6 +4,7 @@
 typedef enum {
     OP_CONSTANT,      // push constant value at index byte0
     OP_INT,           // push integer byte0
+    OP_ZERO,          // push integer 0
     OP_NIL,           // push value nil
     OP_TRUE,          // push value true
     OP_FALSE,         // push value false
