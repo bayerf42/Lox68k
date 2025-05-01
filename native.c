@@ -384,21 +384,18 @@ static bool match_single(int pat, int c, bool escape) {
 // maximal match for pat* regexp and variants
 static bool match_max(int pat, const char* regexp, const char* text, int limit, bool escape) {
     const char* t;
-    for (t = text; limit-- && match_single(pat, *t, escape); t++)
-        ;
+    for (t = text; limit-- && match_single(pat, *t, escape); t++) {} // find maximal match
     do {
-        if (match_here(regexp, t))
-            return true;
-    } while (t-- > text);
+        if (match_here(regexp, t)) return true;
+    } while (t-- > text); // reduce match
     return false;
 }
 
 // minimal match for pat- regexp
 static bool match_min(int pat, const char* regexp, const char* text, bool escape) {
     do {
-        if (match_here(regexp, text))
-            return true;
-    } while (match_single(pat, *text++, escape));
+        if (match_here(regexp, text)) return true;
+    } while (match_single(pat, *text++, escape)); // extend match
     return false;
 }
 
@@ -408,37 +405,23 @@ static bool match_here(const char* regexp, const char* text) {
 tail_recurse:
     match_end = text;
     escape    = false;
-    if (regexp[0] == '\0')
-        return true;
-    if (regexp[0] == '$' && regexp[1] == '\0')
-        return *text == '\0';
-    if (regexp[0] == '%' && regexp[1] != '\0') {
-        escape = true;
-        ++regexp;
-    }
-    if (regexp[1] == '+')
-        return match_single(regexp[0], *text, escape)
-            && match_max(regexp[0], regexp + 2, text + 1, -1, escape);
-    if (regexp[1] == '*')
-        return match_max(regexp[0], regexp + 2, text, -1, escape);
-    if (regexp[1] == '?')
-        return match_max(regexp[0], regexp + 2, text, 1, escape);
-    if (regexp[1] == '-')
-        return match_min(regexp[0], regexp + 2, text, escape);
-    if (match_single(regexp[0], *text, escape)) {
-        ++regexp, ++text;
-        goto tail_recurse;
-    }
+    if (regexp[0] == '\0') return true;
+    if (regexp[0] == '$' && regexp[1] == '\0') return *text == '\0';
+    if (regexp[0] == '%' && regexp[1] != '\0') {escape = true; ++regexp;}
+    if (regexp[1] == '*') return match_max(regexp[0], regexp + 2, text, -1, escape);
+    if (regexp[1] == '?') return match_max(regexp[0], regexp + 2, text, 1, escape);
+    if (regexp[1] == '-') return match_min(regexp[0], regexp + 2, text, escape);
+    if (regexp[1] == '+') return match_single(regexp[0], *text, escape)
+                              && match_max(regexp[0], regexp + 2, text + 1, -1, escape);
+    if (match_single(regexp[0], *text, escape)) {++regexp; ++text; goto tail_recurse;}
     return false;
 }
 
 // match regexp anywhere in *ptext
 static bool match(const char* regexp, const char** ptext) {
-    if (regexp[0] == '^')
-        return match_here(regexp + 1, *ptext);
+    if (regexp[0] == '^') return match_here(regexp + 1, *ptext);
     do {
-        if (match_here(regexp, *ptext))
-            return true;
+        if (match_here(regexp, *ptext)) return true;
     } while (*(*ptext)++);
     return false;
 }
