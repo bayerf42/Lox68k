@@ -35,20 +35,6 @@ typedef enum {
     PREC_POSTFIX,    // . () [] @ ^
 } Precedence;
 
-typedef void (*ParseFn)(bool canAssign);
-
-typedef struct {
-    ParseFn    prefix;
-    ParseFn    infix;
-    Precedence precedence;
-} ParseRule;
-
-typedef struct {
-    Token   name;       // 12 bytes
-    int8_t  depth;      // implicit padding byte on 68k forces struct size 16 to 
-    bool    isCaptured; // allow shift instead of multiplication in offset calculation 
-} Local;
-
 typedef enum {
     TYPE_SCRIPT,
     TYPE_FUN,
@@ -57,32 +43,46 @@ typedef enum {
     TYPE_INIT,
 } FunctionType;
 
+typedef void (*ParseFn)(bool canAssign);
+
+typedef struct {
+    ParseFn           prefix;
+    ParseFn           infix;
+    Precedence        precedence;
+} ParseRule;
+
+typedef struct {
+    Token             name;       // 12 bytes
+    int8_t            depth;      // implicit padding byte on 68k forces struct size 16 to 
+    bool              isCaptured; // allow shift instead of multiplication in offset calculation 
+} Local;
+
 typedef struct LoopInfo {
-    struct LoopInfo* enclosing;
-    int8_t           scopeDepth;
-    int8_t           breakCount;
-    int16_t          breaks[MAX_BREAKS];
+    struct LoopInfo*  enclosing;
+    int8_t            scopeDepth;
+    int8_t            breakCount;
+    int16_t           breaks[MAX_BREAKS];
 } LoopInfo;
 
 typedef struct Compiler {
-    struct Compiler* enclosing;
-    ObjFunction*     target;
-    FunctionType     type;
-    Local            locals[MAX_LOCALS];
-    Upvalue          upvalues[MAX_UPVALUES];
-    int8_t           scopeDepth;
-    uint8_t          localCount;
-    LoopInfo*        currentLoop;
+    struct Compiler*  enclosing;
+    ObjFunction*      target;
+    FunctionType      type;
+    Local             locals[MAX_LOCALS];
+    Upvalue           upvalues[MAX_UPVALUES];
+    int8_t            scopeDepth;
+    uint8_t           localCount;
+    LoopInfo*         currentLoop;
 } Compiler;
 
-typedef struct ClassCompiler {
-    struct ClassCompiler* enclosing;
-    bool                  hasSuperclass;
-} ClassCompiler;
+typedef struct ClassInfo {
+    struct ClassInfo* enclosing;
+    bool              hasSuperclass;
+} ClassInfo;
 
 static Parser         parser;
 static Compiler*      currentComp;
-static ClassCompiler* currentClass;
+static ClassInfo*     currentClass;
 
 static Chunk* currentChunk(void) {
     return &currentComp->target->chunk;
@@ -269,7 +269,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     }
 
     local = &currentComp->locals[currentComp->localCount++];
-    local->depth = 0;
+    local->depth      = 0;
     local->isCaptured = false;
     if (type >= TYPE_METHOD) {
         local->name.start  = "this";
@@ -333,12 +333,10 @@ static void  binary(bool canAssign);
 static void call(bool canAssign) {
     bool isVarArg = false;
     int  argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
-    if (isVarArg)
-        emit2Bytes(OP_VCALL, argCount);
-    else if (argCount <= 2)
-        emitByte(OP_CALL0 + argCount); // special case 0, 1, or 2 args
-    else
-        emit2Bytes(OP_CALL, argCount);
+
+    if      (isVarArg)       emit2Bytes(OP_VCALL,  argCount);
+    else if (argCount <= 2)  emitByte  (OP_CALL0 + argCount); // special case 0, 1, or 2 args
+    else                     emit2Bytes(OP_CALL,   argCount);
 }
 
 static void dot(bool canAssign) {
@@ -366,10 +364,9 @@ static void slice(bool canAssign) {
         expression();
         consumeExp(TOKEN_RIGHT_BRACKET, "slice");
     }
-    if (canAssign && match(TOKEN_EQUAL)) {
+    if (canAssign && match(TOKEN_EQUAL))
         error("Invalid assignment target.");
-        return;
-    } else
+    else
         emitByte(OP_GET_SLICE);
 }
 
@@ -558,7 +555,7 @@ static void namedVariable(Token name, bool canAssign) {
         getOp = OP_GET_UPVALUE;
         setOp = OP_SET_UPVALUE;
     } else {
-        arg = identifierConstant(&name);
+        arg   = identifierConstant(&name);
         getOp = OP_GET_GLOBAL;
         setOp = OP_SET_GLOBAL;
     }
@@ -788,17 +785,17 @@ static void binary(bool canAssign) {
     const ParseRule* rule  = getRule(operatorType);
     parsePrecedence((Precedence)(rule->precedence + 1));
     switch (operatorType) {
-        case TOKEN_BANG_EQUAL:    emit2Bytes(OP_EQUAL, OP_NOT); break;
-        case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
-        case TOKEN_GREATER:       emit2Bytes(OP_SWAP, OP_LESS); break;
-        case TOKEN_LESS_EQUAL:    emit3Bytes(OP_SWAP, OP_LESS, OP_NOT); break;
-        case TOKEN_LESS:          emitByte(OP_LESS); break;
-        case TOKEN_GREATER_EQUAL: emit2Bytes(OP_LESS, OP_NOT); break;
-        case TOKEN_PLUS:          emitByte(OP_ADD); break;
-        case TOKEN_MINUS:         emitByte(OP_SUB); break;
-        case TOKEN_STAR:          emitByte(OP_MUL); break;
-        case TOKEN_SLASH:         emitByte(OP_DIV); break;
-        case TOKEN_BACKSLASH:     emitByte(OP_MOD); break;
+        case TOKEN_BANG_EQUAL:    emit2Bytes(OP_EQUAL, OP_NOT);          break;
+        case TOKEN_EQUAL_EQUAL:   emitByte  (OP_EQUAL);                  break;
+        case TOKEN_GREATER:       emit2Bytes(OP_SWAP,  OP_LESS);         break;
+        case TOKEN_LESS_EQUAL:    emit3Bytes(OP_SWAP,  OP_LESS, OP_NOT); break;
+        case TOKEN_LESS:          emitByte  (OP_LESS);                   break;
+        case TOKEN_GREATER_EQUAL: emit2Bytes(OP_LESS,  OP_NOT);          break;
+        case TOKEN_PLUS:          emitByte  (OP_ADD);                    break;
+        case TOKEN_MINUS:         emitByte  (OP_SUB);                    break;
+        case TOKEN_STAR:          emitByte  (OP_MUL);                    break;
+        case TOKEN_SLASH:         emitByte  (OP_DIV);                    break;
+        case TOKEN_BACKSLASH:     emitByte  (OP_MOD);                    break;
         default: return; // Unreachable
     }
 }
@@ -949,21 +946,21 @@ static void method(void) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void classDeclaration(void) {
-    int           nameConstant;
-    Token         className;
-    ClassCompiler classCompiler;
+    int       nameConstant;
+    Token     className;
+    ClassInfo classInfo;
 
     consume(TOKEN_IDENTIFIER, "Expect class name.");
-    className = parser.previous;
+    className    = parser.previous;
     nameConstant = identifierConstant(&className);
     declareVariable();
 
     emit2Bytes(OP_CLASS, nameConstant);
     defineVariable(nameConstant);
 
-    classCompiler.enclosing     = currentClass;
-    classCompiler.hasSuperclass = false;
-    currentClass = &classCompiler;
+    classInfo.enclosing     = currentClass;
+    classInfo.hasSuperclass = false;
+    currentClass            = &classInfo;
 
     if (match(TOKEN_LESS)) {
         // superclass can be any expression!
@@ -975,7 +972,7 @@ static void classDeclaration(void) {
 
         namedVariable(className, false);
         emitByte(OP_INHERIT);
-        classCompiler.hasSuperclass = true;
+        classInfo.hasSuperclass = true;
     }
 
     namedVariable(className, false);
@@ -985,7 +982,7 @@ static void classDeclaration(void) {
     consumeExp(TOKEN_RIGHT_BRACE, "class body");
     emitByte(OP_POP);
 
-    if (classCompiler.hasSuperclass)
+    if (classInfo.hasSuperclass)
         endScope();
 
     currentClass = currentClass->enclosing;

@@ -5,9 +5,9 @@ typedef enum {
     OP_CONSTANT,      // push constant value at index byte0
     OP_INT,           // push integer byte0
     OP_ZERO,          // push integer 0
-    OP_NIL,           // push value nil
-    OP_TRUE,          // push value true
-    OP_FALSE,         // push value false
+    OP_NIL,           // push nil
+    OP_TRUE,          // push true
+    OP_FALSE,         // push false
     OP_POP,           // pop TOS
     OP_SWAP,          // swap 2 TOS values
     OP_DUP,           // duplicate TOS value

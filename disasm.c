@@ -48,7 +48,7 @@ static void invoInst(const char* name) {
 
 static void closInst(const char* name) {
     // closure instruction, 1 extra byte, 0-255 index into constants table, function stored there
-    // determines additional extra bytes describing its upvalues 
+    // determines additional extra bytes each describing an upvalues 
     int          constant = chunk->code[++offset];
     ObjFunction* function = AS_FUNCTION(chunk->constants.values[constant]);
     int          j, upvalue;

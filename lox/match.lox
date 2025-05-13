@@ -21,7 +21,7 @@ match("ab+c", "xabbbc")      // [1, 6}
 match("ab?c", "xac")         // [1, 3]
 match("ab?c", "xabc")        // [1, 4]
 match("ab?c", "xabbbc")      // nil
-"Tesing greedy/non-greedy"
+"Testing greedy/non-greedy"
 match("a.*c", "xabbcbcbcxx") // [1, 9]
 match("a.-c", "xabbcbcbcxx") // [1, 5]
 "Testing char classes"
@@ -46,3 +46,12 @@ match("ab*c", "xabcqacyabbcu", 4)  // [5, 7]
 match("ab*c", "xabcqacyabbcu", 7)  // [8, 12]
 match("ab*c", "xabcqacyabbcu", 12) // nil
 
+fun match_all(re, str) {
+    var res = [];
+    for (var m = match(re, str); m; m = match(re, str, m[1]))
+        if (m[0] == m[1])
+            error("Empty match.");
+        else
+            append(res, str[m[0] : m[1]]);
+    return res;
+}

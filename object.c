@@ -411,7 +411,7 @@ ObjString* mapString(ObjString* a, int (*mapChar)(int)) {
 // Reals 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static char cvBuffer[34]; // for number conversions, max size 32 byte + \0 terminator + align
+static char cvBuffer[34]; // for number conversions, max size 32 chars + \0 terminator + align
 
 const char* formatReal(Real val) {
 #ifdef KIT68K

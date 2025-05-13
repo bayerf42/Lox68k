@@ -40,11 +40,11 @@ static const char* matchesType(Value value, int type) {
 }
 
 bool callNative(const Native* native, int argCount, Value* args) {
-    int maxParmCount      = 0;
-    int minParmCount      = 0;
-    int i;
-    const char* signature = native->signature;
-    const char* currParm  = signature;
+    int         maxParmCount = 0;
+    int         minParmCount = 0;
+    int         i;
+    const char* signature    = native->signature;
+    const char* currParm     = signature;
     const char* expected;
 
     // Trailing lower-case letters in signature indicate optional arguments.
@@ -362,21 +362,21 @@ static bool        match_here(const char* regexp, const char* text);
 static bool match_single(int pat, int c, bool escape) {
     char cclass;
     bool res;
-    if (!c) return false;
-    if (escape) { // prefixed with '%' in pattern
+    if (!c) return false;                                     // end of searched string reached
+    if (escape) {                                             // prefixed with '%' in pattern
         cclass = pat | LOWER_CASE_MASK;
         if      (cclass == 'a') res = isalpha(c) || c == '_'; // '_' is considered alphabetic! 
         else if (cclass == 'b') res = (c | 0x01) == '1';      // binary digit '0' or '1'
         else if (cclass == 'c') res = iscntrl(c);
         else if (cclass == 'd') res = isdigit(c);
         else if (cclass == 'l') res = islower(c);
-        else if (cclass == 'p') res = ispunct(c) && c != '_';
+        else if (cclass == 'p') res = ispunct(c) && c != '_'; // '_' is considered alphabetic!
         else if (cclass == 's') res = isspace(c);
         else if (cclass == 'u') res = isupper(c);
-        else if (cclass == 'w') res = isalnum(c) || c == '_';
+        else if (cclass == 'w') res = isalnum(c) || c == '_'; // '_' is considered alphabetic!
         else if (cclass == 'x') res = isxdigit(c);
         else return pat == c;
-        return pat & LOWER_CASE_MASK ? res : !res;
+        return pat & LOWER_CASE_MASK ? res : !res;            // invert test for uppercase pattern 
     } else
         return pat == '.' || pat == c;
 }
@@ -574,16 +574,16 @@ NATIVE(inputNative) {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Integers (exploiting the Value tagging scheme)
+// Binary integers exploiting the Value tagging scheme
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NATIVE(bitAndNative) {
-    RESULT = args[0] & args[1]; // LSB always set
+    RESULT = args[0] & args[1];
     return true;
 }
 
 NATIVE(bitOrNative) {
-    RESULT = args[0] | args[1]; // LSB always set
+    RESULT = args[0] | args[1];
     return true;
 }
 

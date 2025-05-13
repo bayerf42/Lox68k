@@ -25,28 +25,28 @@ typedef struct {
 
     bool        handleException;     // internal state
     bool        hadStackoverflow;    // internal state
-    size_t      bytesAllocated;      // to trigger GC
+    size_t      bytesAllocated;      // current heap usage
     Obj*        objects;             // list of all objects used
-    int         grayCount;           // for GC 
-    Obj*        grayStack[GRAY_MAX]; // for GC
+    int         grayCount;           // 
+    Obj*        grayStack[GRAY_MAX]; // objects to be checked for reachability
 
 #ifndef KIT68K
   volatile bool interrupted;         // set from signal handler
 #endif
 
 #ifdef LOX_DBG
-    bool        log_native_result;   // logging status
-    size_t      totallyAllocated;    // execution statistics...
-    int         numGCs;
-    steps_t     stepsExecuted;
-    clock_t     started;
+    bool        log_native_result;   // log result of native call?
+    size_t      totallyAllocated;    // accumulates total memory allocated
+    int         numGCs;              // accumulates number of garbage collections
+    steps_t     stepsExecuted;       // accumulates number of VM instructions executed
+    clock_t     started;             // clock at start of evaluation
 
-    bool        debug_print_code;    // debugging flags...
-    bool        debug_trace_steps;
-    bool        debug_trace_calls;
-    bool        debug_trace_natives;
-    int16_t     debug_log_gc;
-    bool        debug_statistics;
+    bool        debug_print_code;    // print disassembly of code entered
+    bool        debug_trace_steps;   // trace every VM step with opcode and stack dump
+    bool        debug_trace_calls;   // trace call and return of closures, exceptions, and dynvars
+    bool        debug_trace_natives; // trace call of natives 
+    int16_t     debug_log_gc;        // trace garbage collection to several degrees of detail 
+    bool        debug_statistics;    // print accumulated values above after evaluation
 #endif
 } VM;
 

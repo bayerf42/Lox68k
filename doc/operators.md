@@ -4,10 +4,10 @@
 when neccessary.
 
 ## Unary (prefix) operators
-| Op  | Arg      | Result                          | Description                                           |
-|-----|----------|---------------------------------|-------------------------------------------------------|
-| !   | any      | bool                            | logical negation, always bool                         |  
-| -   | num      | num                             | additive inverse                                      |  
+| Op  | Arg      | Result             | Precedence | Description                                           |
+|-----|----------|--------------------|------------|-------------------------------------------------------|
+| !   | any      | bool               | 8          | logical negation, always bool                         |  
+| -   | num      | num                | 8          | additive inverse                                      |  
 
 ## Binary (infix) operators
 | Op  | Arg 1    | Arg 2     | Result | Precedence | Description                                           |
@@ -33,16 +33,20 @@ when neccessary.
 | !=  | any      | any       | bool   | 4          | non-equality/non-identity                             |  
 | and | any      | any       | any    | 3          | first arg when it's falsey, second arg otherwise      |  
 | or  | any      | any       | any    | 2          | first arg when it's truish, second arg otherwise      |  
+| =   | place    | any       | any    | 1, right   | assignment to variable or assignable place (see below)|
 
 ## Postfix operators
+All postfix operators have precedence 9 (highest). Some postfix operators denote assignable places,
+which is partly determined at compile-time (CT) and partly at run-time (RT).
+
 | Op  | Arg 1    | Rest args | Result | Assignable | Description                                           |
 |-----|----------|-----------|--------|------------|-------------------------------------------------------|
-| ()  | callable | any*      | any    | no         | function/method/constructor call                      |  
-| []  | string   | int       | string | no         | string index, result is string of single character    |  
-| []  | list     | int       | any    | yes        | list index                                            |  
-| []  | instance | any       | any    | yes        | property of instance, no class access                 |  
-| [:] | string   | int?, int?| string | no         | substring (slice)                                     |  
-| [:] | list     | int?, int?| list   | no         | sublist (slice)                                       |  
-| .   | instance | name      | any    | yes        | named property of instance, may access class          |  
-| @   | iterator | -         | any    | no         | key of iterator                                       |  
-| ^   | iterator | -         | any    | yes        | value of iterator                                     |  
+| ()  | callable | any*      | any    | no  CT     | function/method/constructor call                      |  
+| []  | string   | int       | string | no  RT     | string index, result is string of single character    |  
+| []  | list     | int       | any    | yes RT     | list index                                            |  
+| []  | instance | any       | any    | yes RT     | property of instance, no class access                 |  
+| [:] | string   | int?, int?| string | no  CT     | substring (slice)                                     |  
+| [:] | list     | int?, int?| list   | no  CT     | sublist (slice)                                       |  
+| .   | instance | name      | any    | yes RT     | named property of instance, may access class          |  
+| @   | iterator | -         | any    | no  CT     | key of iterator                                       |  
+| ^   | iterator | -         | any    | yes RT     | value of iterator                                     |  
