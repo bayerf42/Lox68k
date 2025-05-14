@@ -36,7 +36,7 @@ typedef struct ObjUpvalue  ObjUpvalue;
 #define IS_EMPTY(value)  ((value) == EMPTY_VAL)
 #define IS_INT(value)    ((value) & 1)
 #define IS_OBJ(value)    (((value) & 1) == 0 && ((unsigned)(value) > TRUE_VAL))
-#define IS_FALSEY(value) (((value) | 2) == FALSE_VAL)
+#define IS_FALSEY(value) (!((value) & ~FALSE_VAL))
 
 #define AS_BOOL(value)   ((value) == TRUE_VAL)
 #define AS_INT(value)    (((Int)(value))>>1)
