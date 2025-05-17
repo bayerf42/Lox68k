@@ -40,18 +40,18 @@
 // Object types 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef enum {     //  callable  leaf object (keep enum order for type tests)
-    OBJ_DYNVAR,    //
-    OBJ_FUNCTION,  //
-    OBJ_INSTANCE,  //
-    OBJ_ITERATOR,  // 
-    OBJ_LIST,      //
-    OBJ_UPVALUE,   //
-    OBJ_BOUND,     //  X       
-    OBJ_CLASS,     //  X
-    OBJ_CLOSURE,   //  X
+    OBJ_DYNVAR,    //  .         .
+    OBJ_FUNCTION,  //  .         .
+    OBJ_INSTANCE,  //  .         .
+    OBJ_ITERATOR,  //  .         .
+    OBJ_LIST,      //  .         .
+    OBJ_UPVALUE,   //  .         .
+    OBJ_BOUND,     //  X         .
+    OBJ_CLASS,     //  X         .
+    OBJ_CLOSURE,   //  X         .
     OBJ_NATIVE,    //  X         X
-    OBJ_REAL,      //            X
-    OBJ_STRING,    //            X
+    OBJ_REAL,      //  .         X
+    OBJ_STRING,    //  .         X
 } ObjType;
 
 // The IDE68K C compiler doesn't seem to like including struct Obj in the following structures
@@ -103,7 +103,7 @@ struct ObjFunction {
 
 struct ObjInstance {
     OBJ_HEADER
-    ObjClass*    klass;
+    ObjClass*    klass;        // never nil
     Table        fields;
 };
 
@@ -120,7 +120,7 @@ struct ObjList {
 
 struct ObjNative {
     OBJ_HEADER
-    const Native* native;
+    const Native* native;      // Pointer into ROM table, not GCed
 };
 
 struct ObjReal {
@@ -139,7 +139,7 @@ struct ObjUpvalue {
     OBJ_HEADER
     Value*       location;     // pointer into value stack or into my 'closed' field
     Value        closed;       // storage for closed upvalue migrated from value stack
-    ObjUpvalue*  nextUpvalue;
+    ObjUpvalue*  nextUpvalue;  // next in a list of open upvalues
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -30,7 +30,7 @@ typedef struct {
 void initChunk(Chunk* chunk);
 void freeChunk(Chunk* chunk);
 void freezeChunk(Chunk* chunk);
-void writeChunk(Chunk* chunk, int byte, int line);
+void appendChunk(Chunk* chunk, int byte, int line);
 int  addConstant(Chunk* chunk, Value value);
 int  getLine(Chunk* chunk, int offset);
 

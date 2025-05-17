@@ -26,8 +26,11 @@ void freeValueArray(ValueArray* array) {
 }
 
 void freezeValueArray(ValueArray* array) {
-    array->values   = GROW_ARRAY(Value, array->values, array->capacity, array->count);
-    array->capacity = array->count;
+    // Only shrink when < 80% full
+    if ((array->count << 2) + array->count < (array->capacity << 2)) {
+        array->values = GROW_ARRAY(Value, array->values, array->capacity, array->count);
+        array->capacity = array->count;
+    }
 }
 
 void printValue(Value value, int flags) {
