@@ -498,7 +498,7 @@ nextInst:
 nextInstNoSO:
     // Last op guaranteed no stack overflow, omit check
     if (INTERRUPTED()) {
-        (void)READ_BYTE();
+        (void)READ_BYTE(); // avoid negative ip when interrupting before function start
         putstr("Interrupted.\n");
         printBacktrace();
         return EVAL_INTERRUPTED;

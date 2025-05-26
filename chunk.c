@@ -27,13 +27,13 @@ void freezeChunk(Chunk* chunk) {
 
     // Only shrink when < 80% full
     if ((chunk->count << 2) + chunk->count < (chunk->capacity << 2)) {
-        chunk->code = GROW_ARRAY(uint8_t, chunk->code, chunk->capacity, chunk->count);
+        chunk->code     = RESIZE_ARRAY(uint8_t, chunk->code, chunk->capacity, chunk->count);
         chunk->capacity = chunk->count;
     }
 
     // Only shrink when < 80% full
     if ((chunk->lineCount << 2) + chunk->lineCount < (chunk->lineCapacity << 2)) {
-        chunk->lines = GROW_ARRAY(LineStart, chunk->lines, chunk->lineCapacity, chunk->lineCount);
+        chunk->lines        = RESIZE_ARRAY(LineStart, chunk->lines, chunk->lineCapacity, chunk->lineCount);
         chunk->lineCapacity = chunk->lineCount;
     }
 
@@ -47,7 +47,7 @@ void appendChunk(Chunk* chunk, int byte, int line) {
     if (chunk->capacity < chunk->count + 1) {
         oldCapacity     = chunk->capacity;
         chunk->capacity = GROW_CAPACITY(oldCapacity);
-        chunk->code     = GROW_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacity);
+        chunk->code     = RESIZE_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacity);
     }
     chunk->code[chunk->count++] = byte;
 
@@ -59,7 +59,7 @@ void appendChunk(Chunk* chunk, int byte, int line) {
     if (chunk->lineCapacity < chunk->lineCount + 1) {
         oldCapacity         = chunk->lineCapacity;
         chunk->lineCapacity = GROW_CAPACITY(oldCapacity);
-        chunk->lines        = GROW_ARRAY(LineStart, chunk->lines, oldCapacity, chunk->lineCapacity);
+        chunk->lines        = RESIZE_ARRAY(LineStart, chunk->lines, oldCapacity, chunk->lineCapacity);
     }
 
     lineStart = &chunk->lines[chunk->lineCount++];

@@ -23,7 +23,7 @@
 #define MIN_LIST_CAPACITY(len) \
     ((len) < 8 ? 8 : (len))
 
-#define GROW_ARRAY(type, pointer, oldCount, newCount) \
+#define RESIZE_ARRAY(type, pointer, oldCount, newCount) \
     (type*)reallocate(pointer, sizeof(type) * (oldCount), sizeof(type) * (newCount))
 
 #define FREE_ARRAY(type, pointer, oldCount) \

@@ -15,7 +15,7 @@ void appendValueArray(ValueArray* array, Value value) {
     if (array->capacity < array->count + 1) {
         oldCapacity     = array->capacity;
         array->capacity = GROW_CAPACITY(oldCapacity);
-        array->values   = GROW_ARRAY(Value, array->values, oldCapacity, array->capacity);
+        array->values   = RESIZE_ARRAY(Value, array->values, oldCapacity, array->capacity);
     }
     array->values[array->count++] = value;
 }
@@ -28,7 +28,7 @@ void freeValueArray(ValueArray* array) {
 void freezeValueArray(ValueArray* array) {
     // Only shrink when < 80% full
     if ((array->count << 2) + array->count < (array->capacity << 2)) {
-        array->values = GROW_ARRAY(Value, array->values, array->capacity, array->count);
+        array->values = RESIZE_ARRAY(Value, array->values, array->capacity, array->count);
         array->capacity = array->count;
     }
 }

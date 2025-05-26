@@ -24,8 +24,7 @@ bool isCallable(Value value) {
         return type >= (uint8_t)OBJ_BOUND && 
                type <= (uint8_t)OBJ_NATIVE;
     }
-    else
-        return false;
+    return false;
 }
 
 #define ALLOCATE_OBJ(type, objectType) \
@@ -126,7 +125,7 @@ ObjList* makeList(int len, Value* items, int numCopy, int stride) {
     push(OBJ_VAL(list));
     if (len > 0) {
         newCap             = MIN_LIST_CAPACITY(len); // avoid fragmentation with many small lists
-        list->arr.values   = GROW_ARRAY(Value, list->arr.values, 0, newCap);
+        list->arr.values   = RESIZE_ARRAY(Value, list->arr.values, 0, newCap);
         list->arr.count    = len;
         list->arr.capacity = newCap;
         for (i = 0; i < len; i++) {
@@ -333,7 +332,7 @@ void insertIntoList(ObjList* list, Value value, int index) {
     if (list->arr.capacity < list->arr.count + 1) {
         oldCapacity        = list->arr.capacity;
         list->arr.capacity = GROW_CAPACITY(oldCapacity);
-        list->arr.values   = GROW_ARRAY(Value, list->arr.values, oldCapacity, list->arr.capacity);
+        list->arr.values   = RESIZE_ARRAY(Value, list->arr.values, oldCapacity, list->arr.capacity);
     }
     limitIndex(n, &index);
     for (i = n; i >= index; i--)

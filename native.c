@@ -48,7 +48,7 @@ bool callNative(const Native* native, int argCount, Value* args) {
     const char* expected;
 
     // Trailing lower-case letters in signature indicate optional arguments.
-    while (*currParm) {
+    while ((*currParm | '\x10') != '=') { // '-' or '='
         ++maxParmCount;
         if (!(*currParm & LOWER_CASE_MASK))
             ++minParmCount;
@@ -95,10 +95,14 @@ bool callNative(const Native* native, int argCount, Value* args) {
 // Basic arity and type checks have already been done via the signature string,
 // only in special cases you have to do additional checks, e.g. in join, lcd_defchar.
 //
-// Each char in the signature strings stands for the allowed argument type at the
-// corresponding position. See matchesType() above for possible types.
-// Uppercase means required parameter, lower case optional parameter (must be trailing).
-// Test argCount for actual number in this case. 
+// Each char in the signature strings before '-' or '=' stands for the allowed argument type
+// at the corresponding position. See matchesType() above for possible types.
+// Upper case means required parameter, lower case optional parameter (must be trailing).
+// Test argCount for actual number in this case.
+// When an '-' follows, the native never raises an error, '=' it may raise an error.
+// After that the return type is indicated, upper case means definite type, lower case may
+// return nil. Empty means nil is returned always. The return type is only used for
+// documentation currently.
 //
 // If you allocate heap objects, you have to ensure that objects allocated before are not
 // garbage collected, so you have to add them to the root set of reachable objects.
@@ -964,95 +968,95 @@ char* readLine() {
 
 static const Native allNatives[] = {
     // Mathematics
-    {"abs",         "R",    absNative},
-    {"trunc",       "R",    truncNative},
-    {"sqrt",        "R",    sqrtNative},
-    {"sin",         "R",    sinNative},
-    {"cos",         "R",    cosNative},
-    {"tan",         "R",    tanNative},
-    {"sinh",        "R",    sinhNative},
-    {"cosh",        "R",    coshNative},
-    {"tanh",        "R",    tanhNative},
-    {"exp",         "R",    expNative},
-    {"log",         "R",    logNative},
-    {"atan",        "R",    atanNative},
-    {"pow",         "RR",   powNative},
+    {"abs",         "R-R",    absNative},
+    {"trunc",       "R=R",    truncNative},
+    {"sqrt",        "R=R",    sqrtNative},
+    {"sin",         "R=R",    sinNative},
+    {"cos",         "R=R",    cosNative},
+    {"tan",         "R=R",    tanNative},
+    {"sinh",        "R=R",    sinhNative},
+    {"cosh",        "R=R",    coshNative},
+    {"tanh",        "R-R",    tanhNative},
+    {"exp",         "R=R",    expNative},
+    {"log",         "R=R",    logNative},
+    {"atan",        "R-R",    atanNative},
+    {"pow",         "RR=R" ,  powNative},
 
     // Lists
-    {"list",        "Na",   listNative},
-    {"reverse",     "L",    reverseNative},
-    {"append",      "LA",   appendNative},
-    {"insert",      "LNA",  insertNative},
-    {"delete",      "LN",   deleteNative},
-    {"index",       "ALn",  indexNative},
+    {"list",        "Na=L",   listNative},
+    {"reverse",     "L-L",    reverseNative},
+    {"append",      "LA-",    appendNative},
+    {"insert",      "LNA-",   insertNative},
+    {"delete",      "LN=",    deleteNative},
+    {"index",       "ALn=n",  indexNative},
 
     // Strings
-    {"length",      "Q",    lengthNative},
-    {"lower",       "S",    lowerNative},
-    {"upper",       "S",    upperNative},
-    {"join",        "Lsss", joinNative},
-    {"split",       "SS",   splitNative},
-    {"match",       "SSn",  matchNative},
+    {"length",      "Q-N",    lengthNative},
+    {"lower",       "S-S",    lowerNative},
+    {"upper",       "S-S",    upperNative},
+    {"join",        "Lsss=S", joinNative},
+    {"split",       "SS-L",   splitNative},
+    {"match",       "SSn=l",  matchNative},
 
     // Objects
-    {"parent",      "C",    parentNative},
-    {"class_of",    "A",    classOfNative},
-    {"remove",      "IA",   removeNative},
-    {"slots",       "I",    slotsNative},
-    {"next",        "T",    nextNative},
+    {"parent",      "C-c",    parentNative},
+    {"class_of",    "A-c",    classOfNative},
+    {"remove",      "IA-B",   removeNative},
+    {"slots",       "I-T",    slotsNative},
+    {"next",        "T-B",    nextNative},
 
     // Type conversion
-    {"asc",         "Sn",   ascNative},
-    {"chr",         "N",    chrNative},
-    {"dec",         "R",    decNative},
-    {"hex",         "N",    hexNative},
-    {"bin",         "N",    binNative},
-    {"parse_int",   "S",    parseIntNative},
-    {"parse_real",  "S",    parseRealNative},
+    {"asc",         "Sn=N",   ascNative},
+    {"chr",         "N=S",    chrNative},
+    {"dec",         "R-S",    decNative},
+    {"hex",         "N-S",    hexNative},
+    {"bin",         "N-S",    binNative},
+    {"parse_int",   "S-n",    parseIntNative},
+    {"parse_real",  "S-r",    parseRealNative},
 
     // Binary integers
-    {"bit_and",     "NN",   bitAndNative},
-    {"bit_or",      "NN",   bitOrNative},
-    {"bit_xor",     "NN",   bitXorNative},
-    {"bit_not",     "N",    bitNotNative},
-    {"bit_shift",   "NN",   bitShiftNative},
-    {"random",      "",     randomNative},
-    {"seed_rand",   "N",    seedRandNative},
+    {"bit_and",     "NN-N",   bitAndNative},
+    {"bit_or",      "NN-N",   bitOrNative},
+    {"bit_xor",     "NN-N",   bitXorNative},
+    {"bit_not",     "N-N",    bitNotNative},
+    {"bit_shift",   "NN-N",   bitShiftNative},
+    {"random",      "-N",     randomNative},
+    {"seed_rand",   "N-N",    seedRandNative},
 
     // System
-    {"input",       "s",    inputNative},
-    {"type",        "A",    typeNative},
-    {"name",        "A",    nameNative},
-    {"error",       "A",    errorNative},
-    {"gc",          "",     gcNative},
-    {"clock",       "",     clockNative},
-    {"sleep",       "N",    sleepNative},
+    {"input",       "s-S",    inputNative},
+    {"type",        "A-S",    typeNative},
+    {"name",        "A-s",    nameNative},
+    {"error",       "A=",     errorNative},
+    {"gc",          "-N",     gcNative},
+    {"clock",       "-N",     clockNative},
+    {"sleep",       "N-",     sleepNative},
 
     // Low-level memory access
-    {"peek",        "N",    peekNative},
-    {"poke",        "NN",   pokeNative},
-    {"addr",        "A",    addrNative},
-    {"heap",        "N",    heapNative},
+    {"peek",        "N-N",    peekNative},
+    {"poke",        "NN=",    pokeNative},
+    {"addr",        "A-n",    addrNative},
+    {"heap",        "N-A",    heapNative},
 
 #ifdef KIT68K
-    {"lcd_clear",   "",     lcdClearNative},
-    {"lcd_goto",    "NN",   lcdGotoNative},
-    {"lcd_puts",    "S",    lcdPutsNative},
-    {"lcd_defchar", "NL",   lcdDefcharNative},
-    {"keycode",     "",     keycodeNative},
-    {"sound",       "NN",   soundNative},
-    {"exec",        "Naaa", execNative},
-    {"trap",        "",     trapNative},
+    {"lcd_clear",   "-",      lcdClearNative},
+    {"lcd_goto",    "NN-",    lcdGotoNative},
+    {"lcd_puts",    "S-",     lcdPutsNative},
+    {"lcd_defchar", "NL=",    lcdDefcharNative},
+    {"keycode",     "-n",     keycodeNative},
+    {"sound",       "NN-",    soundNative},
+    {"exec",        "Naaa-A", execNative},
+    {"trap",        "-",      trapNative},
 #endif
 
 #ifdef LOX_DBG
-    {"dbg_code",    "A",    dbgCodeNative},
-    {"dbg_step",    "A",    dbgStepNative},
-    {"dbg_call",    "A",    dbgCallNative},
-    {"dbg_nat",     "A",    dbgNatNative},
-    {"dbg_gc",      "N",    dbgGcNative},
-    {"dbg_stat",    "A",    dbgStatNative},
-    {"disasm",      "FN",   disasmNative},
+    {"dbg_code",    "A-",     dbgCodeNative},
+    {"dbg_step",    "A-",     dbgStepNative},
+    {"dbg_call",    "A-",     dbgCallNative},
+    {"dbg_nat",     "A-",     dbgNatNative},
+    {"dbg_gc",      "N-",     dbgGcNative},
+    {"dbg_stat",    "A-",     dbgStatNative},
+    {"disasm",      "FN=n",   disasmNative},
 #endif
 };
 
