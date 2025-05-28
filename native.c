@@ -47,9 +47,10 @@ bool callNative(const Native* native, int argCount, Value* args) {
     const char* currParm     = signature;
     const char* expected;
 
-    // Trailing lower-case letters in signature indicate optional arguments.
-    while ((*currParm | '\x10') != '=') { // '-' or '='
+    // Count parameters before '-' or '=' in signature
+    while ((*currParm | '\x10') != '=') {
         ++maxParmCount;
+        // Trailing lower-case letters indicate optional arguments.
         if (!(*currParm & LOWER_CASE_MASK))
             ++minParmCount;
         ++currParm;
@@ -206,8 +207,8 @@ NATIVE(lengthNative) {
 }
 
 NATIVE(listNative) {
-    Value    item = (argCount == 2) ? args[1] : NIL_VAL;
-    Int      len  = AS_INT(args[0]);
+    Value item = (argCount == 2) ? args[1] : NIL_VAL;
+    Int   len  = AS_INT(args[0]);
 
     if (len >= 16000) {
         runtimeError("'%s' %s out of range.", "list", "length");
@@ -969,7 +970,7 @@ char* readLine() {
 static const Native allNatives[] = {
     // Mathematics
     {"abs",         "R-R",    absNative},
-    {"trunc",       "R=R",    truncNative},
+    {"trunc",       "R=N",    truncNative},
     {"sqrt",        "R=R",    sqrtNative},
     {"sin",         "R=R",    sinNative},
     {"cos",         "R=R",    cosNative},
@@ -980,7 +981,7 @@ static const Native allNatives[] = {
     {"exp",         "R=R",    expNative},
     {"log",         "R=R",    logNative},
     {"atan",        "R-R",    atanNative},
-    {"pow",         "RR=R" ,  powNative},
+    {"pow",         "RR=R",   powNative},
 
     // Lists
     {"list",        "Na=L",   listNative},

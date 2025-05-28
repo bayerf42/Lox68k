@@ -15,6 +15,8 @@
 #define MAX_LABELS    31 // comparison values per 'case' branch
 #define MAX_BREAKS    16 // number of 'break' statements in a loop
 
+#define PRINT_SEPARATOR "   "
+
 typedef struct {
     Token current;
     Token previous;

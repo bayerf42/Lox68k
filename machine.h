@@ -122,7 +122,4 @@ typedef double Real;
 #define FRAMES_MAX    224  // Maxed, but keep C heap start below C stack limit
 #define GRAY_MAX     1024
 
-#define PRINT_SEPARATOR "   "
-#define LOWER_CASE_MASK 0x20
-
 #endif

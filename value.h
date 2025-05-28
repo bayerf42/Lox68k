@@ -55,6 +55,8 @@ typedef struct ObjUpvalue  ObjUpvalue;
 #define PRTF_EXPAND  0x00
 #define PRTF_COMPACT 0x02
 
+#define LOWER_CASE_MASK 0x20
+
 typedef struct {
     int16_t count;
     int16_t capacity;

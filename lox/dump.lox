@@ -74,3 +74,21 @@ fun dump(obj) {
           szHeader, " + " ,szBytes, " + ", szConst, " + ", szLines, " = ",
           szHeader + szBytes + szConst + szLines, " bytes";
 }
+
+fun cstring(adr) {
+    // read the C string (zero-terminated) starting at address adr
+    var chars = [];
+    for (var c = peek(adr); c != 0; c = peek(adr)) {
+        append(chars, chr(c));
+        adr = adr + 1;
+    }
+    return join(chars);
+}
+
+fun sig(nat) {
+    // Follow object pointers to find the signature string of a native function.
+    if (type(nat) == "native")
+        return cstring(peekl(peekl(addr(nat) + objHead()) + 4));
+    else
+        error("Native expected.");
+}
