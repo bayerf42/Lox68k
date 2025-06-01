@@ -313,7 +313,7 @@ NATIVE(joinNative) {
         joiner = sepa;
         item   = list->arr.values[i];
         if (!IS_STRING(item)) {
-            runtimeError("'%s' string expected in list at %d.", "join", i);
+            runtimeError("'%s' string expected at %d.", "join", i);
             return false;
         }
         curr = AS_CSTRING(item);
@@ -759,11 +759,11 @@ NATIVE(lcdDefcharNative) {
     int      i;
 
     if (udc < 0 || udc > 7) {
-        runtimeError("'%s' %s out of range.", "lcd_defchar", "UDC number");
+        runtimeError("'%s' %s out of range.", "lcd_defchar", "UDC");
         return false;
     }
     if (pattern->arr.count != 8) {
-        runtimeError("'%s' UDC bitmap must be 8 bytes.", "lcd_defchar");
+        runtimeError("'%s' bitmap must be 8 bytes.", "lcd_defchar");
         return false;
     }
     for (i = 0; i < 8; i++) {
@@ -775,7 +775,7 @@ NATIVE(lcdDefcharNative) {
             }
             bitmap[i] = (char)byte;
         } else {
-            runtimeError("'%s' integer expected in UDC bitmap at %d.", "lcd_defchar", i);
+            runtimeError("'%s' int expected at %d.", "lcd_defchar", i);
             return false;
         }
     }
@@ -967,37 +967,37 @@ char* readLine() {
 // Setup everyting
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static const Native allNatives[] = {
+static const Native allNatives[] = {             // Possible errors
     // Mathematics
     {"abs",         "R-R",    absNative},
-    {"trunc",       "R=N",    truncNative},
-    {"sqrt",        "R=R",    sqrtNative},
-    {"sin",         "R=R",    sinNative},
-    {"cos",         "R=R",    cosNative},
-    {"tan",         "R=R",    tanNative},
-    {"sinh",        "R=R",    sinhNative},
-    {"cosh",        "R=R",    coshNative},
+    {"trunc",       "R=N",    truncNative},      // arithmetic error
+    {"sqrt",        "R=R",    sqrtNative},       // arithmetic error
+    {"sin",         "R=R",    sinNative},        // arithmetic error
+    {"cos",         "R=R",    cosNative},        // arithmetic error 
+    {"tan",         "R=R",    tanNative},        // arithmetic error
+    {"sinh",        "R=R",    sinhNative},       // arithmetic error
+    {"cosh",        "R=R",    coshNative},       // arithmetic error
     {"tanh",        "R-R",    tanhNative},
-    {"exp",         "R=R",    expNative},
-    {"log",         "R=R",    logNative},
+    {"exp",         "R=R",    expNative},        // arithmetic error
+    {"log",         "R=R",    logNative},        // arithmetic error
     {"atan",        "R-R",    atanNative},
-    {"pow",         "RR=R",   powNative},
+    {"pow",         "RR=R",   powNative},        // arithmetic error
 
     // Lists
-    {"list",        "Na=L",   listNative},
+    {"list",        "Na=L",   listNative},       // length out of range
     {"reverse",     "L-L",    reverseNative},
     {"append",      "LA-",    appendNative},
     {"insert",      "LNA-",   insertNative},
-    {"delete",      "LN=",    deleteNative},
-    {"index",       "ALn=n",  indexNative},
+    {"delete",      "LN=",    deleteNative},     // index out of range
+    {"index",       "ALn=n",  indexNative},      // start index out of range
 
     // Strings
     {"length",      "Q-N",    lengthNative},
     {"lower",       "S-S",    lowerNative},
     {"upper",       "S-S",    upperNative},
-    {"join",        "Lsss=S", joinNative},
+    {"join",        "Lsss=S", joinNative},       // string expected at % | stringbuffer overflow
     {"split",       "SS-L",   splitNative},
-    {"match",       "SSn=l",  matchNative},
+    {"match",       "SSn=l",  matchNative},      // start index out of range
 
     // Objects
     {"parent",      "C-c",    parentNative},
@@ -1007,13 +1007,13 @@ static const Native allNatives[] = {
     {"next",        "T-B",    nextNative},
 
     // Type conversion
-    {"asc",         "Sn=N",   ascNative},
-    {"chr",         "N=S",    chrNative},
+    {"asc",         "Sn=N",   ascNative},        // index out of range
+    {"chr",         "N=S",    chrNative},        // code out of range
     {"dec",         "R-S",    decNative},
     {"hex",         "N-S",    hexNative},
     {"bin",         "N-S",    binNative},
     {"parse_int",   "S-n",    parseIntNative},
-    {"parse_real",  "S-r",    parseRealNative},
+    {"parse_real",  "S-r",    parseRealNative},  
 
     // Binary integers
     {"bit_and",     "NN-N",   bitAndNative},
@@ -1025,17 +1025,17 @@ static const Native allNatives[] = {
     {"seed_rand",   "N-N",    seedRandNative},
 
     // System
-    {"input",       "s-S",    inputNative},
+    {"input",       "s-s",    inputNative},
     {"type",        "A-S",    typeNative},
     {"name",        "A-s",    nameNative},
-    {"error",       "A=",     errorNative},
+    {"error",       "A=",     errorNative},      // always raises an error
     {"gc",          "-N",     gcNative},
     {"clock",       "-N",     clockNative},
     {"sleep",       "N-",     sleepNative},
 
     // Low-level memory access
     {"peek",        "N-N",    peekNative},
-    {"poke",        "NN=",    pokeNative},
+    {"poke",        "NN=",    pokeNative},       // byte out of range
     {"addr",        "A-n",    addrNative},
     {"heap",        "N-A",    heapNative},
 
@@ -1043,7 +1043,7 @@ static const Native allNatives[] = {
     {"lcd_clear",   "-",      lcdClearNative},
     {"lcd_goto",    "NN-",    lcdGotoNative},
     {"lcd_puts",    "S-",     lcdPutsNative},
-    {"lcd_defchar", "NL=",    lcdDefcharNative},
+    {"lcd_defchar", "NL=",    lcdDefcharNative}, // UDC out of range | bitmap must be 8 bytes | byte out of range | int expected at %
     {"keycode",     "-n",     keycodeNative},
     {"sound",       "NN-",    soundNative},
     {"exec",        "Naaa-A", execNative},
@@ -1057,7 +1057,7 @@ static const Native allNatives[] = {
     {"dbg_nat",     "A-",     dbgNatNative},
     {"dbg_gc",      "N-",     dbgGcNative},
     {"dbg_stat",    "A-",     dbgStatNative},
-    {"disasm",      "FN=n",   disasmNative},
+    {"disasm",      "FN=n",   disasmNative},     // offset out of range
 #endif
 };
 
