@@ -46,7 +46,6 @@ typedef struct ObjUpvalue  ObjUpvalue;
 #define INT_VAL(num)     ((Value)(((num)<<1) | 1))
 #define OBJ_VAL(obj)     ((Value)(obj))
 
-// Fast version, use native equal to compare reals and iterators
 #define valuesEqual(a,b) ((a) == (b))
 
 // Printing flags

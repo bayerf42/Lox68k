@@ -20,7 +20,7 @@ typedef struct {
     Table       strings;             // weak set of all string used
     ObjString*  initString;          // ref to 'init' string
     ObjUpvalue* openUpvalues;        // list of open upvalues
-    int         lambdaCount;         // 
+    int         lambdaCount;         // supplies 'name' for anonymous functions
     uint32_t    randomState;         // state of pseudo-random number generator
 
     bool        handleException;     // internal state

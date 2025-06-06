@@ -96,13 +96,13 @@ bool callNative(const Native* native, int argCount, Value* args) {
 // Basic arity and type checks have already been done via the signature string,
 // only in special cases you have to do additional checks, e.g. in join, lcd_defchar.
 //
-// Each char in the signature strings before '-' or '=' stands for the allowed argument type
+// Each char in the signature strings before '-' or '=' indicates the allowed argument type
 // at the corresponding position. See matchesType() above for possible types.
 // Upper case means required parameter, lower case optional parameter (must be trailing).
 // Test argCount for actual number in this case.
-// When an '-' follows, the native never raises an error, '=' it may raise an error.
-// After that the return type is indicated, upper case means definite type, lower case may
-// return nil. Empty means nil is returned always. The return type is only used for
+// When an '-' follows, the native never raises an error, with '=' it may raise an error.
+// After that the return type is indicated, upper case meaning definite type, lower case may
+// return nil. End of string means nil is returned always. The return type is only used for
 // documentation currently.
 //
 // If you allocate heap objects, you have to ensure that objects allocated before are not
@@ -517,8 +517,8 @@ NATIVE(chrNative) {
     Int  code = AS_INT(args[0]);
     char codepoint;
 
-    if (code < 0 || code > 255) {
-        runtimeError("'%s' %s out of range.", "chr", "code");
+    if (code < 0 || code > UINT8_MAX) {
+        runtimeError("'%s' %s out of range.", "chr", "byte");
         return false;
     }
     codepoint = (char)code;
@@ -701,7 +701,7 @@ NATIVE(peekNative) {
 NATIVE(pokeNative) {
     int32_t address = AS_INT(args[0]);
     Int     byte    = AS_INT(args[1]);
-    if (byte < 0 || byte > 255) {
+    if (byte < 0 || byte > UINT8_MAX) {
         runtimeError("'%s' %s out of range.", "poke", "byte");
         return false;
     }
@@ -769,7 +769,7 @@ NATIVE(lcdDefcharNative) {
     for (i = 0; i < 8; i++) {
         if (IS_INT(pattern->arr.values[i])) {
             byte = AS_INT(pattern->arr.values[i]);
-            if (byte < 0 || byte > 255) {
+            if (byte < 0 || byte > UINT8_MAX) {
                 runtimeError("'%s' %s out of range.", "lcd_defchar", "byte");
                 return false;
             }
@@ -787,7 +787,7 @@ NATIVE(lcdDefcharNative) {
 
 NATIVE(keycodeNative) {
     int code = monitor_scan();
-    if (code == 255)
+    if (code == 0xff)
         RESULT = NIL_VAL;
     else
         RESULT = INT_VAL(code);
@@ -1008,7 +1008,7 @@ static const Native allNatives[] = {             // Possible errors
 
     // Type conversion
     {"asc",         "Sn=N",   ascNative},        // index out of range
-    {"chr",         "N=S",    chrNative},        // code out of range
+    {"chr",         "N=S",    chrNative},        // byte out of range
     {"dec",         "R-S",    decNative},
     {"hex",         "N-S",    hexNative},
     {"bin",         "N-S",    binNative},
