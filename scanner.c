@@ -194,7 +194,7 @@ static Token number(char start) {
     bool isReal        = false;
 
     if (start == '%')
-        while ((peek() | 0x01) == '1') // '0' or '1'
+        while (isbinary(peek()))
             advance();
     else if (start == '$')
         while (isxdigit(peek()))

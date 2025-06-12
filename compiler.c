@@ -247,11 +247,13 @@ static void patchJump(int offset) {
     currentChunk()->code[offset + 1] = jump;
 }
 
-static void emitClosure(Compiler* comp, ObjFunction* func) {
+static void emitClosure(Compiler* compiler) {
+    int upvalueCount = compiler->target->upvalueCount;
     int i;
-    emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(func)));
-    for (i = 0; i < func->upvalueCount; i++) 
-        emitByte(comp->upvalues[i]);
+
+    emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(compiler->target)));
+    for (i = 0; i < upvalueCount; i++) 
+        emitByte(compiler->upvalues[i]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -289,7 +291,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     }
 }
 
-static ObjFunction* endCompiler(bool returnExpr) {
+static void endCompiler(bool returnExpr) {
     ObjFunction* function = currentComp->target;
     if (returnExpr)
         emitByte(OP_RETURN);
@@ -303,7 +305,6 @@ static ObjFunction* endCompiler(bool returnExpr) {
 #endif
 
     currentComp = currentComp->enclosing;
-    return function;
 }
 
 static void beginScope(void) {
@@ -651,13 +652,14 @@ static void lambda(bool canAssign) {
 }
 
 static void buildThunk(void) {
-    Compiler     compiler;
+    Compiler compiler;
 
     CHECK_STACKOVERFLOW
     initCompiler(&compiler, TYPE_LAMBDA);
     beginScope();
     expression();
-    emitClosure(&compiler, endCompiler(true));
+    endCompiler(true);
+    emitClosure(&compiler);
 }
 
 static void handler(bool canAssign) {
@@ -891,7 +893,6 @@ static void block(void) {
 
 static void function(FunctionType type) {
     Compiler     compiler;
-    ObjFunction* function;
     int          parameter;
     uint8_t      restParm = 0;
 
@@ -919,14 +920,13 @@ static void function(FunctionType type) {
         if (type == TYPE_INIT)
             error("Can't return a value from an initializer.");
         expression();
-        function = endCompiler(true);
+        endCompiler(true);
     } else {
         consumeExp(TOKEN_LEFT_BRACE, "function body");
         block();
-        function = endCompiler(false);
+        endCompiler(false);
     }
-
-    emitClosure(&compiler, function);
+    emitClosure(&compiler);
 }
 
 static void method(void) {
@@ -1296,8 +1296,7 @@ static void statement(bool topLevel) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ObjFunction* compile(const char* source) {
-    Compiler     compiler;
-    ObjFunction* function;
+    Compiler compiler;
 
 #ifdef LOX_DBG
     STATIC_BREAKPOINT();
@@ -1316,8 +1315,8 @@ ObjFunction* compile(const char* source) {
     while (!match(TOKEN_EOF))
         declaration(true);
 
-    function = endCompiler(false);
-    return parser.hadError ? NULL : function;
+    endCompiler(false);
+    return parser.hadError ? NULL : compiler.target;
 }
 
 void markCompilerRoots(void) {

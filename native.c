@@ -371,7 +371,7 @@ static bool match_single(int pat, int c, bool escape) {
     if (escape) {                                             // prefixed with '%' in pattern
         cclass = pat | LOWER_CASE_MASK;
         if      (cclass == 'a') res = isalpha(c) || c == '_'; // '_' is considered alphabetic! 
-        else if (cclass == 'b') res = (c | 0x01) == '1';      // binary digit '0' or '1'
+        else if (cclass == 'b') res = isbinary(c);
         else if (cclass == 'c') res = iscntrl(c);
         else if (cclass == 'd') res = isdigit(c);
         else if (cclass == 'l') res = islower(c);
