@@ -247,6 +247,13 @@ static void patchJump(int offset) {
     currentChunk()->code[offset + 1] = jump;
 }
 
+static void emitClosure(Compiler* comp, ObjFunction* func) {
+    int i;
+    emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(func)));
+    for (i = 0; i < func->upvalueCount; i++) 
+        emitByte(comp->upvalues[i]);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Compiler scoping
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -645,18 +652,12 @@ static void lambda(bool canAssign) {
 
 static void buildThunk(void) {
     Compiler     compiler;
-    ObjFunction* function;
-    int          i;
 
     CHECK_STACKOVERFLOW
     initCompiler(&compiler, TYPE_LAMBDA);
     beginScope();
     expression();
-    function = endCompiler(true);
-
-    emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
-    for (i = 0; i < function->upvalueCount; i++) 
-        emitByte(compiler.upvalues[i]);
+    emitClosure(&compiler, endCompiler(true));
 }
 
 static void handler(bool canAssign) {
@@ -891,7 +892,6 @@ static void block(void) {
 static void function(FunctionType type) {
     Compiler     compiler;
     ObjFunction* function;
-    int          i;
     int          parameter;
     uint8_t      restParm = 0;
 
@@ -926,9 +926,7 @@ static void function(FunctionType type) {
         function = endCompiler(false);
     }
 
-    emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
-    for (i = 0; i < function->upvalueCount; i++) 
-        emitByte(compiler.upvalues[i]);
+    emitClosure(&compiler, function);
 }
 
 static void method(void) {
