@@ -1215,8 +1215,7 @@ EvalResult interpret(const char* source) {
 
     pushUnchecked(OBJ_VAL(function));
     closure = makeClosure(function);
-    dropNpush(1, OBJ_VAL(closure));
-    
+    peek(0) = OBJ_VAL(closure);
     callClosure(closure, 0);
 
     RESET_INTERRUPTED();

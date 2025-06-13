@@ -292,7 +292,6 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
 }
 
 static void endCompiler(bool returnExpr) {
-    ObjFunction* function = currentComp->target;
     if (returnExpr)
         emitByte(OP_RETURN);
     else
@@ -301,7 +300,7 @@ static void endCompiler(bool returnExpr) {
 
 #ifdef LOX_DBG
     if (vm.debug_print_code && !parser.hadError)
-        disassembleChunk(currentChunk(), functionName(function));
+        disassembleChunk(currentChunk(), functionName(currentComp->target));
 #endif
 
     currentComp = currentComp->enclosing;
