@@ -41,15 +41,17 @@ typedef enum {
 // than 3 longs. In this case, very strange FMOVE instructions are generated, which
 // trap on the 68008 of course. So the Token struct must be at least 12 bytes long,
 // which is somewhat wasteful... 
+//
+// Now we always pass Tokens by reference to avoid copying leading to smaller and faster code.
 
 typedef struct {
-    const char* start;
-    TokenType   type;
-    int16_t     length;
-    int32_t     line; 
+    const char* start;   // starting position of token in source string
+    int16_t     length;  // length of token 
+    TokenType   type;    // type of token
+    int16_t     line;    // source line number for error location
 } Token;
 
-void  initScanner(const char* source);
-Token scanToken(void);
+void initScanner(const char* source);
+void scanToken(Token* token);
 
 #endif

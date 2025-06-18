@@ -126,10 +126,10 @@ static void errorAtCurrent(const char* message) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void advance(void) {
-    parser.previous = parser.current;
+    parser.previous = parser.current; // structure assignment actually works in IDE68K even for small structs!
 
     for (;;) {
-        parser.current = scanToken();
+        scanToken(&parser.current);
         if (parser.current.type != TOKEN_ERROR)
             break;
         errorAtCurrent(parser.current.start);

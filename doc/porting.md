@@ -12,7 +12,8 @@
   * Compiler crashes sometimes on syntax errors, e.g. missing closing parens.
   * Structures return by value: Compiler generates wrong code with struct sizes less than 12 bytes, an `FMOVE` is generated???
     Solution is making structs at least 12 bytes, so the compiler generates a `DBRA` loop
-    to copy 3 longwords (or more).
+    to copy 3 longwords (or more). Structures are now passed by reference to avoid this bug.
+    Structure assigning actually works.
   * When using smaller field sizes in `Obj` and derived structures, the compiler generates wrong
     code when embedding the entire `Obj` structure as first member in derived structures like
     `ObjFunction`. When `Obj` was 8 bytes long, everything worked, but when reducing it to

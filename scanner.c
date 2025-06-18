@@ -41,29 +41,24 @@ static bool match(char expected) {
     return true;
 }
 
-static Token makeToken(TokenType type) {
-    Token token;
-    token.type   = type;
-    token.start  = scanner.start;
-    token.length = scanner.current - scanner.start;
-    token.line   = scanner.line;
-    return token;
+static void makeToken(Token* token, TokenType type) {
+    token->type   = type;
+    token->start  = scanner.start;
+    token->length = scanner.current - scanner.start;
+    token->line   = scanner.line;
 }
 
-static Token errorToken(const char* message) {
-    Token token;
-    token.type   = TOKEN_ERROR;
-    token.start  = message;
-    token.length = strlen(message);
-    token.line   = scanner.line;
-    return token;
+static void errorToken(Token* token, const char* message) {
+    token->type   = TOKEN_ERROR;
+    token->start  = message;
+    token->length = strlen(message);
+    token->line   = scanner.line;
 }
 
-static Token makeNumToken(bool isReal) {
-    Token token = makeToken(isReal ? TOKEN_REAL : TOKEN_INT);
-    if (token.length == 1 && !isdigit(*token.start))
-        return errorToken("No digits after radix.");
-    return token;
+static void makeNumToken(Token* token, bool isReal) {
+    makeToken(token, isReal ? TOKEN_REAL : TOKEN_INT);
+    if (token->length == 1 && !isdigit(*token->start))
+        errorToken(token, "No digits after radix.");
 }
 
 static void skipWhitespace(void) {
@@ -109,7 +104,7 @@ typedef struct {
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-static Token identifier(int32_t trie) {
+static void identifier(Token* token, int32_t trie) {
     // Overlapping keyword postfixes in single string
     const char* rest =
               "andleturnassilsefynvarintupereakisue";
@@ -138,9 +133,9 @@ static Token identifier(int32_t trie) {
     //         012345678901234567890123456789012345
     int16_t    id_length;
     const char *src;
-    char       c         = scanner.start[0];
+    char       c     = scanner.start[0];
     char       c1;
-    TokenType  tokenType = TOKEN_IDENTIFIER; 
+    TokenType  tType = TOKEN_IDENTIFIER; 
 
     while (isalnum(peek()) || peek() == '_')
         advance();
@@ -179,17 +174,17 @@ static Token identifier(int32_t trie) {
             if (*src++ != *rest++)
                 goto noKeyword;
         } while (--TRIE(length));
-        tokenType = TRIE(type);
+        tType = TRIE(type);
     }
 noKeyword:
-    return makeToken(tokenType);
+    makeToken(token, tType);
 }
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
 
-static Token number(char start) {
+static void number(Token* token, char start) {
     bool exponentEmpty = true;
     bool isReal        = false;
 
@@ -221,38 +216,44 @@ static Token number(char start) {
                 advance();
                 exponentEmpty = false;
             }
-            if (exponentEmpty)
-                return errorToken("Empty exponent in number.");
+            if (exponentEmpty) {
+                errorToken(token, "Empty exponent in number.");
+                return;
+            }
         }
     }
-    return makeNumToken(isReal);
+    makeNumToken(token, isReal);
 }
 
-static Token string(void) {
+static void string(Token* token) {
     while (peek() != '"' && !isAtEnd()) {
         if (peek() == CHAR_LF || peek() == CHAR_RS)
             scanner.line++;
         advance();
     }
 
-    if (isAtEnd())
-        return errorToken("Unterminated string.");
+    if (isAtEnd()) {
+        errorToken(token, "Unterminated string.");
+        return;
+    }
 
     // the closing quote
     advance();
-    return makeToken(TOKEN_STRING);
+    makeToken(token, TOKEN_STRING);
 }
 
-Token scanToken(void) {
+void scanToken(Token* token) {
     char      c;
-    TokenType token;
+    TokenType tType;
     int32_t   trie = 0;
 
     skipWhitespace();
     scanner.start = scanner.current;
 
-    if (isAtEnd())
-        return makeToken(TOKEN_EOF);
+    if (isAtEnd()) {
+        makeToken(token, TOKEN_EOF);
+        return;
+    }
 
     c = *scanner.current++;
 
@@ -260,7 +261,8 @@ Token scanToken(void) {
         case '0': case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9':
         case '$': case '%':
-            return number(c);
+            number(token, c);
+            return;
 
         // can't start keywords
         case 'g': case 'j': case 'k': case 'l': case 'm':
@@ -272,7 +274,8 @@ Token scanToken(void) {
         case 'U': case 'V': case 'W': case 'X': case 'Y':
         case 'Z': case '_':
         ident: 
-            return identifier(trie);
+            identifier(token, trie);
+            return;
 
         // possibly starting unique keyword
         case 'a': trie = WRAP(1, 2,  1, TOKEN_AND);    goto ident;
@@ -294,34 +297,36 @@ Token scanToken(void) {
             goto ident; 
 
         case '"':
-            return string();
+            string(token);
+            return;
 
-        case '(': token = TOKEN_LEFT_PAREN;    break;
-        case ')': token = TOKEN_RIGHT_PAREN;   break;
-        case '{': token = TOKEN_LEFT_BRACE;    break;
-        case '}': token = TOKEN_RIGHT_BRACE;   break;
-        case '[': token = TOKEN_LEFT_BRACKET;  break;
-        case ']': token = TOKEN_RIGHT_BRACKET; break;
-        case ';': token = TOKEN_SEMICOLON;     break;
-        case ':': token = TOKEN_COLON;         break;
-        case ',': token = TOKEN_COMMA;         break;
-        case '+': token = TOKEN_PLUS;          break;
-        case '/': token = TOKEN_SLASH;         break;
-        case '*': token = TOKEN_STAR;          break;
-        case 92 : token = TOKEN_BACKSLASH;     break; // IDE68k doesn't like '\\'
-        case '@': token = TOKEN_AT;            break;
-        case '^': token = TOKEN_HAT;           break;
-        case '?': token = TOKEN_PRINT;         break;
-        case '!': if (match('=')) token = TOKEN_BANG_EQUAL;    else token = TOKEN_BANG;    break;
-        case '=': if (match('=')) token = TOKEN_EQUAL_EQUAL;   else token = TOKEN_EQUAL;   break;
-        case '<': if (match('=')) token = TOKEN_LESS_EQUAL;    else token = TOKEN_LESS;    break;
-        case '>': if (match('=')) token = TOKEN_GREATER_EQUAL; else token = TOKEN_GREATER; break;
-        case '.': if (match('.')) token = TOKEN_DOT_DOT;       else token = TOKEN_DOT;     break;
-        case '-': if (match('>')) token = TOKEN_ARROW;         else token = TOKEN_MINUS;   break;
+        case '(': tType = TOKEN_LEFT_PAREN;    break;
+        case ')': tType = TOKEN_RIGHT_PAREN;   break;
+        case '{': tType = TOKEN_LEFT_BRACE;    break;
+        case '}': tType = TOKEN_RIGHT_BRACE;   break;
+        case '[': tType = TOKEN_LEFT_BRACKET;  break;
+        case ']': tType = TOKEN_RIGHT_BRACKET; break;
+        case ';': tType = TOKEN_SEMICOLON;     break;
+        case ':': tType = TOKEN_COLON;         break;
+        case ',': tType = TOKEN_COMMA;         break;
+        case '+': tType = TOKEN_PLUS;          break;
+        case '/': tType = TOKEN_SLASH;         break;
+        case '*': tType = TOKEN_STAR;          break;
+        case 92 : tType = TOKEN_BACKSLASH;     break; // IDE68k doesn't like '\\'
+        case '@': tType = TOKEN_AT;            break;
+        case '^': tType = TOKEN_HAT;           break;
+        case '?': tType = TOKEN_PRINT;         break;
+        case '!': if (match('=')) tType = TOKEN_BANG_EQUAL;    else tType = TOKEN_BANG;    break;
+        case '=': if (match('=')) tType = TOKEN_EQUAL_EQUAL;   else tType = TOKEN_EQUAL;   break;
+        case '<': if (match('=')) tType = TOKEN_LESS_EQUAL;    else tType = TOKEN_LESS;    break;
+        case '>': if (match('=')) tType = TOKEN_GREATER_EQUAL; else tType = TOKEN_GREATER; break;
+        case '.': if (match('.')) tType = TOKEN_DOT_DOT;       else tType = TOKEN_DOT;     break;
+        case '-': if (match('>')) tType = TOKEN_ARROW;         else tType = TOKEN_MINUS;   break;
 
         default:
             sprintf(buffer, "Invalid character '%c'.", c);
-            return errorToken(buffer);
+            errorToken(token, buffer);
+            return;
     }
-    return makeToken(token);
+    makeToken(token, tType);
 }
