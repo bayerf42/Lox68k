@@ -313,7 +313,7 @@ NATIVE(joinNative) {
         joiner = sepa;
         item   = list->arr.values[i];
         if (!IS_STRING(item)) {
-            runtimeError("'%s' string expected at %d.", "join", i);
+            runtimeError("'%s' %s expected at %d.", "join", "string", i);
             return false;
         }
         curr = AS_CSTRING(item);
@@ -517,7 +517,7 @@ NATIVE(chrNative) {
     Int  code = AS_INT(args[0]);
     char codepoint;
 
-    if (code < 0 || code > UINT8_MAX) {
+    if (code & ~UINT8_MAX) {
         runtimeError("'%s' %s out of range.", "chr", "byte");
         return false;
     }
@@ -701,7 +701,7 @@ NATIVE(peekNative) {
 NATIVE(pokeNative) {
     int32_t address = AS_INT(args[0]);
     Int     byte    = AS_INT(args[1]);
-    if (byte < 0 || byte > UINT8_MAX) {
+    if (byte & ~UINT8_MAX) {
         runtimeError("'%s' %s out of range.", "poke", "byte");
         return false;
     }
@@ -758,7 +758,7 @@ NATIVE(lcdDefcharNative) {
     Int      byte;
     int      i;
 
-    if (udc < 0 || udc > 7) {
+    if (udc & ~7) {
         runtimeError("'%s' %s out of range.", "lcd_defchar", "UDC");
         return false;
     }
@@ -769,13 +769,12 @@ NATIVE(lcdDefcharNative) {
     for (i = 0; i < 8; i++) {
         if (IS_INT(pattern->arr.values[i])) {
             byte = AS_INT(pattern->arr.values[i]);
-            if (byte < 0 || byte > UINT8_MAX) {
-                runtimeError("'%s' %s out of range.", "lcd_defchar", "byte");
-                return false;
-            }
+            if (byte & ~UINT8_MAX)
+                goto noByte;
             bitmap[i] = (char)byte;
         } else {
-            runtimeError("'%s' int expected at %d.", "lcd_defchar", i);
+        noByte:
+            runtimeError("'%s' %s expected at %d.", "lcd_defchar", "byte", i);
             return false;
         }
     }
@@ -1043,7 +1042,7 @@ static const Native allNatives[] = {             // Possible errors
     {"lcd_clear",   "-",      lcdClearNative},
     {"lcd_goto",    "NN-",    lcdGotoNative},
     {"lcd_puts",    "S-",     lcdPutsNative},
-    {"lcd_defchar", "NL=",    lcdDefcharNative}, // UDC out of range | bitmap must be 8 bytes | byte out of range | int expected at %
+    {"lcd_defchar", "NL=",    lcdDefcharNative}, // UDC out of range | bitmap must be 8 bytes | byte expected at %
     {"keycode",     "-n",     keycodeNative},
     {"sound",       "NN-",    soundNative},
     {"exec",        "Naaa-A", execNative},

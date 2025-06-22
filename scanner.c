@@ -13,7 +13,7 @@
 typedef struct {
     const char* start;
     const char* current;
-    int         line;
+    int16_t     line;
 } Scanner;
 
 static Scanner scanner;
