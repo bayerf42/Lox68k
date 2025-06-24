@@ -86,9 +86,8 @@ static Parser         parser;
 static Compiler*      currentComp;
 static ClassInfo*     currentClass;
 
-static Chunk* currentChunk(void) {
-    return &currentComp->target->chunk;
-}
+// inlined for IDE68K
+#define currentChunk() (&currentComp->target->chunk)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Error reporting
@@ -126,7 +125,7 @@ static void errorAtCurrent(const char* message) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void advance(void) {
-    parser.previous = parser.current; // structure assignment actually works in IDE68K even for small structs!
+    parser.previous = parser.current; // structure assignment actually works in IDE68K
 
     for (;;) {
         scanToken(&parser.current);
@@ -156,9 +155,8 @@ static void consumeExp(TokenType expected, const char* context) {
     errorAtCurrent(buffer);
 }
 
-static bool check(TokenType expected) {
-    return parser.current.type == expected;
-}
+// inlined for IDE68K
+#define check(expected) (parser.current.type == (TokenType)(expected))
 
 static bool match(TokenType expected) {
     if (parser.current.type != expected)
@@ -238,13 +236,14 @@ static void emitConstant(Value value) {
 }
 
 static void patchJump(int offset) {
+    Chunk* cc = currentChunk();
     // -2 to adjust for the bytecode for the jump offset itself.
-    int jump = currentChunk()->count - offset - 2;
+    int jump = cc->count - offset - 2;
 
     if (jump > UINT16_MAX)
         error("Jump too large.");
-    currentChunk()->code[offset]     = jump >> 8;
-    currentChunk()->code[offset + 1] = jump;
+    cc->code[offset]     = jump >> 8;
+    cc->code[offset + 1] = jump;
 }
 
 static void emitClosure(Compiler* compiler) {
@@ -368,7 +367,7 @@ static void dot(bool canAssign) {
 
 static void slice(bool canAssign) {
     if (match(TOKEN_RIGHT_BRACKET))
-        emitConstant(INT_VAL(INT32_MAX>>1));
+        emitConstant(INT_VAL(LOXINT_MAX));
     else {
         expression();
         consumeExp(TOKEN_RIGHT_BRACKET, "slice");

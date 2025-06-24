@@ -55,6 +55,8 @@ typedef struct ObjUpvalue  ObjUpvalue;
 #define PRTF_COMPACT 0x02
 
 #define LOWER_CASE_MASK 0x20
+#define LOXINT_MAX      0x3fffffff  // maximal signed 31 bit integer, not yet tagged
+
 #define isbinary(c)     (((c) | 1) == '1')
 
 

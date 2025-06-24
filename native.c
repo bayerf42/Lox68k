@@ -364,7 +364,7 @@ static const char* match_end; // for returning 2nd value
 static bool        match_here(const char* regexp, const char* text);
 
 // match a single char against pattern or character class
-static bool match_single(int pat, int c, bool escape) {
+static bool match_one(int pat, int c, bool escape) {
     char cclass;
     bool res;
     if (!c) return false;                                     // end of searched string reached
@@ -389,7 +389,7 @@ static bool match_single(int pat, int c, bool escape) {
 // maximal match for pat* regexp and variants
 static bool match_max(int pat, const char* regexp, const char* text, int limit, bool escape) {
     const char* t;
-    for (t = text; limit-- && match_single(pat, *t, escape); t++) {} // find maximal match
+    for (t = text; limit-- && match_one(pat, *t, escape); t++) {} // find maximal match
     do {
         if (match_here(regexp, t)) return true;
     } while (t-- > text); // reduce match
@@ -400,7 +400,7 @@ static bool match_max(int pat, const char* regexp, const char* text, int limit, 
 static bool match_min(int pat, const char* regexp, const char* text, bool escape) {
     do {
         if (match_here(regexp, text)) return true;
-    } while (match_single(pat, *text++, escape)); // extend match
+    } while (match_one(pat, *text++, escape)); // extend match
     return false;
 }
 
@@ -416,9 +416,9 @@ tail_recurse:
     if (regexp[1] == '*') return match_max(regexp[0], regexp + 2, text, -1, escape);
     if (regexp[1] == '?') return match_max(regexp[0], regexp + 2, text, 1, escape);
     if (regexp[1] == '-') return match_min(regexp[0], regexp + 2, text, escape);
-    if (regexp[1] == '+') return match_single(regexp[0], *text, escape)
+    if (regexp[1] == '+') return match_one(regexp[0], *text, escape)
                               && match_max(regexp[0], regexp + 2, text + 1, -1, escape);
-    if (match_single(regexp[0], *text, escape)) {++regexp; ++text; goto tail_recurse;}
+    if (match_one(regexp[0], *text, escape)) {++regexp; ++text; goto tail_recurse;}
     return false;
 }
 
@@ -508,7 +508,7 @@ NATIVE(ascNative) {
         runtimeError("'%s' %s out of range.", "asc", "index");
         return false;
     }
-    code   = string->chars[index] & 0xff;
+    code   = string->chars[index] & UINT8_MAX;
     RESULT = INT_VAL(code);
     return true;
 }
@@ -620,7 +620,7 @@ NATIVE(randomNative) {
     vm.randomState ^= vm.randomState << 13;
     vm.randomState ^= vm.randomState >> 17;
     vm.randomState ^= vm.randomState << 5;
-    RESULT          = INT_VAL(vm.randomState & 0x3fffffff);
+    RESULT          = INT_VAL(vm.randomState & LOXINT_MAX);
     return true;
 }
 
