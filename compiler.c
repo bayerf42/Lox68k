@@ -99,9 +99,9 @@ static void errorAt(Token* token, const char* message) {
     parser.panicMode = true;
     printf("[line %d] Error", token->line);
 
-    if (token->type == TOKEN_EOF)
+    if (token->type == (TokenType)TOKEN_EOF)
         putstr(" at end");
-    else if (token->type != TOKEN_ERROR) {
+    else if (token->type != (TokenType)TOKEN_ERROR) {
         // IDE68K's printf("%.*s") is broken
         putstr(" at '");
         putstrn(token->length, token->start);
@@ -129,7 +129,7 @@ static void advance(void) {
 
     for (;;) {
         scanToken(&parser.current);
-        if (parser.current.type != TOKEN_ERROR)
+        if (parser.current.type != (TokenType)TOKEN_ERROR)
             break;
         errorAtCurrent(parser.current.start);
     }
@@ -150,7 +150,8 @@ static void consumeExp(TokenType expected, const char* context) {
     }
     sprintf(buffer, "Expect '%c' %s %s.",
             TOKEN_CHARS[expected],
-            expected == TOKEN_LEFT_BRACE || expected == TOKEN_LEFT_PAREN ? "before" : "after",
+            expected == (TokenType)TOKEN_LEFT_BRACE || expected == (TokenType)TOKEN_LEFT_PAREN
+              ? "before" : "after",
             context);
     errorAtCurrent(buffer);
 }
@@ -168,9 +169,9 @@ static bool match(TokenType expected) {
 static void synchronize(void) {
     parser.panicMode = false;
 
-    while (parser.current.type != TOKEN_EOF) {
-        if (parser.previous.type == TOKEN_SEMICOLON ||
-            parser.current.type  >= TOKEN_BREAK)    // Tokens to synchronize on
+    while (parser.current.type != (TokenType)TOKEN_EOF) {
+        if (parser.previous.type == (TokenType)TOKEN_SEMICOLON ||
+            parser.current.type  >= (TokenType)TOKEN_BREAK)    // Tokens to synchronize on
             return;
         advance();
     }
@@ -400,13 +401,13 @@ static void index_(bool canAssign) {
 static void iter(bool canAssign) {
     TokenType accessor = parser.previous.type;
     if (canAssign && match(TOKEN_EQUAL)) {
-        if (accessor == TOKEN_HAT) {
+        if (accessor == (TokenType)TOKEN_HAT) {
             expression();
             emitByte(OP_SET_ITVAL);
         } else
             error("Invalid assignment target.");
     } else
-        emitByte(accessor == TOKEN_HAT ? OP_GET_ITVAL : OP_GET_ITKEY);
+        emitByte(accessor == (TokenType)TOKEN_HAT ? OP_GET_ITVAL : OP_GET_ITKEY);
 }
 
 static void litNil(bool canAssign) {
@@ -784,23 +785,20 @@ static const ParseRule rules[] = {
 #define getRule(type) (&rules[type])
 
 static void binary(bool canAssign) {
-    TokenType operatorType = parser.previous.type;
-    const ParseRule* rule  = getRule(operatorType);
+    TokenType ot           = parser.previous.type;
+    const ParseRule* rule  = getRule(ot);
     parsePrecedence((Precedence)(rule->precedence + 1));
-    switch (operatorType) {
-        case TOKEN_BANG_EQUAL:    emit2Bytes(OP_EQUAL, OP_NOT);          break;
-        case TOKEN_EQUAL_EQUAL:   emitByte  (OP_EQUAL);                  break;
-        case TOKEN_GREATER:       emit2Bytes(OP_SWAP,  OP_LESS);         break;
-        case TOKEN_LESS_EQUAL:    emit3Bytes(OP_SWAP,  OP_LESS, OP_NOT); break;
-        case TOKEN_LESS:          emitByte  (OP_LESS);                   break;
-        case TOKEN_GREATER_EQUAL: emit2Bytes(OP_LESS,  OP_NOT);          break;
-        case TOKEN_PLUS:          emitByte  (OP_ADD);                    break;
-        case TOKEN_MINUS:         emitByte  (OP_SUB);                    break;
-        case TOKEN_STAR:          emitByte  (OP_MUL);                    break;
-        case TOKEN_SLASH:         emitByte  (OP_DIV);                    break;
-        case TOKEN_BACKSLASH:     emitByte  (OP_MOD);                    break;
-        default: return; // Unreachable
-    }
+    if      (ot == (TokenType)TOKEN_BANG_EQUAL)    emit2Bytes(OP_EQUAL, OP_NOT);
+    else if (ot == (TokenType)TOKEN_EQUAL_EQUAL)   emitByte  (OP_EQUAL);
+    else if (ot == (TokenType)TOKEN_GREATER)       emit2Bytes(OP_SWAP,  OP_LESS);
+    else if (ot == (TokenType)TOKEN_LESS_EQUAL)    emit3Bytes(OP_SWAP,  OP_LESS, OP_NOT);
+    else if (ot == (TokenType)TOKEN_LESS)          emitByte  (OP_LESS);
+    else if (ot == (TokenType)TOKEN_GREATER_EQUAL) emit2Bytes(OP_LESS,  OP_NOT);
+    else if (ot == (TokenType)TOKEN_PLUS)          emitByte  (OP_ADD);
+    else if (ot == (TokenType)TOKEN_MINUS)         emitByte  (OP_SUB);
+    else if (ot == (TokenType)TOKEN_STAR)          emitByte  (OP_MUL);
+    else if (ot == (TokenType)TOKEN_SLASH)         emitByte  (OP_DIV);
+    else /*if (ot == (TokenType)TOKEN_BACKSLASH:*/ emitByte  (OP_MOD);
 }
 
 static void parsePrecedence(Precedence precedence) {
@@ -1143,7 +1141,7 @@ static void caseStatement(void) {
                 // patch its condition to jump to the next (= this case).
                 patchJump(prevCaseSkip);
             }
-            if (caseType == TOKEN_WHEN) {
+            if (caseType == (TokenType)TOKEN_WHEN) {
                 state = 1;
                 do {
                     emitByte(OP_DUP);
