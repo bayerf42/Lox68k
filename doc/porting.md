@@ -22,6 +22,9 @@
     expanding `Obj`s fields in each derived structure.
   * Some macros were resolved incorrectly, e.g. `READ_CONSTANT` in `vm.c`. Had to expand
     manually.
+  * Comparisons with enums unnecessarily extend both value to `long`; cast the enum constant
+    to its own type (!) to avoid this and use `.W` comparisons, e.g. in `compiler.c` with
+    `FunctionType`.
   * Wrong word-size absolute addressing
     * When a static (non exported) function in address range `$8000` - `$ffff` is called, the
       assembler generates absolute `.W` calls, which is wrong, since those calls sign-extend

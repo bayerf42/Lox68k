@@ -54,9 +54,9 @@ typedef struct {
 } ParseRule;
 
 typedef struct {
-    Token             name;       // 12 bytes
-    int8_t            depth;      // implicit padding byte on 68k forces struct size 16 to 
-    bool              isCaptured; // allow shift instead of multiplication in offset calculation 
+    Token             name;       // 10 bytes
+    int8_t            depth;
+    int8_t            isCaptured; 
 } Local;
 
 typedef struct LoopInfo {
@@ -211,7 +211,7 @@ static int emitJump(int instruction) {
 }
 
 static void emitReturn(void) {
-    if (currentComp->type == TYPE_INIT)
+    if (currentComp->type == (FunctionType)TYPE_INIT)
         emit3Bytes(OP_GET_LOCAL, 0, OP_RETURN);
     else
         emitByte(OP_RETURN_NIL);
@@ -270,8 +270,8 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     compiler->currentLoop = NULL;
     currentComp           = compiler;
 
-    if (type != TYPE_SCRIPT) {
-        if (type == TYPE_LAMBDA)
+    if (type != (FunctionType)TYPE_SCRIPT) {
+        if (type == (FunctionType)TYPE_LAMBDA)
             currentComp->target->name = INT_VAL(vm.lambdaCount++);
         else
             currentComp->target->name =
@@ -281,7 +281,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     local = &currentComp->locals[currentComp->localCount++];
     local->depth      = 0;
     local->isCaptured = false;
-    if (type >= TYPE_METHOD) {
+    if (type >= (FunctionType)TYPE_METHOD) {
         local->name.start  = "this";
         local->name.length = 4;
     } else {
@@ -815,7 +815,7 @@ static void parsePrecedence(Precedence precedence) {
         return;
     }
 
-    canAssign = precedence <= PREC_ASSIGNMENT;
+    canAssign = precedence <= (Precedence)PREC_ASSIGNMENT;
     (*prefixRule)(canAssign);
 
     while (precedence <= getRule(parser.current.type)->precedence) {
@@ -915,7 +915,7 @@ static void function(FunctionType type) {
     currentComp->target->arity |= restParm;        
 
     if (match(TOKEN_ARROW)) {
-        if (type == TYPE_INIT)
+        if (type == (FunctionType)TYPE_INIT)
             error("Can't return a value from an initializer.");
         expression();
         endCompiler(true);
@@ -929,7 +929,7 @@ static void function(FunctionType type) {
 
 static void method(void) {
     int          mname;
-    FunctionType type = TYPE_METHOD;
+    FunctionType type = TYPE_METHOD; 
 
     consume(TOKEN_IDENTIFIER, "Expect method name.");
     mname = identifierConstant(&parser.previous);
@@ -1210,13 +1210,13 @@ static void printStatement(void) {
 }
 
 static void returnStatement(void) {
-    if (currentComp->type == TYPE_SCRIPT)
+    if (currentComp->type == (FunctionType)TYPE_SCRIPT)
         error("Can't return from top-level code.");
 
     if (match(TOKEN_SEMICOLON))
         emitReturn();
     else {
-        if (currentComp->type == TYPE_INIT)
+        if (currentComp->type == (FunctionType)TYPE_INIT)
             error("Can't return a value from an initializer.");
         expression();
         consumeExp(TOKEN_SEMICOLON, "return value");
