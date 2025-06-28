@@ -60,7 +60,7 @@ void markObject(Obj* object) {
 #ifdef LOX_DBG
     if (vm.debug_log_gc & DBG_GC_MARK) {
         printf("GC %05x mark ", (int32_t)object);
-        printValue(OBJ_VAL(object), PRTF_MACHINE | PRTF_COMPACT);
+        printValue(OBJ_VAL(object), PRTF_MACHINE | PRTF_COMPACT | PRTF_NO_REALS);
         putstr("\n");
     }
 #endif
@@ -93,7 +93,7 @@ static void blackenObject(Obj* object) {
 #ifdef LOX_DBG
     if (vm.debug_log_gc & DBG_GC_BLACK) {
         printf("GC %05x blak ", (int32_t)object);
-        printValue(OBJ_VAL(object), PRTF_MACHINE | PRTF_COMPACT);
+        printValue(OBJ_VAL(object), PRTF_MACHINE | PRTF_COMPACT | PRTF_NO_REALS);
         putstr("\n");
     }
 #endif

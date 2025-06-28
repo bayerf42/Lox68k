@@ -49,10 +49,11 @@ typedef struct ObjUpvalue  ObjUpvalue;
 #define valuesEqual(a,b) ((a) == (b))
 
 // Printing flags
-#define PRTF_HUMAN   0x00
-#define PRTF_MACHINE 0x01
-#define PRTF_EXPAND  0x00
-#define PRTF_COMPACT 0x02
+#define PRTF_HUMAN    0x00
+#define PRTF_MACHINE  0x01
+#define PRTF_EXPAND   0x00
+#define PRTF_COMPACT  0x02
+#define PRTF_NO_REALS 0x04
 
 #define LOWER_CASE_MASK 0x20
 #define LOXINT_MAX      0x3fffffff  // maximal signed 31 bit integer, not yet tagged

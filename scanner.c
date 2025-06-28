@@ -81,6 +81,64 @@ again:
     }
 }
 
+static void number(Token* token, char start) {
+    bool exponentEmpty = true;
+    bool isReal        = false;
+
+    if (start == '%')
+        while (isbinary(peek()))
+            advance();
+    else if (start == '$')
+        while (isxdigit(peek()))
+            advance();
+    else {
+        while (isdigit(peek()))
+            advance();
+
+        // Look for fractional part
+        if (peek() == '.' && isdigit(peekNext())) {
+            // Consume the ".".
+            advance();
+            isReal = true;
+            while (isdigit(peek()))
+                advance();
+        }
+        // Look for exponential part
+        if ((peek() | LOWER_CASE_MASK) == 'e') { // 'E' or 'e'
+            advance();
+            isReal = true;
+            if (peek() == '+' || peek() == '-')
+                advance();
+            while (isdigit(peek())) {
+                advance();
+                exponentEmpty = false;
+            }
+            if (exponentEmpty) {
+                errorToken(token, "Empty exponent in number.");
+                return;
+            }
+        }
+    }
+    makeNumToken(token, isReal);
+}
+
+static void string(Token* token) {
+    while (peek() != '"' && !isAtEnd()) {
+        if (peek() == CHAR_LF || peek() == CHAR_RS)
+            scanner.line++;
+        advance();
+    }
+
+    if (isAtEnd()) {
+        errorToken(token, "Unterminated string.");
+        return;
+    }
+
+    // the closing quote
+    advance();
+    makeToken(token, TOKEN_STRING);
+}
+
 // Wrapping 4 bytes Trie info into a single 32 bit argument
 #ifdef WRAP_BIG_ENDIAN
 #define WRAP(a,b,c,d) ((a)<<24|(b)<<16|(c)<<8|(d))
@@ -183,64 +241,6 @@ noKeyword:
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
-
-static void number(Token* token, char start) {
-    bool exponentEmpty = true;
-    bool isReal        = false;
-
-    if (start == '%')
-        while (isbinary(peek()))
-            advance();
-    else if (start == '$')
-        while (isxdigit(peek()))
-            advance();
-    else {
-        while (isdigit(peek()))
-            advance();
-
-        // Look for fractional part
-        if (peek() == '.' && isdigit(peekNext())) {
-            // Consume the ".".
-            advance();
-            isReal = true;
-            while (isdigit(peek()))
-                advance();
-        }
-        // Look for exponential part
-        if ((peek() | LOWER_CASE_MASK) == 'e') { // 'E' or 'e'
-            advance();
-            isReal = true;
-            if (peek() == '+' || peek() == '-')
-                advance();
-            while (isdigit(peek())) {
-                advance();
-                exponentEmpty = false;
-            }
-            if (exponentEmpty) {
-                errorToken(token, "Empty exponent in number.");
-                return;
-            }
-        }
-    }
-    makeNumToken(token, isReal);
-}
-
-static void string(Token* token) {
-    while (peek() != '"' && !isAtEnd()) {
-        if (peek() == CHAR_LF || peek() == CHAR_RS)
-            scanner.line++;
-        advance();
-    }
-
-    if (isAtEnd()) {
-        errorToken(token, "Unterminated string.");
-        return;
-    }
-
-    // the closing quote
-    advance();
-    makeToken(token, TOKEN_STRING);
-}
 
 void scanToken(Token* token) {
     char      c;

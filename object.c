@@ -241,9 +241,9 @@ const char* typeName(ObjType type) {
     static const char* const typeNames[] = {
          "unknown",
          // ensure same order as enum declaration
-         "dynvar",  "fun",     "instance", "iterator",
-         "list",    "upvalue", "bound",    "class",
-         "closure", "native",  "real",     "string"
+         "dynvar",   "fun",      "upvalue", "instance",
+         "list",     "iterator", "bound",   "class",
+         "closure",  "native",   "real",    "string"
     };
     return typeNames[OBJ_DYNVAR<=type && type<=OBJ_STRING ? type + 1 : 0];
 }
@@ -290,7 +290,12 @@ void printObject(Value value, int flags) {
             break;
 
         case OBJ_REAL:
+#ifdef LOX_DBG
+            // avoid clobbering conversion buffer when called from GC tracing
+            putstr(flags & PRTF_NO_REALS ? "<real>" : formatReal(AS_REAL(value)));
+#else
             putstr(formatReal(AS_REAL(value)));
+#endif
             break;
 
         case OBJ_STRING:

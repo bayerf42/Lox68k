@@ -39,19 +39,19 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object types 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef enum {     //  callable  leaf object (keep enum order for type tests)
-    OBJ_DYNVAR,    //  .         .
-    OBJ_FUNCTION,  //  .         .
-    OBJ_INSTANCE,  //  .         .
-    OBJ_ITERATOR,  //  .         .
-    OBJ_LIST,      //  .         .
-    OBJ_UPVALUE,   //  .         .
-    OBJ_BOUND,     //  X         .
-    OBJ_CLASS,     //  X         .
-    OBJ_CLOSURE,   //  X         .
-    OBJ_NATIVE,    //  X         X
-    OBJ_REAL,      //  .         X
-    OBJ_STRING,    //  .         X
+typedef enum {     //  visible to user | callable | leaf object (keep enum order for type tests)
+    OBJ_DYNVAR,    //  .               | .        | .
+    OBJ_FUNCTION,  //  .               | .        | .
+    OBJ_UPVALUE,   //  .               | .        | .
+    OBJ_INSTANCE,  //  X               | .        | .
+    OBJ_LIST,      //  X               | .        | .
+    OBJ_ITERATOR,  //  X               | .        | .
+    OBJ_BOUND,     //  X               | X        | .
+    OBJ_CLASS,     //  X               | X        | .
+    OBJ_CLOSURE,   //  X               | X        | .
+    OBJ_NATIVE,    //  X               | X        | X
+    OBJ_REAL,      //  X               | .        | X
+    OBJ_STRING,    //  X               | .        | X
 } ObjType;
 
 // The IDE68K C compiler doesn't seem to like including struct Obj in the following structures
@@ -137,7 +137,7 @@ struct ObjString {
 
 struct ObjUpvalue {
     OBJ_HEADER
-    Value*          location;  // pointer into value stack or into my 'closed' field
+    Value*          location;  // pointer into value stack or to my 'uv.closed' field
     union {                    // only one of those is needed at any time: 
         ObjUpvalue* next;      // next in a list of open upvalues
         Value       closed;    // storage for closed upvalue migrated from value stack
