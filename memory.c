@@ -141,7 +141,8 @@ static void blackenObject(Obj* object) {
             break;
 
         case OBJ_UPVALUE:
-            markValue(((ObjUpvalue*)object)->closed);
+            // No need to check for actual variant since NIL==NULL and Obj* isomorphic to Value
+            markValue(((ObjUpvalue*)object)->uv.closed);
             break;
     }
 }
@@ -223,7 +224,7 @@ static void markRoots(void) {
         markValue(frame->handler);
     }
 
-    for (upvalue = vm.openUpvalues; upvalue != NULL; upvalue = upvalue->nextUpvalue)
+    for (upvalue = vm.openUpvalues; upvalue != NULL; upvalue = upvalue->uv.next)
         markObject((Obj*)upvalue);
 
     markTable(&vm.globals);

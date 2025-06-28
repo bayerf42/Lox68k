@@ -410,30 +410,33 @@ static ObjUpvalue* captureUpvalue(Value* local) {
 
     while (upvalue != NULL && upvalue->location > local) {
         prevUpvalue = upvalue;
-        upvalue     = upvalue->nextUpvalue;
+        upvalue     = upvalue->uv.next;
     }
 
     if (upvalue != NULL && upvalue->location == local)
         return upvalue;
 
     createdUpvalue = makeUpvalue(local);
-    createdUpvalue->nextUpvalue = upvalue;
+    createdUpvalue->uv.next = upvalue;
 
     if (prevUpvalue == NULL)
         vm.openUpvalues = createdUpvalue;
     else
-        prevUpvalue->nextUpvalue = createdUpvalue;
+        prevUpvalue->uv.next = createdUpvalue;
 
     return createdUpvalue;
 }
 
 static void closeUpvalues(Value* last) {
     ObjUpvalue* upvalue;
+
     while (vm.openUpvalues != NULL && vm.openUpvalues->location >= last) {
-        upvalue           = vm.openUpvalues;
-        upvalue->closed   = *upvalue->location;
-        upvalue->location = &upvalue->closed;
-        vm.openUpvalues   = upvalue->nextUpvalue;
+        upvalue            = vm.openUpvalues;
+        vm.openUpvalues    = upvalue->uv.next;
+        // upvalue unlinked from open list, so uv.next not needed anymore,
+        // re-use its memory for the value itself (uv.closed)
+        upvalue->uv.closed = *upvalue->location;
+        upvalue->location  = &upvalue->uv.closed;
     }
 }
 

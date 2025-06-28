@@ -137,9 +137,11 @@ struct ObjString {
 
 struct ObjUpvalue {
     OBJ_HEADER
-    Value*       location;     // pointer into value stack or into my 'closed' field
-    Value        closed;       // storage for closed upvalue migrated from value stack
-    ObjUpvalue*  nextUpvalue;  // next in a list of open upvalues
+    Value*          location;  // pointer into value stack or into my 'closed' field
+    union {                    // only one of those is needed at any time: 
+        ObjUpvalue* next;      // next in a list of open upvalues
+        Value       closed;    // storage for closed upvalue migrated from value stack
+    } uv;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
