@@ -17,15 +17,8 @@
 
 #define PRINT_SEPARATOR "   "
 
-typedef struct {
-    Token current;
-    Token previous;
-    bool  hadError;
-    bool  panicMode;
-} Parser;
-
-typedef enum {
-    PREC_NONE,
+typedef enum {       // operator precedence 
+    PREC_NONE,       // lowest
     PREC_ASSIGNMENT, // =
     PREC_OR,         // or
     PREC_AND,        // and
@@ -37,15 +30,23 @@ typedef enum {
     PREC_POSTFIX,    // . () [] @ ^
 } Precedence;
 
-typedef enum {
-    TYPE_SCRIPT,
-    TYPE_FUN,
-    TYPE_LAMBDA,
-    TYPE_METHOD,     // last 2 types allowed in classes only 
-    TYPE_INIT,
+typedef enum {       // function type  
+    TYPE_SCRIPT,     // top-level script, input from user
+    TYPE_FUN,        // function declaration
+    TYPE_LAMBDA,     // anonymous (lambda) function
+                     // next 2 types allowed in classes only 
+    TYPE_METHOD,     // method in a class declaration 
+    TYPE_INIT,       // initialization method (constructor)  
 } FunctionType;
 
 typedef void (*ParseFn)(bool canAssign);
+
+typedef struct {
+    Token             current;
+    Token             previous;
+    bool              hadError;
+    bool              panicMode;
+} Parser;
 
 typedef struct {
     ParseFn           prefix;
@@ -150,7 +151,8 @@ static void consumeExp(TokenType expected, const char* context) {
     }
     sprintf(buffer, "Expect '%c' %s %s.",
             TOKEN_CHARS[expected],
-            expected == (TokenType)TOKEN_LEFT_BRACE || expected == (TokenType)TOKEN_LEFT_PAREN
+            expected == (TokenType)TOKEN_LEFT_BRACE ||
+            expected == (TokenType)TOKEN_LEFT_PAREN
               ? "before" : "after",
             context);
     errorAtCurrent(buffer);
