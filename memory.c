@@ -141,8 +141,7 @@ static void blackenObject(Obj* object) {
             break;
 
         case OBJ_UPVALUE:
-            // No need to check for actual variant since NIL==NULL and Obj* isomorphic to Value
-            markValue(((ObjUpvalue*)object)->uv.closed);
+            markValue(*((ObjUpvalue*)object)->location);
             break;
     }
 }

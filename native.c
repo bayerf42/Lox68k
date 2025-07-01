@@ -86,36 +86,45 @@ bool callNative(const Native* native, int argCount, Value* args) {
 // Concatening fun name with ## crashes IDE68K compiler
 #define NATIVE(fun) static bool fun(int argCount, Value* args)
 
-// Calling convention for natives:
-// ===============================
+// # Calling convention for natives:
+//
+// ## General
 //
 // 1st parameter is number of arguments (only useful for variadic arity)
 // 2nd parameter is pointer into value stack slice, arguments can be accessed by
-// args[0], args[1], etc.
+// `args[0]`, `args[1]`, etc.
 //
 // Basic arity and type checks have already been done via the signature string,
-// only in special cases you have to do additional checks, e.g. in join, lcd_defchar.
+// only in special cases you have to do additional checks, e.g. in `join`, `lcd_defchar`.
+//
+// ## Signature string format
 //
 // Each char in the signature strings before '-' or '=' indicates the allowed argument type
-// at the corresponding position. See matchesType() above for possible types.
+// at the corresponding position. See `matchesType()` above for possible types.
 // Upper case means required parameter, lower case optional parameter (must be trailing).
-// Test argCount for actual number in this case.
+// Test `argCount` for actual number in this case.
 // When an '-' follows, the native never raises an error, with '=' it may raise an error.
 // After that the return type is indicated, upper case meaning definite type, lower case may
-// return nil. End of string means nil is returned always. The return type is only used for
+// return `nil`. End of string means `nil` is returned always. The return type is only used for
 // documentation currently.
+//
+// ## Allocations
 //
 // If you allocate heap objects, you have to ensure that objects allocated before are not
 // garbage collected, so you have to add them to the root set of reachable objects.
-// The easiest way to do this is to push() every allocated object and drop() before returning. 
+// The easiest way to do this is to `push()` every allocated object and `drop()` before returning. 
 //
 // Make sure that the value stack level is the same after calling your native or
 // terrible things may happen.
 //
-// The result is stored into args[-1] (use macro RESULT)
+// ## Return value
+//
+// The result is stored into `args[-1]` (use macro `RESULT`)
+//
+// ## Error handling
 //
 // Return true to indicate success, or false on error.
-// You have to call runtimeError(...) before returning false to provide a useful
+// You have to call `runtimeError()` before returning false to provide a useful
 // error message and setup possible exception handling.
 
 
