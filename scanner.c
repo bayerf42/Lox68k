@@ -55,6 +55,13 @@ static void errorToken(Token* token, const char* message) {
     token->line   = scanner.line;
 }
 
+void syntheticToken(Token* token, const char* name) {
+    token->type   = TOKEN_IDENTIFIER;
+    token->start  = name;
+    token->length = strlen(name);
+    token->line   = 0;
+}
+
 static void makeNumToken(Token* token, bool isReal) {
     makeToken(token, isReal ? TOKEN_REAL : TOKEN_INT);
     if (token->length == 1 && !isdigit(*token->start))

@@ -55,7 +55,7 @@ typedef struct {
 } ParseRule;
 
 typedef struct {
-    Token             name;       // 10 bytes
+    Token             name;
     int8_t            depth;
     int8_t            isCaptured; 
 } Local;
@@ -83,9 +83,13 @@ typedef struct ClassInfo {
     bool              hasSuperclass;
 } ClassInfo;
 
+// Compiler globals
 static Parser         parser;
 static Compiler*      currentComp;
 static ClassInfo*     currentClass;
+static Token          synthThis;
+static Token          synthSuper;
+static Token          synthCase;
 
 // inlined for IDE68K
 #define currentChunk() (&currentComp->target->chunk)
@@ -126,7 +130,7 @@ static void errorAtCurrent(const char* message) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void advance(void) {
-    parser.previous = parser.current; // structure assignment actually works in IDE68K
+    parser.previous = parser.current; // copy struct
 
     for (;;) {
         scanToken(&parser.current);
@@ -523,14 +527,14 @@ static int resolveUpvalue(Compiler* compiler, Token* name) {
     return -1;
 }
 
-static void addLocal(Token name) {
+static void addLocal(Token* name) {
     Local* local;
     if (currentComp->localCount == MAX_LOCALS) {
         error("Too many local variables in function.");
         return;
     }
     local = &currentComp->locals[currentComp->localCount++];
-    local->name       = name;
+    local->name       = *name; // copy struct
     local->depth      = -1;
     local->isCaptured = false;
 }
@@ -552,21 +556,21 @@ static void declareVariable(void) {
         if (identifiersEqual(name, &local->name))
             error("Already a variable with this name in this scope.");
     }
-    addLocal(*name);
+    addLocal(name);
 }
 
-static void namedVariable(Token name, bool canAssign) {
+static void namedVariable(Token* name, bool canAssign) {
     int getOp, setOp;
-    int arg = resolveLocal(currentComp, &name);
+    int arg = resolveLocal(currentComp, name);
 
     if (arg != -1) {
         getOp = OP_GET_LOCAL;
         setOp = OP_SET_LOCAL;
-    } else if ((arg = resolveUpvalue(currentComp, &name)) != -1) {
+    } else if ((arg = resolveUpvalue(currentComp, name)) != -1) {
         getOp = OP_GET_UPVALUE;
         setOp = OP_SET_UPVALUE;
     } else {
-        arg   = identifierConstant(&name);
+        arg   = identifierConstant(name);
         getOp = OP_GET_GLOBAL;
         setOp = OP_SET_GLOBAL;
     }
@@ -578,19 +582,12 @@ static void namedVariable(Token name, bool canAssign) {
 }
 
 static void variable(bool canAssign) {
-    namedVariable(parser.previous, canAssign);
+    namedVariable(&parser.previous, canAssign);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Expressions continued
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-static Token syntheticToken(const char* text) {
-    Token token;
-    token.start  = text;
-    token.length = (int)strlen(text);
-    return token;
-}
 
 static void keySuper(bool canAssign) {
     int  mname;
@@ -606,13 +603,13 @@ static void keySuper(bool canAssign) {
     consume(TOKEN_IDENTIFIER, "Expect superclass method name.");
     mname = identifierConstant(&parser.previous);
 
-    namedVariable(syntheticToken("this"), false);
+    namedVariable(&synthThis, false);
     if (match(TOKEN_LEFT_PAREN)) {
         argCount = argumentList(&isVarArg, TOKEN_RIGHT_PAREN);
-        namedVariable(syntheticToken("super"), false);
+        namedVariable(&synthSuper, false);
         emit3Bytes(isVarArg ? OP_VSUPER_INVOKE : OP_SUPER_INVOKE, mname, argCount);
     } else {
-        namedVariable(syntheticToken("super"), false);
+        namedVariable(&synthSuper, false);
         emit2Bytes(OP_GET_SUPER, mname);
     }
 }
@@ -949,7 +946,7 @@ static void classDeclaration(void) {
     ClassInfo classInfo;
 
     consume(TOKEN_IDENTIFIER, "Expect class name.");
-    className    = parser.previous;
+    className    = parser.previous; // copy struct
     nameConstant = identifierConstant(&className);
     declareVariable();
 
@@ -965,15 +962,15 @@ static void classDeclaration(void) {
         expression(); 
 
         beginScope();
-        addLocal(syntheticToken("super"));
+        addLocal(&synthSuper);
         defineVariable(0);
 
-        namedVariable(className, false);
+        namedVariable(&className, false);
         emitByte(OP_INHERIT);
         classInfo.hasSuperclass = true;
     }
 
-    namedVariable(className, false);
+    namedVariable(&className, false);
     consumeExp(TOKEN_LEFT_BRACE, "class body");
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
         method();
@@ -1123,7 +1120,7 @@ static void caseStatement(void) {
 
     beginScope();
     // reserve one stack slot for case test value
-    addLocal(syntheticToken("case"));
+    addLocal(&synthCase);
     defineVariable(0);
 
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
@@ -1301,6 +1298,10 @@ ObjFunction* compile(const char* source) {
     vm.totallyAllocated = 0;
     vm.numGCs           = 0;
 #endif
+
+    syntheticToken(&synthThis,  "this");
+    syntheticToken(&synthSuper, "super");
+    syntheticToken(&synthCase,  "case");
 
     initScanner(source);
     initCompiler(&compiler, TYPE_SCRIPT);
