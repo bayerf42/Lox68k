@@ -1,6 +1,6 @@
 ### Python script to build a ROM image including Monitor, FFP lib, and Clox68k
 
-import bincopy, os, sys
+import bincopy, os, sys, time
 
 rom_path = "../roms/"
 rom_base = 0x40000
@@ -30,6 +30,10 @@ except FileNotFoundError:
 finally:
     # Terminate string with NUL byte
     rom.add_binary([0], lib_base + lib_size, overwrite = True)
+
+## Add ROM creation timestamp
+created = time.strftime("%Y-%m-%d %H:%M")
+rom.add_binary(bytes(created, 'ascii'), rom_base + 0x80, overwrite = True)
 
 ## Write entire ROM image
 rom.fill()
