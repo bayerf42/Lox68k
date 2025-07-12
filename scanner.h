@@ -53,6 +53,5 @@ typedef struct {
 
 void initScanner(const char* source);
 void scanToken(Token* token);
-void syntheticToken(Token* token, const char* name);
 
 #endif

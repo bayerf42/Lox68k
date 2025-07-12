@@ -87,9 +87,11 @@ typedef struct ClassInfo {
 static Parser         parser;
 static Compiler*      currentComp;
 static ClassInfo*     currentClass;
-static Token          synthThis;
-static Token          synthSuper;
-static Token          synthCase;
+
+// Synthetic tokens (in ROM)
+static const Token synthThis  = { "this",  4, TOKEN_IDENTIFIER, 0};
+static const Token synthSuper = { "super", 5, TOKEN_IDENTIFIER, 0};
+static const Token synthCase  = { "case",  4, TOKEN_IDENTIFIER, 0};
 
 // inlined for IDE68K
 #define currentChunk() (&currentComp->target->chunk)
@@ -98,7 +100,7 @@ static Token          synthCase;
 // Error reporting
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void errorAt(Token* token, const char* message) {
+static void errorAt(const Token* token, const char* message) {
     if (parser.panicMode)
         return;
     parser.panicMode = true;
@@ -338,7 +340,7 @@ static void  declaration(bool topLevel);
 static void  function(FunctionType type);
 static void  parsePrecedence(Precedence precedence);
 static int   argumentList(bool* isVarArg, TokenType terminator);
-static int   identifierConstant(Token* name);
+static int   identifierConstant(const Token* name);
 static void  binary(bool canAssign);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -453,7 +455,7 @@ static void string(bool canAssign) {
     emitConstant(OBJ_VAL(str));
 }
 
-static int identifierConstant(Token* name) {
+static int identifierConstant(const Token* name) {
     // Redundant code in IDE68K without str local variable?
     ObjString* str = makeString(name->start, name->length);
     return makeConstant(OBJ_VAL(str));
@@ -469,13 +471,13 @@ static void list(bool canAssign) {
 // Variable handling
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static bool identifiersEqual(Token* a, Token* b) {
+static bool identifiersEqual(const Token* a, const Token* b) {
     if (a->length != b->length)
         return false;
     return fix_memcmp(a->start, b->start, a->length) == 0;
 }
 
-static int resolveLocal(Compiler* compiler, Token* name) {
+static int resolveLocal(Compiler* compiler, const Token* name) {
     int    i;
     Local* local;
 
@@ -508,7 +510,7 @@ static int addUpvalue(Compiler* compiler, int index, bool isLocal) {
     return compiler->target->upvalueCount++;
 }
 
-static int resolveUpvalue(Compiler* compiler, Token* name) {
+static int resolveUpvalue(Compiler* compiler, const Token* name) {
     int local, upvalue;
 
     if (compiler->enclosing == NULL)
@@ -527,7 +529,7 @@ static int resolveUpvalue(Compiler* compiler, Token* name) {
     return -1;
 }
 
-static void addLocal(Token* name) {
+static void addLocal(const Token* name) {
     Local* local;
     if (currentComp->localCount == MAX_LOCALS) {
         error("Too many local variables in function.");
@@ -540,9 +542,9 @@ static void addLocal(Token* name) {
 }
 
 static void declareVariable(void) {
-    Token* name;
-    int    i;
-    Local* local;
+    const Token* name;
+    int          i;
+    Local*       local;
 
     if (currentComp->scopeDepth == 0)
         return;
@@ -559,7 +561,7 @@ static void declareVariable(void) {
     addLocal(name);
 }
 
-static void namedVariable(Token* name, bool canAssign) {
+static void namedVariable(const Token* name, bool canAssign) {
     int getOp, setOp;
     int arg = resolveLocal(currentComp, name);
 
@@ -1298,10 +1300,6 @@ ObjFunction* compile(const char* source) {
     vm.totallyAllocated = 0;
     vm.numGCs           = 0;
 #endif
-
-    syntheticToken(&synthThis,  "this");
-    syntheticToken(&synthSuper, "super");
-    syntheticToken(&synthCase,  "case");
 
     initScanner(source);
     initCompiler(&compiler, TYPE_SCRIPT);
