@@ -229,7 +229,7 @@ static void emitReturn(void) {
 static int makeConstant(Value value) {
     int constant = addConstant(currentChunk(), value);
     if (constant > UINT8_MAX) {
-        error("Too many constants in one chunk.");
+        error("Too many constants in function.");
         return 0;
     }
     return constant;
@@ -485,7 +485,7 @@ static int resolveLocal(Compiler* compiler, const Token* name) {
         local = &compiler->locals[i];
         if (identifiersEqual(name, &local->name)) {
             if (local->depth == -1)
-                error("Can't read local variable in its own initializer.");
+                error("Can't read local variable in its initializer.");
             return i;
         }
     }
@@ -556,7 +556,7 @@ static void declareVariable(void) {
             break;
 
         if (identifiersEqual(name, &local->name))
-            error("Already a variable with this name in this scope.");
+            error("Duplicate variable name in scope.");
     }
     addLocal(name);
 }
@@ -597,9 +597,9 @@ static void keySuper(bool canAssign) {
     bool isVarArg = false;
 
     if (currentClass == NULL)
-        error("Can't use 'super' outside of a class.");
+        error("Invalid outside of a class.");
     else if (!currentClass->hasSuperclass)
-        error("Can't use 'super' in a class with no superclass.");
+        error("Invalid in a class with no superclass.");
 
     consumeExp(TOKEN_DOT, "'super'");
     consume(TOKEN_IDENTIFIER, "Expect superclass method name.");
@@ -618,7 +618,7 @@ static void keySuper(bool canAssign) {
 
 static void keyThis(bool canAssign) {
     if (currentClass == NULL) {
-        error("Can't use 'this' outside of a class.");
+        error("Invalid outside of a class.");
         return;
     }
     variable(false);
@@ -901,7 +901,7 @@ static void function(FunctionType type) {
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
             if (restParm)
-                errorAtCurrent("No more parameters allowed after rest parameter.");
+                errorAtCurrent("Rest parameter must be last.");
             if (++currentComp->target->arity >= MAX_LOCALS)
                 errorAtCurrent("Too many parameters.");
             if (match(TOKEN_DOT_DOT))
@@ -915,7 +915,7 @@ static void function(FunctionType type) {
 
     if (match(TOKEN_ARROW)) {
         if (type == (FunctionType)TYPE_INIT)
-            error("Can't return a value from an initializer.");
+            error("Can't return value from initializer.");
         expression();
         endCompiler(true);
     } else {
@@ -1132,7 +1132,7 @@ static void caseStatement(void) {
             emptyBranch = true;
             caseType    = parser.previous.type;
             if (state == 2)
-                error("Can't have another branch after 'else'.");
+                error("Can't have branch after 'else'.");
             if (state == 1) {
                 // at end of previous case, jump over the others.
                 if (caseCount < MAX_BRANCHES)
@@ -1210,13 +1210,13 @@ static void printStatement(void) {
 
 static void returnStatement(void) {
     if (currentComp->type == (FunctionType)TYPE_SCRIPT)
-        error("Can't return from top-level code.");
+        error("Can't return from top-level.");
 
     if (match(TOKEN_SEMICOLON))
         emitReturn();
     else {
         if (currentComp->type == (FunctionType)TYPE_INIT)
-            error("Can't return a value from an initializer.");
+            error("Can't return value from initializer.");
         expression();
         consumeExp(TOKEN_SEMICOLON, "return value");
         emitByte(OP_RETURN);
