@@ -151,19 +151,10 @@ void userError(Value exception) {
 }
 
 void initVM(void) {
+    // All other fields zeroed.
     resetStack();
-    vm.objects        = NULL;
-    vm.bytesAllocated = 0;
-    vm.grayCount      = 0;
-    vm.lambdaCount    = 0;
-    vm.randomState    = 47110815;
-
-    initTable(&vm.globals);
-    initTable(&vm.strings);
-
-    vm.initString = NULL;
-    vm.initString = makeString0("init");
-
+    vm.randomState = 47110815;
+    vm.initString  = makeString0("init");
     defineAllNatives();
 }
 
