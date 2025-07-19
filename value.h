@@ -73,6 +73,5 @@ void        freeValueArray(ValueArray* array);
 void        freezeValueArray(ValueArray* array);
 void        printValue(Value value, int flags);
 const char* valueType(Value value);
-uint32_t    hashValue(Value value);
 
 #endif

@@ -48,9 +48,3 @@ const char* valueType(Value value) {
     else if (IS_INT(value))    return "int";
     else                       return typeName(OBJ_TYPE(value));
 }
-
-uint32_t hashValue(Value value) {
-    if   (IS_STRING(value)) return AS_STRING(value)->hash;
-    else                    return value;
-}
-

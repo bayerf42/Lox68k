@@ -17,8 +17,12 @@ void freeTable(Table* table) {
     initTable(table);
 }
 
+
+
+#define HASH_VALUE(val) (IS_STRING(val) ? AS_STRING(val)->hash : (val))
+
 static Entry* findEntry(Entry* entries, int capacity, Value key) {
-    uint32_t index     = hashValue(key) & (capacity - 1);
+    uint32_t index     = HASH_VALUE(key) & (capacity - 1);
     Entry*   tombstone = NULL;
     Entry*   entry;
 
