@@ -139,8 +139,9 @@ bool callNative(const Native* native, int argCount, Value* args) {
     }
 
 NATIVE(absNative) {
-    if (IS_INT(args[0]))
-        RESULT = INT_VAL(abs(AS_INT(args[0])));
+    Value v = args[0];
+    if (IS_INT(v))
+        RESULT = (v >= 0) ? v : -v + 2; // relying on int value tagging
     else
         RESULT = makeReal(fabs(AS_REAL(args[0])));
     return true;

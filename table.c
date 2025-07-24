@@ -17,8 +17,6 @@ void freeTable(Table* table) {
     initTable(table);
 }
 
-
-
 #define HASH_VALUE(val) (IS_STRING(val) ? AS_STRING(val)->hash : (val))
 
 static Entry* findEntry(Entry* entries, int capacity, Value key) {

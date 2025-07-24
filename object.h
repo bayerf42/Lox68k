@@ -163,13 +163,14 @@ ObjString*   makeString(const char* chars, int length);
 ObjUpvalue*  makeUpvalue(Value* slot);
 
 void         printObject(Value value, int flags);
-const char*  typeName(ObjType type);
 bool         isObjType(Value value, ObjType type);
 bool         isCallable(Value value);
+const char*  typeName(ObjType type);
+const char*  functionName(ObjFunction* function);
 
 void         insertIntoList(ObjList* list, Value value, int index);
-ObjList*     sliceFromList(ObjList* list, int begin, int end);
 void         deleteFromList(ObjList* list, int index);
+ObjList*     sliceFromList(ObjList* list, int begin, int end);
 bool         validateListIndex(ObjList* list, int* index);
 ObjList*     concatLists(ObjList* a, ObjList* b);
 
@@ -182,7 +183,6 @@ const char*  formatReal(Real val);
 const char*  formatInt(Int val);
 const char*  formatHex(Int val);
 const char*  formatBin(Int val);
-const char*  functionName(ObjFunction* function);
 Value        parseInt(const char* start, bool checkLen);
 void         putstrn(int len, const char* str);
 
