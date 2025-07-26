@@ -87,6 +87,7 @@ typedef struct ClassInfo {
 static Parser         parser;
 static Compiler*      currentComp;
 static ClassInfo*     currentClass;
+static Int            lambdaCount;
 
 // Synthetic tokens (in ROM)
 static const Token synthThis  = { "this",  4, TOKEN_IDENTIFIER, 0};
@@ -281,7 +282,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
 
     if (type != (FunctionType)TYPE_SCRIPT) {
         if (type == (FunctionType)TYPE_LAMBDA)
-            currentComp->target->name = INT_VAL(vm.lambdaCount++);
+            currentComp->target->name = INT_VAL(lambdaCount++);
         else
             currentComp->target->name =
                 OBJ_VAL(makeString(parser.previous.start, parser.previous.length));

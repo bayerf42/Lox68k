@@ -71,7 +71,7 @@ _push:
        lea       _vm.W,A1
        cmpi.l    #_vm+16388,(A1)           ; beyond end of value stack
        blo.s     .push
-       st        20011(A1)                 ; stack overflow
+       st        20007(A1)                 ; low byte of stack overflow
        rts
 
 .push  move.l    (A1),A0                   ; push actually

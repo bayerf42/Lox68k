@@ -30,11 +30,21 @@ class Rectangle < Shape {
   area() -> this.w * this.h
 }
 
+class Dot < Shape {
+  // init inherited
+
+  area() -> 0
+}
+
 var r = Rectangle(10,20,30,40);
 var c = Circle(-10,-20,100);
+var d = Dot(4,5); // inherited init DOESN'T raise error
 
 print r,,r.area();
 print c,,c.area();
+print d,,c.area();
 
 // Fail to instantiate abstract class
-var s = Shape(23,45);
+// var s = Shape(23,45);
+
+fun test() -> map(fun (obj) -> obj.area(), [r,d,c])
