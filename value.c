@@ -5,9 +5,7 @@
 #include "value.h"
 
 void initValueArray(ValueArray* array) {
-    array->values   = NULL;
-    array->capacity = 0;
-    array->count    = 0;
+    mem_clear(array, sizeof(ValueArray));
 }
 
 void appendValueArray(ValueArray* array, Value value) {

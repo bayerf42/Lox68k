@@ -7,9 +7,7 @@
 #include "vm.h"
 
 void initTable(Table* table) {
-    table->count    = 0;
-    table->capacity = 0;
-    table->entries  = NULL;
+    mem_clear(table, sizeof(Table));
 }
 
 void freeTable(Table* table) {

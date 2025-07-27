@@ -15,6 +15,17 @@ _fix_memcpy:
 .test  dbra      D1,.loop
        rts
 
+; void mem_clear(int* dest, size_t size);
+       xdef      _mem_clear
+_mem_clear:
+       movea.l   (4,A7),A0                 ; dest
+       move.l    (8,A7),D0                 ; size
+       asr.w     #2,D0                     ; Assume size multiple of 4                     
+       bra.s     .test
+.loop  clr.l     (A0)+
+.test  dbra      D0,.loop
+       rts
+
 ; int fix_memcmp(const char* a, const char* b, size_t size);
        xdef      _fix_memcmp
 _fix_memcmp:

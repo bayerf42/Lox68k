@@ -100,6 +100,7 @@ typedef double Real;
 // use standard routines here
 #define fix_memcpy     memcpy
 #define fix_memcmp     memcmp
+#define mem_clear(a,n) memset(a,0,n)
 #define putstr(str)    fputs((str),stdout)
 
 // hide Kit's assembly helpers 

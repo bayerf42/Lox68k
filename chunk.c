@@ -5,13 +5,7 @@
 #include "vm.h"
 
 void initChunk(Chunk* chunk) {
-    chunk->count        = 0;
-    chunk->capacity     = 0;
-    chunk->code         = NULL;
-    chunk->lineCount    = 0;
-    chunk->lineCapacity = 0;
-    chunk->lines        = NULL;
-    initValueArray(&chunk->constants);
+    mem_clear(chunk, sizeof(Chunk));
 }
 
 void freeChunk(Chunk* chunk) {
