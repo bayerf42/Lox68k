@@ -42,7 +42,7 @@ var d = Dot(4,5); // inherited init DOESN'T raise error
 
 print r,,r.area();
 print c,,c.area();
-print d,,c.area();
+print d,,d.area();
 
 // Fail to instantiate abstract class
 // var s = Shape(23,45);
