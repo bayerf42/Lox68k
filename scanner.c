@@ -114,11 +114,18 @@ static void number(Token* token, char start) {
                 exponentEmpty = false;
             }
             if (exponentEmpty) {
-                errorToken(token, "Empty exponent in number.");
+                errorToken(token, "Empty exponent part.");
                 return;
             }
         }
     }
+
+    if (isalnum(peek())) {
+        sprintf(buffer, "Invalid digit '%c'.", peek());
+        errorToken(token, buffer);
+	return;
+    }
+
     makeNumToken(token, isReal);
 }
 

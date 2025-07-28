@@ -762,7 +762,7 @@ nextInstNoSO:
                     bInt = AS_INT(pop());
                     aInt = AS_INT(pop());
                     if (bInt == 0) {
-                        runtimeError("div by zero.");
+                        runtimeError("Div by zero.");
                         goto handleError;
                     }
                     if (CURR_INSTR()==OP_DIV) 
@@ -789,7 +789,7 @@ nextInstNoSO:
                 goto handleError;
             }
             if (bReal == 0) {
-                runtimeError("div by zero.");
+                runtimeError("Div by zero.");
                 goto handleError;
             }
             errno = 0;
