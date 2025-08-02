@@ -90,9 +90,9 @@ static ClassInfo*     currentClass;
 static Int            lambdaCount;
 
 // Synthetic tokens (in ROM)
+static const Token synthEmpty = { "",      0, TOKEN_IDENTIFIER, 0};
 static const Token synthThis  = { "this",  4, TOKEN_IDENTIFIER, 0};
 static const Token synthSuper = { "super", 5, TOKEN_IDENTIFIER, 0};
-static const Token synthCase  = { "case",  4, TOKEN_IDENTIFIER, 0};
 
 // inlined for IDE68K
 #define currentChunk() (&currentComp->target->chunk)
@@ -291,13 +291,8 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     local = &currentComp->locals[currentComp->localCount++];
     local->depth      = 0;
     local->isCaptured = false;
-    if (type >= (FunctionType)TYPE_METHOD) {
-        local->name.start  = "this";
-        local->name.length = 4;
-    } else {
-        local->name.start  = "";
-        local->name.length = 0;
-    }
+    local->name       =  *((type >= (FunctionType)TYPE_METHOD) ? &synthThis : &synthEmpty);
+    // IDE68K doesn't allow struct in ?: operator, only struct *
 }
 
 static void endCompiler(bool returnExpr) {
@@ -1123,7 +1118,7 @@ static void caseStatement(void) {
 
     beginScope();
     // reserve one stack slot for case test value
-    addLocal(&synthCase);
+    addLocal(&synthEmpty);
     defineVariable(0);
 
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {

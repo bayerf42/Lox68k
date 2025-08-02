@@ -120,6 +120,7 @@ static void number(Token* token, char start) {
         }
     }
 
+    // Don't silently begin a new token when an alphanumeric char follows directly
     if (isalnum(peek())) {
         sprintf(buffer, "Invalid digit '%c'.", peek());
         errorToken(token, buffer);

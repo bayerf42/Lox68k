@@ -13,8 +13,8 @@ typedef uint8_t Upvalue; // lower 7 bits index, highest bit set if local
 #define REST_PARM_MASK 0x80
 
 typedef struct {
-    int16_t offset;
-    int16_t line;
+    int16_t    offset;
+    int16_t    line;
 } LineStart;
 
 typedef struct {
