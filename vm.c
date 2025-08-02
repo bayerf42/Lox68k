@@ -11,6 +11,10 @@
 
 VM vm;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Printing call/value stacks
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static void resetStack(void) {
     vm.sp           = vm.stack;
     vm.frameCount   = 0;
@@ -63,10 +67,33 @@ static void printBacktrace(void) {
     resetStack();
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Lox global variables
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static Value getGlobal(Value name) {
+    Value val = NIL_VAL;
+    return tableGet(&vm.globals, name, &val) ? val : EMPTY_VAL;
+}
+
+static bool setGlobal(Value name, Value newValue) {
+    if (newValue == EMPTY_VAL)
+        return tableDelete(&vm.globals, name);
+    else if (tableSet(&vm.globals, name, newValue)) {
+        tableDelete(&vm.globals, name);
+        return false;
+    }
+    return true; 
+}
+
 static void popGlobal(Value handler) {
     ObjDynvar* dynvar = AS_DYNVAR(handler);
     setGlobal(dynvar->varName, dynvar->previous);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Error reporting and recovery
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void runtimeError(const char* format, ...) {
     va_list    args;
@@ -155,6 +182,10 @@ void userError(Value exception) {
     printBacktrace();
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Utilities
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void initVM(void) {
     // All other fields zeroed.
     resetStack();
@@ -200,6 +231,9 @@ if (vm.frameCount == FRAMES_MAX) {              \
     return false;                               \
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Closure calling
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static bool callClosure(ObjClosure* closure, int argCount) {
     CallFrame*   frame;
@@ -290,7 +324,7 @@ static bool callBinding(Value varName) {
     }
 #endif
 
-    defGlobal(varName, peek(1));
+    tableSet(&vm.globals, varName, peek(1));
     dropNpush(2, OBJ_VAL(closure));
 
     frame = &vm.frames[vm.frameCount++];
@@ -361,6 +395,10 @@ static bool callValue(Value callee, int argCount) {
     return false;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Method invoking
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
     Value method = NIL_VAL;
     if (!tableGet(&klass->methods, OBJ_VAL(name), &method)) {
@@ -400,6 +438,20 @@ static bool bindMethod(ObjClass* klass, ObjString* name) {
     return true;
 }
 
+static void defineMethod(ObjString* name) {
+    Value       method = peek(0);
+    ObjClass*   klass  = AS_CLASS(peek(1));
+    ObjClosure* clos   = AS_CLOSURE(method);
+
+    clos->function->klass = klass;
+    tableSet(&klass->methods, OBJ_VAL(name), method);
+    drop();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Upvalue handling
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static ObjUpvalue* captureUpvalue(Value* local) {
     ObjUpvalue* prevUpvalue = NULL;
     ObjUpvalue* upvalue     = vm.openUpvalues;
@@ -437,15 +489,9 @@ static void closeUpvalues(Value* last) {
     }
 }
 
-static void defineMethod(ObjString* name) {
-    Value       method = peek(0);
-    ObjClass*   klass  = AS_CLASS(peek(1));
-    ObjClosure* clos   = AS_CLOSURE(method);
-
-    clos->function->klass = klass;
-    tableSet(&klass->methods, OBJ_VAL(name), method);
-    drop();
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Main interpreter loop
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define READ_BYTE()   (*frame->ip++)
 #define READ_USHORT() (frame->ip += 2, (frame->ip[-2] << 8) | frame->ip[-1])
@@ -561,7 +607,7 @@ nextInstNoSO:
         case OP_DEF_GLOBAL:
             index    = READ_BYTE();
             constant = consts[index];
-            defGlobal(constant, peek(0));
+            tableSet(&vm.globals, constant, peek(0));
             drop();
             goto nextInstNoSO;
 

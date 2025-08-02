@@ -30,8 +30,4 @@ bool       isValidIterator(ObjIterator* iter);
 Value      getIterator(ObjIterator* iter, bool wantKey);
 void       setIterator(ObjIterator* iter, Value value);
 
-Value      getGlobal(Value name);
-bool       setGlobal(Value name, Value newValue);
-void       defGlobal(Value name, Value newValue);
-
 #endif

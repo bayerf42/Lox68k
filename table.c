@@ -237,27 +237,3 @@ void setIterator(ObjIterator* iter, Value value) {
     Entry* entry = &iter->instance->fields.entries[iter->position];
     entry->value = value;
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Global variables  
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Inlined in OP_GET_GLOBAL in vm.c for better performance
-Value getGlobal(Value name) {
-    Value val = NIL_VAL;
-    return tableGet(&vm.globals, name, &val) ? val : EMPTY_VAL;
-}
-
-bool setGlobal(Value name, Value newValue) {
-    if (newValue == EMPTY_VAL)
-        return tableDelete(&vm.globals, name);
-    else if (tableSet(&vm.globals, name, newValue)) {
-        tableDelete(&vm.globals, name);
-        return false;
-    }
-    return true; 
-}
-
-void defGlobal(Value name, Value newValue) {
-    tableSet(&vm.globals, name, newValue);
-}
