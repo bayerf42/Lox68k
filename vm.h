@@ -29,9 +29,8 @@ typedef struct {
     int         grayCount;           // 
     Obj*        grayStack[GRAY_MAX]; // objects to be checked for reachability
 
-#ifndef KIT68K
-  volatile bool interrupted;         // set from signal handler
-#endif
+    volatile
+    bool        interrupted;         // set from signal handler
 
 #ifdef LOX_DBG
     bool        log_native_result;   // log result of native call?

@@ -64,7 +64,6 @@ extern void _stackoverflow(void);
 #define ON_KIT()      (*((short*)0x0200) == 0x1138)
 #define INTERRUPTED() ((*port0 & 0x40) == 0)
 
-#define RESET_INTERRUPTED()    // nothing to do
 #define handleInterrupts(flag) // nothing to do
 
 extern void ticker(void);      // in cstart_lox_rom.asm
@@ -109,7 +108,6 @@ typedef double Real;
 
 // Set by SIGINT handler
 #define INTERRUPTED()       (vm.interrupted)
-#define RESET_INTERRUPTED()  vm.interrupted = false;
 
 #endif
 

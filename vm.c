@@ -15,14 +15,6 @@ VM vm;
 // Printing call/value stacks
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void resetStack(void) {
-    vm.sp           = vm.stack;
-    vm.frameCount   = 0;
-    vm.openUpvalues = NULL;
-}
-
-static void closeUpvalues(Value* last);
-
 #ifdef LOX_DBG
 
 static void indentCallTrace(void) {
@@ -51,6 +43,12 @@ static void printStack(void) {
 }
 
 #endif
+
+static void resetStack(void) {
+    vm.sp           = vm.stack;
+    vm.frameCount   = 0;
+    vm.openUpvalues = NULL;
+}
 
 static void printBacktrace(void) {
     int          i;
@@ -95,6 +93,8 @@ static void popGlobal(Value handler) {
 // Error reporting and recovery
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+static void closeUpvalues(Value* last);
+
 void runtimeError(const char* format, ...) {
     va_list    args;
     int        i;
@@ -123,7 +123,9 @@ void runtimeError(const char* format, ...) {
             if (IS_DYNVAR(frame->handler)) {
                 popGlobal(frame->handler);
                 continue;
-            }  
+            }
+            if (vm.interrupted)
+                continue;
             closeUpvalues(frame->fp);
             vm.sp         = frame->fp;
             vm.frameCount = i;
@@ -545,8 +547,9 @@ nextInstNoSO:
     // Last op guaranteed no stack overflow, omit check
     if (INTERRUPTED()) {
         (void)READ_BYTE(); // avoid negative ip when interrupting before function start
-        putstr("Interrupted.\n");
-        printBacktrace();
+        // Make sure all dynvars are restored, but disable exception handlers
+        vm.interrupted = true;
+        runtimeError("Interrupted.");
         return EVAL_INTERRUPTED;
     }
 
@@ -1263,10 +1266,11 @@ EvalResult interpret(const char* source) {
     peek(0) = OBJ_VAL(closure);
     callClosure(closure, 0);
 
-    RESET_INTERRUPTED();
 #ifdef LOX_DBG
     vm.started = clock();
 #endif
+
+    vm.interrupted = false;
     handleInterrupts(true);
     result = run();
     handleInterrupts(false);
