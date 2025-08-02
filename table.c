@@ -54,21 +54,6 @@ bool tableGet(Table* table, Value key, Value* value) {
     return true;
 }
 
-
-static bool tableGetRef(Table* table, Value key, Value** valueRef) {
-    Entry* entry;
-
-    if (table->count == 0)
-        return false;
-
-    entry = findEntry(table->entries, table->capacity, key);
-    if (IS_EMPTY(entry->key))
-        return false;
-
-    *valueRef = &entry->value;
-    return true;
-}
-
 static void adjustCapacity(Table* table, int capacity) {
     Entry*  entries = ALLOCATE(Entry, capacity);
     Entry*  entry;
@@ -254,48 +239,25 @@ void setIterator(ObjIterator* iter, Value value) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Re-bindable global variables  
+// Global variables  
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if 0
 // Inlined in OP_GET_GLOBAL in vm.c for better performance
-bool getGlobal(Value name, Value* result) {
-    bool found = tableGet(&vm.globals, name, result);
-    if (found && IS_DYNVAR(*result)) 
-        *result = AS_DYNVAR(*result)->current;
-    return found;
+Value getGlobal(Value name) {
+    Value val = NIL_VAL;
+    return tableGet(&vm.globals, name, &val) ? val : EMPTY_VAL;
 }
-#endif
 
 bool setGlobal(Value name, Value newValue) {
-    Value* valPtr = NULL;
-    bool   found  = tableGetRef(&vm.globals, name, &valPtr);
-
-    if (found) {
-        if (IS_DYNVAR(*valPtr))
-            AS_DYNVAR(*valPtr)->current = newValue;
-        else 
-            *valPtr = newValue;
+    if (newValue == EMPTY_VAL)
+        return tableDelete(&vm.globals, name);
+    else if (tableSet(&vm.globals, name, newValue)) {
+        tableDelete(&vm.globals, name);
+        return false;
     }
-    return found;
+    return true; 
 }
 
-void pushGlobal(Value name, Value newValue) {
-    Value* valPtr = NULL;
-
-    if (tableGetRef(&vm.globals, name, &valPtr)) 
-        *valPtr = OBJ_VAL(makeDynvar(newValue, *valPtr));
-    else
-        tableSet(&vm.globals, name, newValue);
-}
-
-void popGlobal(Value name) {
-    Value* valPtr = NULL;
-
-    if (tableGetRef(&vm.globals, name, &valPtr)) {
-        if (IS_DYNVAR(*valPtr)) 
-            *valPtr = AS_DYNVAR(*valPtr)->previous;
-        else
-            tableDelete(&vm.globals, name);
-    }
+void defGlobal(Value name, Value newValue) {
+    tableSet(&vm.globals, name, newValue);
 }

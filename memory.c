@@ -117,7 +117,7 @@ static void blackenObject(Obj* object) {
             break;
 
         case OBJ_DYNVAR:
-            markValue(((ObjDynvar*)object)->current);
+            markValue(((ObjDynvar*)object)->varName);
             markValue(((ObjDynvar*)object)->previous);
             break;
 

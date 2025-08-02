@@ -88,8 +88,8 @@ struct ObjClosure {
 
 struct ObjDynvar {
     OBJ_HEADER
-    Value        current;
-    Value        previous;     // can also be an ObjDynvar building a stack
+    Value        varName;      // actually always an ObjString*   
+    Value        previous;     // EMPTY_VAL when nothing to unbind
 };
 
 struct ObjFunction {
@@ -151,7 +151,7 @@ struct ObjUpvalue {
 ObjBound*    makeBound(Value receiver, ObjClosure* method);
 ObjClass*    makeClass(ObjString* name);
 ObjClosure*  makeClosure(ObjFunction* function);
-ObjDynvar*   makeDynvar(Value current, Value previous);
+ObjDynvar*   makeDynvar(Value varName, Value previous);
 ObjFunction* makeFunction(void);
 ObjInstance* makeInstance(ObjClass* klass);
 ObjIterator* makeIterator(ObjInstance* instance);

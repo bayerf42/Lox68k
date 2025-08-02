@@ -8,7 +8,7 @@ typedef struct {
     uint8_t*    ip;      // instruction pointer, keep first for fast addressing without offset  
     Value*      fp;      // frame pointer into value stack
     ObjClosure* closure; // active closure 
-    Value       handler; // exception handler, if callable; dynamic variable, if string
+    Value       handler; // exception handler, if callable; unbind dynamic variable, if dynvar
 } CallFrame;
 
 typedef struct {

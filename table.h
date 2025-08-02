@@ -30,9 +30,8 @@ bool       isValidIterator(ObjIterator* iter);
 Value      getIterator(ObjIterator* iter, bool wantKey);
 void       setIterator(ObjIterator* iter, Value value);
 
-bool       getGlobal(Value name, Value* result);
+Value      getGlobal(Value name);
 bool       setGlobal(Value name, Value newValue);
-void       pushGlobal(Value name, Value newValue);
-void       popGlobal(Value name);
+void       defGlobal(Value name, Value newValue);
 
 #endif

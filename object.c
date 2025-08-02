@@ -84,9 +84,9 @@ ObjClosure* makeClosure(ObjFunction* function) {
     return closure;
 }
 
-ObjDynvar* makeDynvar(Value current, Value previous) {
+ObjDynvar* makeDynvar(Value varName, Value previous) {
     ObjDynvar* dynvar = ALLOCATE_OBJ(ObjDynvar, OBJ_DYNVAR);
-    dynvar->current   = current;
+    dynvar->varName   = varName;
     dynvar->previous  = previous;
     return dynvar;
 }

@@ -63,6 +63,11 @@ static void printBacktrace(void) {
     resetStack();
 }
 
+static void popGlobal(Value handler) {
+    ObjDynvar* dynvar = AS_DYNVAR(handler);
+    setGlobal(dynvar->varName, dynvar->previous);
+}
+
 void runtimeError(const char* format, ...) {
     va_list    args;
     int        i;
@@ -88,7 +93,7 @@ void runtimeError(const char* format, ...) {
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
         if (!IS_NIL(frame->handler)) {
-            if (IS_STRING(frame->handler)) {
+            if (IS_DYNVAR(frame->handler)) {
                 popGlobal(frame->handler);
                 continue;
             }  
@@ -131,7 +136,7 @@ void userError(Value exception) {
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame = &vm.frames[i];
         if (!IS_NIL(frame->handler)) {
-            if (IS_STRING(frame->handler)) {
+            if (IS_DYNVAR(frame->handler)) {
                 popGlobal(frame->handler);
                 continue;
             }  
@@ -272,6 +277,7 @@ static bool callBinding(Value varName) {
     CallFrame*   frame;
     ObjClosure*  closure  = AS_CLOSURE(peek(0));
     ObjFunction* function = closure->function;
+    ObjDynvar*   dynvar   = makeDynvar(varName, getGlobal(varName));
 
     CHECK_LOX_STACK_OVERFLOW()
 
@@ -284,12 +290,12 @@ static bool callBinding(Value varName) {
     }
 #endif
 
-    pushGlobal(varName, peek(1));
+    defGlobal(varName, peek(1));
     dropNpush(2, OBJ_VAL(closure));
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
-    frame->handler = varName;
+    frame->handler = OBJ_VAL(dynvar);
     frame->ip      = function->chunk.code;
     frame->fp      = vm.sp - 1;
     return true;
@@ -544,19 +550,18 @@ nextInstNoSO:
         case OP_GET_GLOBAL:
             index    = READ_BYTE();
             constant = consts[index];
+            // if ((aVal = getGlobal(constant)) == EMPTY_VAL) inlined to:
             if (!tableGet(&vm.globals, constant, &aVal)) {
                 runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
                 goto handleError;
             }
-            if (IS_DYNVAR(aVal)) 
-                aVal = AS_DYNVAR(aVal)->current;
             push(aVal);
             goto nextInst;
 
         case OP_DEF_GLOBAL:
             index    = READ_BYTE();
             constant = consts[index];
-            tableSet(&vm.globals, constant, peek(0)); // not pushGlobal to avoid chains when redefining
+            defGlobal(constant, peek(0));
             drop();
             goto nextInstNoSO;
 
@@ -953,7 +958,7 @@ nextInstNoSO:
         cont_ret:
             closeUpvalues(frame->fp);
 
-            if (IS_STRING(frame->handler))
+            if (IS_DYNVAR(frame->handler))
                 popGlobal(frame->handler);
 
             vm.frameCount--;
