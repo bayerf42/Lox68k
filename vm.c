@@ -135,7 +135,8 @@ void runtimeError(const char* format, ...) {
             return;
         }
     }
-    putstr("Runtime error: ");
+    if (!vm.interrupted)
+        putstr("Runtime error: ");
     putstr(big_buffer);
     putstr("\n");
     printBacktrace();

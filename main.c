@@ -58,7 +58,7 @@ int main() {
             if (loadSource(big_buffer + 1) == 0) 
                 putstr("File loaded.\n");
             else {
-                printf("File not found.\n");
+                putstr("File not found.\n");
                 continue;
             }
         }    
