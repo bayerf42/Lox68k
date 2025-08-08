@@ -400,14 +400,14 @@ ObjString* concatStrings(ObjString* a, ObjString* b) {
 }
 
 ObjString* mapString(ObjString* a, int (*mapChar)(int)) {
-    int   length = a->length;
-    char* cp;
-    fix_memcpy(big_buffer, a->chars, length + 1);
+    int16_t       len   = a->length;
+    char*         dest  = big_buffer;
+    const char*   src   = a->chars;
 
-    for (cp=big_buffer; *cp; ++cp)
-        *cp = (*mapChar)(*cp);
+    for (; len--; ++src, ++dest)
+        *dest = (*mapChar)(*src);
 
-    return makeString(big_buffer, length);
+    return makeString(big_buffer, a->length);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
