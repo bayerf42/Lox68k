@@ -247,8 +247,14 @@ on the kit, pressing **F3** in the terminal and input a hex file name.
 Since Lox reads the entire input (file) into RAM, the maximum file size is limited by the
 input buffer size, which is 16 kB.
 
-When inputting Lox code, **ENTER** sends your input to the Lox REPL and interprets it. When
-you want to input a line feed without starting interpretation, press **Ctrl-ENTER** instead.
+The terminal emulator has two modes which can be toggled with **F4**:
+* Multiline mode: **ENTER** sends your input to the Lox REPL and interprets it. **Ctrl-ENTER**
+  allows entering multiple lines before finally **ENTER** starts evaluation. No history is
+  recorded in this mode and only **BACKSPACE** is supported to correct typos.
+* History mode: Only single lines can be entered and sent to the Kit with the **ENTER** key.
+  However, a history of lines submitted is stored and can be recalled with **UP** and **DOWN**
+  cursor keys. Also line editing is available in this mode with keys **LEFT**, **RIGHT**,
+  **HOME**, **END**, **DELETE**, and **BACKSPACE**.
 
 To exit the terminal, press **Ctrl-C**, but to interrupt a running computation, press the
 **REP** key on the Kit.
