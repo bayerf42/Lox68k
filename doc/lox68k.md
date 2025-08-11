@@ -233,28 +233,31 @@ You can interact with Lox68K running on the Kit with any terminal program, e.g.,
 in IDE68K, or with Putty, etc. However, since you want to upload Lox source code and
 68008 hex files to the Kit, I recommend using `terminal.py` instead, which provides those two
 features. It supports both serial protocols for uploading HEX files and the (different)
-protocol `gets()` uses on the Kit for inputting source code to the Lox REPL.
+protocol `gets()` uses on the Kit for inputting source code to the Lox REPL. It also has a history
+of input sent to the Kit.
 
 Start it with
 ```sh
 python terminal.py
 ```
-Now everything you type is sent to the Kit and every response
-from the kit is displayed. Additionally, you can upload Lox source code by pressing **F2** and
+
+The terminal emulator has two modes which can be toggled with **F4**:
+* *Direct mode:* Each key pressed is immediately transferred to the Kit and its echo is displayed
+  at the terminal. Pressing **ENTER** completes the input and starts evaluation. You can also
+  press **Ctrl-ENTER** to start a new line without evaluation. No history is
+  recorded in this mode and only **BACKSPACE** is supported to correct typos (since this is the
+  only editing character recognized by the Kit's `gets()` input function.) 
+* *Line-buffer mode* (active on start): You type a line and can edit it with the keys **LEFT**, **RIGHT**,
+  **HOME**, **END**, **DELETE**, and **BACKSPACE**. Nothing is sent to the Kit until you submit
+  the line with the **ENTER** key, starting evaluation. Each line is stored in the history and
+  can be recalled (with **UP** and **DOWN** keys), edited, and re-submitted.
+
+In both modes you can upload Lox source code by pressing **F2** and
 inputting the file name. Or you can upload Motorola HEX files by pressing the **LOAD** button
 on the kit, pressing **F3** in the terminal and input a hex file name.
 
 Since Lox reads the entire input (file) into RAM, the maximum file size is limited by the
 input buffer size, which is 16 kB.
-
-The terminal emulator has two modes which can be toggled with **F4**:
-* Multiline mode: **ENTER** sends your input to the Lox REPL and interprets it. **Ctrl-ENTER**
-  allows entering multiple lines before finally **ENTER** starts evaluation. No history is
-  recorded in this mode and only **BACKSPACE** is supported to correct typos.
-* History mode: Only single lines can be entered and sent to the Kit with the **ENTER** key.
-  However, a history of lines submitted is stored and can be recalled with **UP** and **DOWN**
-  cursor keys. Also line editing is available in this mode with keys **LEFT**, **RIGHT**,
-  **HOME**, **END**, **DELETE**, and **BACKSPACE**.
 
 To exit the terminal, press **Ctrl-C**, but to interrupt a running computation, press the
 **REP** key on the Kit.

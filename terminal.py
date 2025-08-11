@@ -52,12 +52,19 @@ def response():
 
 def terminal_help():
     global use_history
-    print( "Any input is sent to 68008 kit via serial port, any response from it is displayed here.")
-    print( "Ctrl-ENTER:  Send line break to Lox, but don't terminate input, yet. Not in history mode.")
-    print( "F2:          Upload a LOX source file to the Lox68k REPL.")
-    print( "F3:          Upload a HEX file, press LOAD button on the Kit before.")
-    print(f"F4:          Toggle history mode. (Currently {use_history})")
-    print( "Ctrl-C:      Quit terminal")
+    if use_history:
+        print("Current mode: Line-buffered. Press F4 to switch to Direct mode.")
+        print("No input is sent to the Kit until ENTER key is pressed.")
+        print("Simple line editing with LEFT, RIGHT, HOME, END, BACKSPACE and DELETE keys possible.")
+        print("Each input submitted is stored in history, which can be recalled with UP and DOWN keys.")
+    else:
+        print("Current mode: Direct. Press F4 to switch to Line-buffered mode.")
+        print("Any input is sent directly, the echo displayed comes from the Kit.")
+        print("Only BACKSPACE key possible to correct input.")
+        print("Ctrl-ENTER: Send line break to Lox, but don't terminate input, yet.")
+    print( "F2:         Upload a LOX source file to the Lox68k REPL.")
+    print( "F3:         Upload a HEX file, press LOAD button on the Kit before.")
+    print( "Ctrl-C:     Quit terminal")
 
 
 def uploadLOX():
@@ -111,15 +118,15 @@ def terminal_loop():
     current_input = ""
     history_index = None   # Current position in history
     staged_input  = ""     # staged input while navigating history
-    curr_line_len = 0
+    prev_line_len = 0
     cursor_pos    = 0
 
     def refresh_line():
         """Refresh current input line on console."""
-        nonlocal current_input, curr_line_len, cursor_pos
+        nonlocal current_input, prev_line_len, cursor_pos
     
-        # Clear current display line
-        print('\r  ' + ' ' * curr_line_len, end='\r> ')
+        # Clear previous display line
+        print('\r  ' + ' ' * prev_line_len, end='\r> ')
 
         # Print entire input line    
         print(current_input, end='\r> ')
@@ -127,7 +134,7 @@ def terminal_loop():
         # Print again upto current cursor position
         print(current_input[:cursor_pos], end='', flush=True);
     
-        curr_line_len = len(current_input)
+        prev_line_len = len(current_input)
     
     while True:
         time.sleep(anti_stress_delay)
@@ -225,7 +232,7 @@ def terminal_loop():
                     cursor_pos    = 0
                     history_index = None
                     staged_input  = ""
-                    curr_line_len = 0
+                    prev_line_len = 0
                 else:
                     ser.write(CHAR_NL)
 
@@ -261,6 +268,7 @@ def terminal_loop():
 
 
 try:
+    print("Press F1 for help.")
     terminal_loop()
 except KeyboardInterrupt:
     print("=== Terminal terminated, transcript closed. ===")
