@@ -64,7 +64,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | poke        | int *addr*, int *byte*    | nil         | all          | writes *byte* to *addr*                                                           |  
 | pow         | num, num                  | real        | all          | power                                                                             |  
 | random      | -                         | int         | all          | a pseudo-random positive integer                                                  |
-| remove      | instance, any             | bool        | all          | removes a field name/dictionary key from an instance, true if it existed before   |
+| remove      | any, instance?            | bool        | all          | removes a field from an instance, or a global variable, true if it existed before |
 | reverse     | list                      | list        | all          | creates a new list from *list* in reverse order                                   |
 | seed_rand   | int                       | int         | all          | set seed for random number generator, returns current state                       |
 | sin         | num                       | real        | all          | sine                                                                              |  

@@ -64,7 +64,7 @@ parse_real split upper`
 `input keycode print sound`
 
 ### System
-`clock disasm gc sleep`
+`clock disasm gc sleep remove`
 
 ### Exceptions
 `error handle`

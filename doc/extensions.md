@@ -335,7 +335,7 @@ to the first, you must call `next`, returning `true` if the current position is 
   for (var iter = slots(m); next(iter);) { // advance and test via next()
       print iter@,,;     // the @ operator accesses the key, read-only
       print iter^;       // the ^ operator accesses the value, may assign to it
-      remove(m, iter@);  // removing the current item is allowed
+      remove(iter@, m);  // removing the current item is allowed
   }
     ✎ bar   38           // iteration order depends on key hash, consider it random
     ✎ true   666

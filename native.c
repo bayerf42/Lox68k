@@ -470,9 +470,8 @@ NATIVE(matchNative) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NATIVE(removeNative) {
-    ObjInstance* instance = AS_INSTANCE(args[0]);
-    bool         removed  = tableDelete(&instance->fields, args[1]);
-    RESULT = BOOL_VAL(removed);
+    Table* dest = (argCount == 1) ? &vm.globals : &AS_INSTANCE(args[1])->fields;
+    RESULT = BOOL_VAL(tableDelete(dest, args[0]));
     return true;
 }
 
@@ -1011,7 +1010,7 @@ static const Native allNatives[] = {             // Possible errors
     // Objects
     {"parent",      "C-c",    parentNative},
     {"class_of",    "A-c",    classOfNative},
-    {"remove",      "IA-B",   removeNative},
+    {"remove",      "Ai-B",   removeNative},
     {"slots",       "I-T",    slotsNative},
     {"next",        "T-B",    nextNative},
 

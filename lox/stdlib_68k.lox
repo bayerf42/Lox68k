@@ -101,12 +101,12 @@ class Set<Object {
  intersect(that) {
   for (var it=slots(this);next(it);)
    if (!that[it@])
-    remove(this,it@);
+    remove(it@,this);
   return this;
  }
  subtract(that) {
   for (var it=slots(that);next(it);)
-   remove(this,it@);
+   remove(it@,this);
   return this;
  }
 }

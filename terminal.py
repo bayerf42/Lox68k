@@ -185,7 +185,7 @@ def terminal_loop():
 
                 elif next_key == '\x4d': # Arrow right
                     if use_history:
-                        # Move cursor one char to the rightt
+                        # Move cursor one char to the right
                         if cursor_pos < len(current_input):
                             cursor_pos += 1
                             refresh_line()
