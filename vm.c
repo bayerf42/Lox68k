@@ -75,9 +75,7 @@ static Value getGlobal(Value name) {
 }
 
 static bool setGlobal(Value name, Value newValue) {
-    if (newValue == EMPTY_VAL)
-        return tableDelete(&vm.globals, name);
-    else if (tableSet(&vm.globals, name, newValue)) {
+    if (tableSet(&vm.globals, name, newValue)) {
         tableDelete(&vm.globals, name);
         return false;
     }
@@ -86,7 +84,11 @@ static bool setGlobal(Value name, Value newValue) {
 
 static void popGlobal(Value handler) {
     ObjDynvar* dynvar = AS_DYNVAR(handler);
-    setGlobal(dynvar->varName, dynvar->previous);
+
+    if (dynvar->previous == EMPTY_VAL)
+        tableDelete(&vm.globals, dynvar->varName);
+    else
+        tableSet(&vm.globals, dynvar->varName, dynvar->previous);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
