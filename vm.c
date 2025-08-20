@@ -65,24 +65,7 @@ static void printBacktrace(void) {
     resetStack();
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Lox global variables
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-static Value getGlobal(Value name) {
-    Value val = NIL_VAL;
-    return tableGet(&vm.globals, name, &val) ? val : EMPTY_VAL;
-}
-
-static bool setGlobal(Value name, Value newValue) {
-    if (tableSet(&vm.globals, name, newValue)) {
-        tableDelete(&vm.globals, name);
-        return false;
-    }
-    return true; 
-}
-
-static void popGlobal(Value handler) {
+static void restoreGlobal(Value handler) {
     ObjDynvar* dynvar = AS_DYNVAR(handler);
 
     if (dynvar->previous == EMPTY_VAL)
@@ -91,11 +74,11 @@ static void popGlobal(Value handler) {
         tableSet(&vm.globals, dynvar->varName, dynvar->previous);
 }
 
+static void closeUpvalues(Value* last);
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Error reporting and recovery
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-static void closeUpvalues(Value* last);
 
 void runtimeError(const char* format, ...) {
     va_list    args;
@@ -123,7 +106,7 @@ void runtimeError(const char* format, ...) {
         frame = &vm.frames[i];
         if (!IS_NIL(frame->handler)) {
             if (IS_DYNVAR(frame->handler)) {
-                popGlobal(frame->handler);
+                restoreGlobal(frame->handler);
                 continue;
             }
             if (vm.interrupted)
@@ -169,7 +152,7 @@ void userError(Value exception) {
         frame = &vm.frames[i];
         if (!IS_NIL(frame->handler)) {
             if (IS_DYNVAR(frame->handler)) {
-                popGlobal(frame->handler);
+                restoreGlobal(frame->handler);
                 continue;
             }  
             closeUpvalues(frame->fp);
@@ -316,7 +299,7 @@ static bool callBinding(Value varName) {
     CallFrame*   frame;
     ObjClosure*  closure  = AS_CLOSURE(peek(0));
     ObjFunction* function = closure->function;
-    ObjDynvar*   dynvar   = makeDynvar(varName, getGlobal(varName));
+    Value        previous = EMPTY_VAL;
 
     CHECK_LOX_STACK_OVERFLOW()
 
@@ -329,12 +312,13 @@ static bool callBinding(Value varName) {
     }
 #endif
 
+    tableGet(&vm.globals, varName, &previous);
     tableSet(&vm.globals, varName, peek(1));
     dropNpush(2, OBJ_VAL(closure));
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
-    frame->handler = OBJ_VAL(dynvar);
+    frame->handler = OBJ_VAL(makeDynvar(varName, previous));
     frame->ip      = function->chunk.code;
     frame->fp      = vm.sp - 1;
     return true;
@@ -602,7 +586,6 @@ nextInstNoSO:
         case OP_GET_GLOBAL:
             index    = READ_BYTE();
             constant = consts[index];
-            // if ((aVal = getGlobal(constant)) == EMPTY_VAL) inlined to:
             if (!tableGet(&vm.globals, constant, &aVal)) {
                 runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
                 goto handleError;
@@ -620,7 +603,8 @@ nextInstNoSO:
         case OP_SET_GLOBAL:
             index    = READ_BYTE();
             constant = consts[index];
-            if (!setGlobal(constant, peek(0))) {
+            if (tableSet(&vm.globals, constant, peek(0))) {
+                tableDelete(&vm.globals, constant);
                 runtimeError("Undefined variable '%s'.", AS_CSTRING(constant));
                 goto handleError;
             }
@@ -1011,7 +995,7 @@ nextInstNoSO:
             closeUpvalues(frame->fp);
 
             if (IS_DYNVAR(frame->handler))
-                popGlobal(frame->handler);
+                restoreGlobal(frame->handler);
 
             vm.frameCount--;
 
