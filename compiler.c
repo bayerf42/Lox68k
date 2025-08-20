@@ -22,8 +22,7 @@ typedef enum {       // operator precedence
     PREC_ASSIGNMENT, // =
     PREC_OR,         // or
     PREC_AND,        // and
-    PREC_EQUALITY,   // == !=
-    PREC_COMPARISON, // < > <= >=
+    PREC_COMPARISON, // == != < > <= >=
     PREC_TERM,       // + -
     PREC_FACTOR,     // * \ / 
     PREC_UNARY,      // ! -
@@ -736,8 +735,8 @@ static const ParseRule rules[] = {
     /* [TOKEN_LESS]          = */ {NULL,     binary, PREC_COMPARISON},
 
     // double character operators *************************************
-    /* [TOKEN_BANG_EQUAL]    = */ {NULL,     binary, PREC_EQUALITY},
-    /* [TOKEN_EQUAL_EQUAL]   = */ {NULL,     binary, PREC_EQUALITY},
+    /* [TOKEN_BANG_EQUAL]    = */ {NULL,     binary, PREC_COMPARISON},
+    /* [TOKEN_EQUAL_EQUAL]   = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_GREATER_EQUAL] = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_LESS_EQUAL]    = */ {NULL,     binary, PREC_COMPARISON},
     /* [TOKEN_DOT_DOT]       = */ X,

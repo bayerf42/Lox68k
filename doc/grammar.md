@@ -20,6 +20,7 @@ Changes to [original Lox grammar](https://craftinginterpreters.com/appendix-i.ht
 * `if` expression
 * expressions at top-level
 * `dynvar` expression for dynamic variables
+* same precedence for all comparison operators
 
 View this grammar as a [railroad diagram](grammar.html).
 
@@ -66,9 +67,8 @@ expression     → assignment ;
 assignment     → postfix "=" assignment | logic_or ;
 
 logic_or       → logic_and ( "or" logic_and )* ;
-logic_and      → equality ( "and" equality )* ;
-equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+logic_and      → comparison ( "and" comparison )* ;
+comparison     → term ( ( "!=" | "==" | ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
 factor         → unary ( ( "/" | "*" | "\") unary )* ;
 
