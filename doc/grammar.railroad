@@ -1,5 +1,5 @@
 /* Source for Lox68k railroad syntax diagram. */
-/* Use https://rr.red-dove.com/ui to generate Railroad diagram from this file */
+/* Use https://www.bottlecaps.de/rr/ui to generate Railroad diagram from this file */
 /* Open 'Edit grammar' tab, paste this file and select 'View Diagram' tab. */
 /* Disable 'factoring' in options, it leads to confusing diagrams. */
 
@@ -54,7 +54,7 @@ primary        ::= literal
                  | "fun" function
                  | "if" "(" expression ":" expression ":" expression ")"
                  | "handle" "(" expression ":" expression ")"
-                 | "dynvar" "(" IDENTIFIER ("=" expression)? ":" expression ")"
+                 | "dynvar" "(" IDENTIFIER "=" expression ":" expression ")"
 literal        ::= "nil" | "true" | "false" | NUMBER | STRING
 function       ::= "(" parameters ")" (block | "->" expression)
 parameters     ::= (".." IDENTIFIER | IDENTIFIER ("," IDENTIFIER)* ("," ".." IDENTIFIER)?)?
