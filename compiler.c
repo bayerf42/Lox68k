@@ -30,12 +30,12 @@ typedef enum {       // operator precedence
 } Precedence;
 
 typedef enum {       // function type  
-    TYPE_SCRIPT,     // top-level script, input from user
-    TYPE_FUN,        // function declaration
-    TYPE_LAMBDA,     // anonymous (lambda) function
+    FUNT_SCRIPT,     // top-level script, input from user
+    FUNT_FUN,        // function declaration
+    FUNT_LAMBDA,     // anonymous (lambda) function
                      // next 2 types allowed in classes only 
-    TYPE_METHOD,     // method in a class declaration 
-    TYPE_INIT,       // initialization method (constructor)  
+    FUNT_METHOD,     // method in a class declaration 
+    FUNT_INIT,       // initialization method (constructor)  
 } FunctionType;
 
 typedef void (*ParseFn)(bool canAssign);
@@ -220,7 +220,7 @@ static int emitJump(int instruction) {
 }
 
 static void emitReturn(void) {
-    if (currentComp->type == (FunctionType)TYPE_INIT)
+    if (currentComp->type == (FunctionType)FUNT_INIT)
         emit3Bytes(OP_GET_LOCAL, 0, OP_RETURN);
     else
         emitByte(OP_RETURN_NIL);
@@ -256,8 +256,8 @@ static void patchJump(int offset) {
 }
 
 static void emitClosure(Compiler* compiler) {
-    int upvalueCount = compiler->target->upvalueCount;
-    int i;
+    uint8_t upvalueCount = compiler->target->upvalueCount;
+    uint8_t i;
 
     emit2Bytes(OP_CLOSURE, makeConstant(OBJ_VAL(compiler->target)));
     for (i = 0; i < upvalueCount; i++) 
@@ -279,8 +279,8 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     compiler->currentLoop = NULL;
     currentComp           = compiler;
 
-    if (type != (FunctionType)TYPE_SCRIPT) {
-        if (type == (FunctionType)TYPE_LAMBDA)
+    if (type != (FunctionType)FUNT_SCRIPT) {
+        if (type == (FunctionType)FUNT_LAMBDA)
             currentComp->target->name = INT_VAL(lambdaCount++);
         else
             currentComp->target->name =
@@ -290,7 +290,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     local = &currentComp->locals[currentComp->localCount++];
     local->depth      = 0;
     local->isCaptured = false;
-    local->name       =  *((type >= (FunctionType)TYPE_METHOD) ? &synthThis : &synthEmpty);
+    local->name       =  *((type >= (FunctionType)FUNT_METHOD) ? &synthThis : &synthEmpty);
     // IDE68K doesn't allow struct in ?: operator, only struct *
 }
 
@@ -339,7 +339,7 @@ static int   identifierConstant(const Token* name);
 static void  binary(bool canAssign);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Expressions
+// Postfix operators
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void call(bool canAssign) {
@@ -412,6 +412,10 @@ static void iter(bool canAssign) {
     } else
         emitByte(accessor == (TokenType)TOKEN_HAT ? OP_GET_ITVAL : OP_GET_ITKEY);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Primary expressions 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void litNil(bool canAssign) {
     emitByte(OP_NIL);
@@ -643,14 +647,14 @@ static void negative(bool canAssign) {
 }
 
 static void lambda(bool canAssign) {
-    function(TYPE_LAMBDA);
+    function(FUNT_LAMBDA);
 }
 
 static void buildThunk(void) {
     Compiler compiler;
 
     CHECK_STACKOVERFLOW
-    initCompiler(&compiler, TYPE_LAMBDA);
+    initCompiler(&compiler, FUNT_LAMBDA);
     beginScope();
     expression();
     endCompiler(true);
@@ -783,6 +787,7 @@ static const ParseRule rules[] = {
 static void binary(bool canAssign) {
     TokenType ot           = parser.previous.type;
     const ParseRule* rule  = getRule(ot);
+
     parsePrecedence((Precedence)(rule->precedence + 1));
     if      (ot == (TokenType)TOKEN_BANG_EQUAL)    emit2Bytes(OP_EQUAL, OP_NOT);
     else if (ot == (TokenType)TOKEN_EQUAL_EQUAL)   emitByte  (OP_EQUAL);
@@ -909,7 +914,7 @@ static void function(FunctionType type) {
     currentComp->target->arity |= restParm;        
 
     if (match(TOKEN_ARROW)) {
-        if (type == (FunctionType)TYPE_INIT)
+        if (type == (FunctionType)FUNT_INIT)
             error("Can't return value from initializer.");
         expression();
         endCompiler(true);
@@ -923,12 +928,12 @@ static void function(FunctionType type) {
 
 static void method(void) {
     int          mname;
-    FunctionType type = TYPE_METHOD; 
+    FunctionType type = FUNT_METHOD; 
 
     consume(TOKEN_IDENTIFIER, "Expect method name.");
     mname = identifierConstant(&parser.previous);
     if (parser.previous.length == 4 && fix_memcmp(parser.previous.start, "init", 4) == 0)
-        type = TYPE_INIT;
+        type = FUNT_INIT;
     function(type);
     emit2Bytes(OP_METHOD, mname);
 }
@@ -984,7 +989,7 @@ static void funDeclaration(void) {
     int fname = parseVariable("Expect function name.");
 
     markInitialized();
-    function(TYPE_FUN);
+    function(FUNT_FUN);
     defineVariable(fname);
 }
 
@@ -1204,13 +1209,13 @@ static void printStatement(void) {
 }
 
 static void returnStatement(void) {
-    if (currentComp->type == (FunctionType)TYPE_SCRIPT)
+    if (currentComp->type == (FunctionType)FUNT_SCRIPT)
         error("Can't return from top-level.");
 
     if (match(TOKEN_SEMICOLON))
         emitReturn();
     else {
-        if (currentComp->type == (FunctionType)TYPE_INIT)
+        if (currentComp->type == (FunctionType)FUNT_INIT)
             error("Can't return value from initializer.");
         expression();
         consumeExp(TOKEN_SEMICOLON, "return value");
@@ -1297,7 +1302,7 @@ ObjFunction* compile(const char* source) {
 #endif
 
     initScanner(source);
-    initCompiler(&compiler, TYPE_SCRIPT);
+    initCompiler(&compiler, FUNT_SCRIPT);
 
     parser.hadError  = false;
     parser.panicMode = false;

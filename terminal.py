@@ -140,9 +140,7 @@ def terminal_loop():
         time.sleep(anti_stress_delay)
         if msvcrt.kbhit():
             key = msvcrt.getwch()
-
-            # Function and arrow keys
-            if key in ('\x00', '\xe0'):
+            if key in ('\x00', '\xe0'): # Prefix for special keys, test next keycode
                 next_key = msvcrt.getwch()
                 if   next_key == '\x3b': # F1
                     terminal_help()
@@ -216,8 +214,7 @@ def terminal_loop():
                             current_input = current_input[:cursor_pos] + current_input[cursor_pos+1:]
                             refresh_line()
 
-            # ENTER
-            elif key == '\r':
+            elif key == '\r': # Enter
                 if use_history:
                     # Send input and append to history
                     send_serial_line(current_input)
@@ -236,14 +233,12 @@ def terminal_loop():
                 else:
                     ser.write(CHAR_NL)
 
-            # Ctrl+ENTER
-            elif key == '\x0a':
+            elif key == '\x0a': # Ctrl-Enter
                 # Send RS to Kit for next line, ignored in history mode
                 if not use_history:
                     ser.write(CHAR_RS)
 
-            # Backspace
-            elif key == '\x08':
+            elif key == '\x08': # Backspace
                 if use_history:
                     # Delete char left of cursor and move cursor left
                     if cursor_pos > 0:
@@ -253,8 +248,7 @@ def terminal_loop():
                 else:
                     ser.write(CHAR_BS)
 
-            # Other chars
-            else:
+            else: # All other chars
                 if use_history:
                     # Insert at cursor position and move cursor right
                     current_input = current_input[:cursor_pos] + key + current_input[cursor_pos:]
