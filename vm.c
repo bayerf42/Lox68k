@@ -318,7 +318,9 @@ static bool callBinding(Value varName) {
 
     frame = &vm.frames[vm.frameCount++];
     frame->closure = closure;
+    pushUnchecked(previous); // protect from GC
     frame->handler = OBJ_VAL(makeDynvar(varName, previous));
+    drop();
     frame->ip      = function->chunk.code;
     frame->fp      = vm.sp - 1;
     return true;
