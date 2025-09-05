@@ -4,9 +4,9 @@
 
        section code
 
-; void fix_memcpy(char* dest, const char* src, size_t size);
-       xdef      _fix_memcpy
-_fix_memcpy:
+; void mem_copy(char* dest, const char* src, size_t size);
+       xdef      _mem_copy
+_mem_copy:
        movea.l   (4,A7),A0                 ; dest
        movea.l   (8,A7),A1                 ; src
        move.l    (12,A7),D1                ; size
@@ -26,19 +26,17 @@ _mem_clear:
 .test  dbra      D0,.loop
        rts
 
-; int fix_memcmp(const char* a, const char* b, size_t size);
-       xdef      _fix_memcmp
-_fix_memcmp:
+; int mem_not_eq(const char* a, const char* b, size_t size);
+       xdef      _mem_not_eq
+_mem_not_eq:
        movea.l   (4,A7),A0                 ; a
        movea.l   (8,A7),A1                 ; b
        move.l    (12,A7),D1                ; size
-       clr.b     D0                        ; result
+       clr.l     D0                        ; result
        bra.s     .test
-.loop  move.b    (A0)+,D0
-       sub.b     (A1)+,D0
+.loop  cmpm.b    (A0)+,(A1)+
 .test  dbne      D1,.loop
-       ext.w     D0
-       ext.l     D0
+       sne       D0
        rts 
 
 ; int putstr(const char* str);

@@ -97,8 +97,8 @@ typedef double Real;
 #define less(x,y)      ((x)<(y))
 
 // use standard routines here
-#define fix_memcpy     memcpy
-#define fix_memcmp     memcmp
+#define mem_copy       memcpy
+#define mem_not_eq     memcmp
 #define mem_clear(a,n) memset(a,0,n)
 #define putstr(str)    fputs((str),stdout)
 

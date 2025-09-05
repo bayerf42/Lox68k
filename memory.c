@@ -47,7 +47,7 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
 #endif
 
     if (oldSize != 0) {
-        fix_memcpy(result, pointer, (oldSize < newSize) ? oldSize : newSize);
+        mem_copy(result, pointer, (oldSize < newSize) ? oldSize : newSize);
         nano_free(pointer);
     }
     return result;

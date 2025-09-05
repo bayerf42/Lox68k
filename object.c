@@ -164,7 +164,7 @@ ObjString* makeString(const char* chars, int length) {
     string = (ObjString*)allocateObject(sizeof(ObjString) + length + 1, OBJ_STRING);
     string->length = length;
     string->hash   = hash;
-    fix_memcpy(string->chars, chars, length);
+    mem_copy(string->chars, chars, length);
     string->chars[length] = '\0';
 
     // and save it in table
@@ -394,8 +394,8 @@ ObjString* sliceFromString(ObjString* string, int begin, int end) {
 ObjString* concatStrings(ObjString* a, ObjString* b) {
     if (a->length + b->length >= INPUT_SIZE)
         return NULL;
-    fix_memcpy(big_buffer, a->chars, a->length);
-    fix_memcpy(big_buffer + a->length, b->chars, b->length);
+    mem_copy(big_buffer, a->chars, a->length);
+    mem_copy(big_buffer + a->length, b->chars, b->length);
     return makeString(big_buffer, a->length + b->length);
 }
 
