@@ -169,7 +169,7 @@ ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t
             string = AS_STRING(entry->key); // keys will always be strings here!
             if (string->length == length &&
                 string->hash   == hash   &&
-                mem_not_eq(string->chars, chars, length) == 0) {
+                mem_equal(string->chars, chars, length)) {
                 // we found duplicate string
                 return string;
             }

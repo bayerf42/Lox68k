@@ -97,10 +97,10 @@ typedef double Real;
 #define less(x,y)      ((x)<(y))
 
 // use standard routines here
-#define mem_copy       memcpy
-#define mem_not_eq     memcmp
-#define mem_clear(a,n) memset(a,0,n)
-#define putstr(str)    fputs((str),stdout)
+#define mem_copy         memcpy
+#define mem_equal(a,b,n) (!memcmp(a,b,n))
+#define mem_clear(a,n)   memset(a,0,n)
+#define putstr(str)      fputs((str),stdout)
 
 // hide Kit's assembly helpers 
 #define CHECK_STACKOVERFLOW

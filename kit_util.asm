@@ -26,9 +26,9 @@ _mem_clear:
 .test  dbra      D0,.loop
        rts
 
-; int mem_not_eq(const char* a, const char* b, size_t size);
-       xdef      _mem_not_eq
-_mem_not_eq:
+; int mem_equal(const char* a, const char* b, size_t size);
+       xdef      _mem_equal
+_mem_equal:
        movea.l   (4,A7),A0                 ; a
        movea.l   (8,A7),A1                 ; b
        move.l    (12,A7),D1                ; size
@@ -36,7 +36,7 @@ _mem_not_eq:
        bra.s     .test
 .loop  cmpm.b    (A0)+,(A1)+
 .test  dbne      D1,.loop
-       sne       D0
+       seq       D0
        rts 
 
 ; int putstr(const char* str);

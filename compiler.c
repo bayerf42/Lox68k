@@ -473,7 +473,7 @@ static void list(bool canAssign) {
 static bool identifiersEqual(const Token* a, const Token* b) {
     if (a->length != b->length)
         return false;
-    return mem_not_eq(a->start, b->start, a->length) == 0;
+    return mem_equal(a->start, b->start, a->length);
 }
 
 static int resolveLocal(Compiler* compiler, const Token* name) {
@@ -932,7 +932,7 @@ static void method(void) {
 
     consume(TOKEN_IDENTIFIER, "Expect method name.");
     mname = identifierConstant(&parser.previous);
-    if (parser.previous.length == 4 && mem_not_eq(parser.previous.start, "init", 4) == 0)
+    if (parser.previous.length == 4 && mem_equal(parser.previous.start, "init", 4))
         type = FUNT_INIT;
     function(type);
     emit2Bytes(OP_METHOD, mname);
