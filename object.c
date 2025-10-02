@@ -76,9 +76,7 @@ ObjClosure* makeClosure(ObjFunction* function) {
     ObjClosure* closure = (ObjClosure*)
         allocateObject(sizeof(ObjClosure) + sizeof(ObjUpvalue*) * function->upvalueCount,
                        OBJ_CLOSURE);
-    int i;
-    for (i = 0; i < function->upvalueCount; i++)
-        closure->upvalues[i] = NULL;
+    mem_clear(closure->upvalues, function->upvalueCount * sizeof(ObjUpvalue*));
     closure->function     = function;
     closure->upvalueCount = function->upvalueCount;
     return closure;

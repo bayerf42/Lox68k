@@ -39,19 +39,20 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Object types 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef enum {     //  visible to user | callable | leaf object (keep enum order for type tests)
-    OBJ_DYNVAR,    //  .               | .        | .
-    OBJ_FUNCTION,  //  .               | .        | .
-    OBJ_UPVALUE,   //  .               | .        | .
-    OBJ_INSTANCE,  //  X               | .        | .
-    OBJ_LIST,      //  X               | .        | .
-    OBJ_ITERATOR,  //  X               | .        | .
-    OBJ_BOUND,     //  X               | X        | .
-    OBJ_CLASS,     //  X               | X        | .
-    OBJ_CLOSURE,   //  X               | X        | .
-    OBJ_NATIVE,    //  X               | X        | X
-    OBJ_REAL,      //  X               | .        | X
-    OBJ_STRING,    //  X               | .        | X
+// keep enum order for type tests
+typedef enum {     //  visible to user | callable | leaf object | creation (Init, Compile, Runtime)
+    OBJ_DYNVAR,    //  .               | .        | .           | R
+    OBJ_FUNCTION,  //  .               | .        | .           | C
+    OBJ_UPVALUE,   //  .               | .        | .           | R
+    OBJ_INSTANCE,  //  X               | .        | .           | R
+    OBJ_LIST,      //  X               | .        | .           | R
+    OBJ_ITERATOR,  //  X               | .        | .           | R
+    OBJ_BOUND,     //  X               | X        | .           | R
+    OBJ_CLASS,     //  X               | X        | .           | R
+    OBJ_CLOSURE,   //  X               | X        | .           | R
+    OBJ_NATIVE,    //  X               | X        | X           | I
+    OBJ_REAL,      //  X               | .        | X           | C,R
+    OBJ_STRING,    //  X               | .        | X           | I,C,R
 } ObjType;
 
 // The IDE68K C compiler doesn't seem to like including struct Obj in the following structures

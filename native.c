@@ -19,7 +19,8 @@ static const char* matchesType(Value value, int type) {
     const char* NULLPTR = 0; // Using NULL constant in next statements creates inefficient code???
 
     switch (type) {
-        case 'A': return                      NULLPTR;  // any value
+        case 'A': return                      NULLPTR;             // any value
+    //  case 'B': return IS_BOOL(value)     ? NULLPTR : "a bool";  // unused
         case 'C': return IS_CLASS(value)    ? NULLPTR : "a class";
 #ifdef LOX_DBG
         case 'F': return IS_CLOSURE(value)
@@ -264,7 +265,7 @@ NATIVE(deleteNative) {
 }
 
 NATIVE(indexNative) {
-    ObjList* list  = AS_LIST(args[1]);;
+    ObjList* list  = AS_LIST(args[1]);
     int      start = (argCount == 2) ? 0 : AS_INT(args[2]);
     int      i;
 
