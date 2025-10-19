@@ -63,9 +63,14 @@ void appendChunk(Chunk* chunk, int byte, int line) {
 
 int addConstant(Chunk* chunk, Value value) {
     int i;
-    for (i = 0; i < chunk->constants.count; i++)
-        if (valuesEqual(chunk->constants.values[i], value))
+    Value currVal;
+    bool  isReal = IS_REAL(value);
+    for (i = 0; i < chunk->constants.count; i++) {
+        currVal = chunk->constants.values[i];
+        if (valuesEqual(currVal, value) ||
+            isReal && IS_REAL(currVal) && AS_REAL(currVal)==AS_REAL(value))
             return i;
+    }
 
     pushUnchecked(value);
     appendValueArray(&chunk->constants, value);

@@ -3,9 +3,13 @@
 Native functions are implemented in C and are always available, even when you start Lox without
 the [standard library](stdlib.md).
 
-Trailing `?` indicates optional parameter. `num` means any number type, `int` or `real`.
-
+Trailing `?` indicates optional parameter.
 Trailing `?` at return type means that the native may return `nil`.
+
+* `num` means any number type, `int` or `real`.
+* `seq` means sequence, `string` or `list`,
+* `bool` as a parameter type means any type, interpreted as a bool, so `nil` and `false` are falsey, any other value is truish
+* `bool` as a return type means actually `false` or `true`
 
 
 | Name        | Parameters                | Returns     | Availability | Description                                                                       |
@@ -26,12 +30,12 @@ Trailing `?` at return type means that the native may return `nil`.
 | clock       | -                         | int         | all          | runtime in milliseconds after start                                               |  
 | cos         | num                       | real        | all          | cosine                                                                            |  
 | cosh        | num                       | real        | all          | hyperbolic cosine                                                                 |  
-| dbg_call    | any                       | nil         | debug        | trace call/return Lox functions/methods                                           |  
-| dbg_code    | any                       | nil         | debug        | prints byte code after compiling                                                  |  
+| dbg_call    | bool                      | nil         | debug        | trace call/return Lox functions/methods                                           |  
+| dbg_code    | bool                      | nil         | debug        | prints byte code after compiling                                                  |  
 | dbg_gc      | int                       | nil         | debug        | prints garbage collection diagnostics according to bit flags *int*, see `memory.h`|  
-| dbg_nat     | any                       | nil         | debug        | trace calling Lox natives                                                         |  
-| dbg_stat    | any                       | nil         | debug        | print statistics after evaluation                                                 |  
-| dbg_step    | any                       | nil         | debug        | trace each VM instruction executed, prints stack                                  |  
+| dbg_nat     | bool                      | nil         | debug        | trace calling Lox natives                                                         |  
+| dbg_stat    | bool                      | nil         | debug        | print statistics after evaluation                                                 |  
+| dbg_step    | bool                      | nil         | debug        | trace each VM instruction executed, prints stack                                  |  
 | dec         | num                       | string      | all          | *num* as decimal string                                                           |
 | delete      | list, int                 | nil         | all          | deletes element at *int* from *list*                                              |
 | disasm      | fun, int                  | int?        | debug        | prints VM code of *fun* at offset *int*, returns next offset or nil at end        |
@@ -50,7 +54,7 @@ Trailing `?` at return type means that the native may return `nil`.
 | lcd_defchar | int, list *of 8 bytes*    | nil         | Kit          | creates a user-defined char with code *int* for LCD with bit pattern from *list*  |  
 | lcd_goto    | int *col*, int *line*     | nil         | Kit          | set cursor position on LCD                                                        |  
 | lcd_puts    | string                    | nil         | Kit          | writes *string* to LCD                                                            |  
-| length      | list or string            | int         | all          | length of *list* or *string*                                                      |
+| length      | seq                       | int         | all          | length of the sequence                                                            |
 | list        | int, any?                 | list        | all          | creates a list with *int* elements, initialized to *any* or nil                   |
 | log         | num                       | real        | all          | natural logarithm                                                                 |  
 | lower       | string                    | string      | all          | lower case of string                                                              |  
