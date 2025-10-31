@@ -19,7 +19,7 @@
 
 #include "monitor4x.h"
 
-const char* loxLibSrc;
+static const char* loxLibSrc;
 
 int main() {
     if (ON_KIT()) { // Running on actual 68008 Kit
