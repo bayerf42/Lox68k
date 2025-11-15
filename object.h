@@ -186,6 +186,7 @@ const char*  formatHex(Int val);
 const char*  formatBin(Int val);
 Value        parseInt(const char* start, bool checkLen);
 void         putstrn(int len, const char* str);
+char*        readLine(void);
 
 extern char  buffer[];
 

@@ -68,7 +68,7 @@ int addConstant(Chunk* chunk, Value value) {
     for (i = 0; i < chunk->constants.count; i++) {
         currVal = chunk->constants.values[i];
         if (valuesEqual(currVal, value) ||
-            isReal && IS_REAL(currVal) && AS_REAL(currVal)==AS_REAL(value))
+            (isReal && IS_REAL(currVal) && AS_REAL(currVal)==AS_REAL(value)))
             return i;
     }
 

@@ -533,3 +533,15 @@ void putstrn(int len, const char* str) {
     while (*str && len--)
         putchar(*str++);
 }
+
+char* readLine() {
+#ifdef KIT68K
+    return gets(big_buffer);
+#else
+    char* res = fgets(big_buffer, sizeof(big_buffer), stdin);
+    if (res)
+        big_buffer[strcspn(big_buffer, "\n")] = 0;
+    return res;      
+#endif
+}
+

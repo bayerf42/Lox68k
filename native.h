@@ -14,6 +14,5 @@ typedef struct {
 
 void  defineAllNatives(void);
 bool  callNative(const Native* native, int argCount, Value* args);
-char* readLine(void);
 
 #endif
