@@ -308,24 +308,29 @@ void printObject(Value value, int flags) {
     }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// String/List index checks 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static void limitIndex(int len, int* index) {
+    // Slicing: index out of bounds allowed, snaps to min/max
+    if (*index < 0)   *index += len;
+    if (*index < 0)   *index  = 0;
+    if (*index > len) *index  = len;
+}
+
+bool validateIndex(int len, int* index) {
+    // Subscript: index out of bounds is error
+    if (*index >= 0) 
+        return  *index <  len;
+    else
+        return (*index += len) >= 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Lists 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// for slicing, index beyond ends allowed
-static void limitIndex(int n, int* index) {
-    if (*index < 0) *index += n;
-    if (*index < 0) *index  = 0;
-    if (*index > n) *index  = n;
-}
-
-// also adjust negative index
-bool validateListIndex(ObjList* list, int* index) {
-    if (*index >= 0) 
-        return  *index <  list->arr.count;
-    else
-        return (*index += list->arr.count) >= 0;
-}
 
 void insertIntoList(ObjList* list, Value value, int index) {
     int oldCapacity, i;
@@ -373,14 +378,6 @@ ObjList* concatLists(ObjList* a, ObjList* b) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Strings 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// also adjust negative index
-bool validateStringIndex(ObjString* string, int* index) {
-    if (*index >= 0) 
-        return  *index <  string->length;
-    else
-        return (*index += string->length) >= 0;
-}
 
 ObjString* sliceFromString(ObjString* string, int begin, int end) {
     int n = string->length;

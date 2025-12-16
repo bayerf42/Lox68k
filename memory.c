@@ -100,7 +100,7 @@ static void blackenObject(Obj* object) {
 
     switch (object->type) {
         case OBJ_BOUND:
-            markValue(((ObjBound*)object)->receiver);
+            markObject((Obj*)((ObjBound*)object)->receiver); // always instance
             markObject((Obj*)((ObjBound*)object)->method);
             break;
 
@@ -117,12 +117,12 @@ static void blackenObject(Obj* object) {
             break;
 
         case OBJ_DYNVAR:
-            markValue(((ObjDynvar*)object)->varName);
+            markObject((Obj*)((ObjDynvar*)object)->varName); // always string
             markValue(((ObjDynvar*)object)->previous);
             break;
 
         case OBJ_FUNCTION:
-            markValue(((ObjFunction*)object)->name);
+            markValue(((ObjFunction*)object)->name); // int or string
             markObject((Obj*)((ObjFunction*)object)->klass);
             markArray(&((ObjFunction*)object)->chunk.constants);
             break;

@@ -169,14 +169,14 @@ bool         isCallable(Value value);
 const char*  typeName(ObjType type);
 const char*  functionName(ObjFunction* function);
 
+bool         validateIndex(int len, int* index);
+
 void         insertIntoList(ObjList* list, Value value, int index);
 void         deleteFromList(ObjList* list, int index);
 ObjList*     sliceFromList(ObjList* list, int begin, int end);
-bool         validateListIndex(ObjList* list, int* index);
 ObjList*     concatLists(ObjList* a, ObjList* b);
 
 ObjString*   sliceFromString(ObjString* string, int begin, int end);
-bool         validateStringIndex(ObjString* string, int* index);
 ObjString*   concatStrings(ObjString* a, ObjString* b);
 ObjString*   mapString(ObjString* a, int (*mapChar)(int));
 
