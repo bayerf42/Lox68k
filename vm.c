@@ -56,11 +56,12 @@ static void printBacktrace(void) {
     CallFrame*   frame;
     ObjFunction* function;
 
+    putstr("\n");
     for (i = vm.frameCount - 1; i >= 0; i--) {
         frame       = &vm.frames[i];
         function    = frame->closure->function;
         instruction = frame->ip - function->chunk.code - 1;
-        printf("[line %d] in %s\n", getLine(&function->chunk, instruction), functionName(function));
+        printf("[line %d in %s]\n", getLine(&function->chunk, instruction), functionName(function));
     }
     resetStack();
 }
@@ -123,7 +124,6 @@ void runtimeError(const char* format, ...) {
     if (!vm.interrupted)
         putstr("Runtime error: ");
     putstr(big_buffer);
-    putstr("\n");
     printBacktrace();
 }
 
@@ -166,7 +166,6 @@ void userError(Value exception) {
     }
     putstr("Runtime error: ");
     printValue(exception, PRTF_HUMAN | PRTF_EXPAND);
-    putstr("\n");
     printBacktrace();
 }
 
