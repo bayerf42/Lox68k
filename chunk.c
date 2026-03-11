@@ -34,7 +34,7 @@ void freezeChunk(Chunk* chunk) {
     freezeValueArray(&chunk->constants);
 }
 
-void appendChunk(Chunk* chunk, int byte, int line) {
+void addBytecode(Chunk* chunk, int byte, int line) {
     int16_t    oldCapacity;
     LineStart* lineStart;
 

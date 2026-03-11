@@ -2,8 +2,6 @@
 #define clox_ffp_glue_h
 
 Real fabs(Real x);
-int  trunc(Real x);
-
 Real sqrt(Real x);
 Real sin(Real x);
 Real cos(Real x);

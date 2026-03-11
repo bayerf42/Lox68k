@@ -23,7 +23,7 @@ typedef struct {
     uint32_t    randomState;         // state of pseudo-random number generator
 
     bool        handleException;     // internal state
-    bool        hadStackoverflow;    // internal state
+    bool        hadStackoverflow;    // internal state, don't move, kit_util.asm assumes it here
     size_t      bytesAllocated;      // current heap usage
     Obj*        objects;             // list of all objects used
     int         grayCount;           // 

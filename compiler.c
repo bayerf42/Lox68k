@@ -190,7 +190,7 @@ static void synchronize(void) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void emitByte(int byte) {
-    appendChunk(currentChunk(), byte, parser.previous.line);
+    addBytecode(currentChunk(), byte, parser.previous.line);
 }
 
 static void emit2Bytes(int byte1, int byte2) {
