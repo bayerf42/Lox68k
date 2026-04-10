@@ -93,7 +93,7 @@ argument       → ".."? expression ;
 print_list     → ( expression ( print_sep expression )* print_sep? )? ;
 print_sep      → "," ","? ;
 
-NUMBER         → DIGIT+ ( "." DIGIT+ )? ( ( "e" | "E" ) ( "+" | "-" )? DIGIT+ )?
+NUMBER         → DIGIT+ ( "." DIGIT* )? ( ( "e" | "E" ) ( "+" | "-" )? DIGIT+ )?
                | "$" HEXDIGIT+
                | "%" BINDIGIT+ ;
  

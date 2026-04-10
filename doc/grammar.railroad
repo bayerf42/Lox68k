@@ -61,7 +61,7 @@ parameters     ::= (".." IDENTIFIER | IDENTIFIER ("," IDENTIFIER)* ("," ".." IDE
 arguments      ::= ((".."? expression) ("," (".."? expression))*)?
 print_list     ::= (expression (("," ","?) expression)* ("," ","?)?)?
 
-NUMBER         ::= DIGIT+ ("." DIGIT+)? (("e" | "E") ("+" | "-")? DIGIT+)?
+NUMBER         ::= DIGIT+ ("." DIGIT*)? (("e" | "E") ("+" | "-")? DIGIT+)?
                  | "$" HEXDIGIT+
                  | "%" BINDIGIT+
 

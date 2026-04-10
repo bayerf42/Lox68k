@@ -96,8 +96,7 @@ static void number(Token* token, char start) {
             advance();
 
         // Look for fractional part
-        if (peek() == '.' && isdigit(peekNext())) {
-            // Consume the ".".
+        if (peek() == '.') {
             advance();
             isReal = true;
             while (isdigit(peek()))
